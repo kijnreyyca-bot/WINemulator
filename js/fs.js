@@ -108,7 +108,8 @@
     if (entry.kind === 'image') return 'image';
     if (entry.kind === 'text') return 'textfile';
     if (entry.ext === 'exe' || entry.ext === 'com') return 'exe';
-    if (entry.ext === 'bat') return 'exe';
+    if (entry.ext === 'bat' || entry.ext === 'cmd') return 'terminal';
+    if (entry.ext === 'ps1') return 'powershell';
     return 'file';
   }
 
@@ -546,12 +547,20 @@
     dirs.forEach(function (p) {
       try { Win.fs.mkdir(p, { parents: true, silent: true }); } catch (e) {}
     });
-    const sys32Files = ['cmd.exe', 'powershell.exe', 'notepad.exe', 'explorer.exe', 'calc.exe', 'taskmgr.exe', 'regedit.exe', 'msconfig.exe', 'mmc.exe', 'mspaint.exe'];
+    const sys32Dirs = ['drivers', 'drivers/etc', 'wbem', 'WindowsPowerShell', 'WindowsPowerShell/v1.0', 'config', 'config/systemprofile', 'catroot', 'catroot2', 'LogFiles', 'LogFiles/W3SVC1', 'Tasks', 'spool', 'spool/PRINTERS', 'spool/drivers', 'spool/drivers/color', 'dhcp', 'GroupPolicy', 'GroupPolicy/Machine', 'GroupPolicy/User', 'migwiz', 'oobe', 'Restore', 'Restore/filelist'];
+    sys32Dirs.forEach(function (d) {
+      try { Win.fs.mkdir('C:\\Windows\\System32\\' + d, { parents: true, silent: true }); } catch (e) {}
+    });
+    const sys32Files = ['cmd.exe', 'powershell.exe', 'notepad.exe', 'explorer.exe', 'calc.exe', 'taskmgr.exe', 'regedit.exe', 'msconfig.exe', 'mmc.exe', 'mspaint.exe', 'kernel32.dll', 'user32.dll', 'ntdll.dll', 'gdi32.dll', 'advapi32.dll', 'shell32.dll', 'ole32.dll', 'rpcrt4.dll', 'ws2_32.dll', 'msvcrt.dll', 'wininet.dll', 'urlmon.dll', 'shlwapi.dll', 'crypt32.dll', 'secur32.dll', 'netapi32.dll', 'iphlpapi.dll', 'dnsapi.dll', 'wship6.dll', 'imm32.dll', 'comctl32.dll', 'comdlg32.dll', 'version.dll', 'winmm.dll', 'setupapi.dll', 'cfgmgr32.dll', 'devmgr.dll', 'ntoskrnl.exe', 'hal.dll', 'smss.exe', 'csrss.exe', 'winlogon.exe', 'services.exe', 'lsass.exe', 'svchost.exe', 'spoolsv.exe', 'taskhost.exe', 'dwm.exe', 'conhost.exe', 'audiodg.exe', 'SearchIndexer.exe', 'WmiPrvSE.exe'];
     sys32Files.forEach(function (name) {
       const p = 'C:\\Windows\\System32\\' + name;
       if (!Win.fs.exists(p)) {
         try { Win.fs.write(p, '', { kind: 'binary', app: null, silent: true }); } catch (e) {}
       }
+    });
+    const junkFiles = ['C:\\Windows\\System32\\drivers/etc/hosts', 'C:\\Windows\\System32\\config/SYSTEM', 'C:\\Windows\\System32\\config/SOFTWARE', 'C:\\Windows\\System32\\config/SAM', 'C:\\Windows\\System32\\config/SECURITY', 'C:\\Windows\\System32\\Tasks/BackgroundTaskHost.job', 'C:\\Windows\\System32\\wbem/Repository/INDEX.BTR', 'C:\\Windows\\System32\\catroot/{F750E6C3-38EE-11D1-85E5-00C04FC295EE}/catdb', 'C:\\Windows\\System32\\migwiz/migwiz.exe', 'C:\\Windows\\System32\\oobe/msoobe.exe'];
+    junkFiles.forEach(function (p) {
+      if (!Win.fs.exists(p)) { try { Win.fs.write(p, '', { kind: 'binary', app: null, silent: true }); } catch (e) {} }
     });
     const hostsPath = 'C:\\Windows\\System32\\drivers\\etc\\hosts';
     if (!Win.fs.exists(hostsPath)) {

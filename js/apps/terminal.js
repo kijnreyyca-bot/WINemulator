@@ -1482,6 +1482,10 @@
 
     setMode(mode);
     setPrompt();
+    if (args.run || args.file) {
+      const rf = args.run || args.file;
+      setTimeout(function () { run(rf); }, 120);
+    }
     setTimeout(function () { input.focus(); }, 60);
 
     return {

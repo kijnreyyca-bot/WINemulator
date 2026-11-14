@@ -30,7 +30,10 @@
             const app = b.dataset.app;
             if (app === 'paint' || app === 'notepad') Win.wm.open(app, { path: Win.fs.norm(path) });
             else if (app === 'browser') Win.wm.open('browser', { url: 'file://' + path });
-            else Win.wm.open(app);
+            else if (app === 'terminal') {
+              const parent = Win.fs.parentPath(path) || 'C:\\';
+              Win.wm.open('terminal', { mode: path.toLowerCase().endsWith('.ps1') ? 'ps' : 'cmd', cwd: parent, run: Win.fs.baseName(path) });
+            } else Win.wm.open(app);
           });
         });
       },

@@ -42,6 +42,12 @@
   function openFile(path) {
     const node = Win.fs.resolve(path);
     if (!node || node.type !== 'file') throw new Error('The file "' + path + '" could not be found.');
+    const ext = Win.fs.extName(path).toLowerCase();
+    if (ext === 'bat' || ext === 'cmd' || ext === 'ps1') {
+      const parent = Win.fs.parentPath(path) || 'C:\\';
+      Win.recent.add(path);
+      return Win.wm.open('terminal', { mode: ext === 'ps1' ? 'ps' : 'cmd', cwd: parent, run: Win.fs.baseName(path) });
+    }
     const app = node.app || Win.fs.appFor(path);
     if (!app) {
       return Win.ui.error('Windows cannot open this file:\n\n' + Win.fs.baseName(path) +
@@ -339,7 +345,10 @@
             const app = b.dataset.app;
             if (app === 'paint' || app === 'notepad') Win.wm.open(app, { path: Win.fs.norm(path) });
             else if (app === 'browser') Win.wm.open('browser', { url: 'file://' + path });
-            else Win.wm.open(app);
+            else if (app === 'terminal') {
+              const parent = Win.fs.parentPath(path) || 'C:\\';
+              Win.wm.open('terminal', { mode: path.toLowerCase().endsWith('.ps1') ? 'ps' : 'cmd', cwd: parent, run: Win.fs.baseName(path) });
+            } else Win.wm.open(app);
             try { win.dispatchEvent(new CustomEvent('winemulator:close')); } catch (e) {}
           });
         });

@@ -13,6 +13,11 @@
       let dirty = false;
       let wrap = false;
       let showStatus = true;
+      let findText = '';
+      let matchCase = false;
+      let fontFamily = 'Consolas';
+      let fontSize = 12;
+      let fontWeight = '400';
 
       body.innerHTML =
         '<div class="menubar np-menu">' +
@@ -135,7 +140,115 @@
         area.style.whiteSpace = wrap ? 'pre-wrap' : 'pre';
         area.style.overflowX = wrap ? 'hidden' : 'auto';
       }
+      function applyFont() {
+        area.style.fontFamily = fontFamily + ', Consolas, monospace';
+        area.style.fontSize = fontSize + 'px';
+        area.style.fontWeight = fontWeight;
+      }
 
+      function findNext(fromStart) {
+        const text = area.value;
+        const start = fromStart ? 0 : area.selectionEnd;
+        const idx = matchCase ? text.indexOf(findText, start) : text.toLowerCase().indexOf(findText.toLowerCase(), start);
+        if (idx < 0) { Win.ui.toast('Cannot find "' + findText + '".', 'info', 2000); return; }
+        area.focus(); area.setSelectionRange(idx, idx + findText.length);
+        updatePos(); scrollToCaret();
+      }
+      function replaceAll() {
+        if (!findText) return;
+        const re = new RegExp(findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), matchCase ? 'g' : 'gi');
+        const count = (area.value.match(re) || []).length;
+        area.value = area.value.replace(re, replaceText);
+        setDirty(true); updatePos();
+        Win.ui.toast('Replaced ' + count + ' occurrence(s).', 'check', 2000);
+      }
+      let replaceText = '';
+      function findDialog() {
+        Win.ui.dialog({
+          title: 'Find', icon: 'search', width: 360,
+          html: '<div class="find-box"><div class="find-row"><label>Find what:</label><input class="field find-q" type="text" value="' + U.escapeHtml(findText) + '"></div>' +
+            '<div class="find-row"><label></label><label class="set-check"><input type="checkbox" class="find-case"' + (matchCase ? ' checked' : '') + '> Match case</label></div></div>',
+          onShow: function (win) {
+            const q = win.querySelector('.find-q');
+            const c = win.querySelector('.find-case');
+            q.focus(); q.select();
+            const go = function () { findText = q.value; matchCase = c.checked; findNext(false); };
+            win.querySelector('.find-go') || 0;
+            const btn = document.createElement('button'); // placeholder not used
+          },
+          buttons: [
+            { label: 'Find Next', value: 'next', primary: true },
+            { label: 'Cancel', value: false, cancel: true }
+          ]
+        }).then(function (r) {
+          const win = document.querySelector('.modal-overlay .dialog');
+          if (!win) return;
+          const q = win.querySelector('.find-q');
+          const c = win.querySelector('.find-case');
+          findText = q ? q.value : findText;
+          matchCase = c ? c.checked : matchCase;
+          if (r === 'next') findNext(false);
+        });
+      }
+      function replaceDialog() {
+        Win.ui.dialog({
+          title: 'Replace', icon: 'replace' in (Win.icons||{}) ? 'replace' : 'search', width: 400,
+          html: '<div class="find-box"><div class="find-row"><label>Find what:</label><input class="field rep-find" type="text" value="' + U.escapeHtml(findText) + '"></div>' +
+            '<div class="find-row"><label>Replace with:</label><input class="field rep-repl" type="text" value="' + U.escapeHtml(replaceText) + '"></div>' +
+            '<div class="find-row"><label></label><label class="set-check"><input type="checkbox" class="rep-case"' + (matchCase ? ' checked' : '') + '> Match case</label></div>' +
+            '<div class="find-actions"><button class="btn rep-findnext" type="button">Find Next</button><button class="btn rep-replace" type="button">Replace</button><button class="btn rep-replaceall" type="button">Replace All</button></div></div>',
+          onShow: function (win) {
+            const f = win.querySelector('.rep-find'); const r = win.querySelector('.rep-repl'); const c = win.querySelector('.rep-case');
+            f.focus(); f.select();
+            win.querySelector('.rep-findnext').addEventListener('click', function () { findText = f.value; matchCase = c.checked; findNext(false); });
+            win.querySelector('.rep-replace').addEventListener('click', function () {
+              findText = f.value; replaceText = r.value; matchCase = c.checked;
+              const sel = area.value.slice(area.selectionStart, area.selectionEnd);
+              if (matchCase ? sel === findText : sel.toLowerCase() === findText.toLowerCase()) {
+                insertText(replaceText);
+              }
+              findNext(false);
+            });
+            win.querySelector('.rep-replaceall').addEventListener('click', function () { findText = f.value; replaceText = r.value; matchCase = c.checked; replaceAll(); });
+          },
+          buttons: [{ label: 'Cancel', value: false, cancel: true }]
+        });
+      }
+      function gotoDialog() {
+        Win.ui.prompt({ title: 'Go To Line', label: 'Line number:', value: '1' }).then(function (v) {
+          if (!v) return;
+          const n = Math.max(1, parseInt(v, 10) || 1);
+          const lines = area.value.split('\n');
+          let idx = 0;
+          for (let i = 0; i < n - 1 && i < lines.length; i++) idx += lines[i].length + 1;
+          area.focus(); area.setSelectionRange(idx, idx); updatePos(); scrollToCaret();
+        });
+      }
+      function fontDialog() {
+        Win.ui.dialog({
+          title: 'Font', icon: 'textfile', width: 360,
+          html: '<div class="find-box"><div class="find-row"><label>Font:</label><select class="field font-family"><option>Consolas</option><option>Courier New</option><option>Segoe UI</option><option>Tahoma</option><option>Arial</option></select></div>' +
+            '<div class="find-row"><label>Size:</label><select class="field font-size"><option>10</option><option>11</option><option>12</option><option>14</option><option>16</option><option>18</option><option>20</option></select></div>' +
+            '<div class="find-row"><label>Weight:</label><select class="field font-weight"><option value="400">Regular</option><option value="700">Bold</option></select></div></div>',
+          onShow: function (win) {
+            win.querySelector('.font-family').value = fontFamily;
+            win.querySelector('.font-size').value = String(fontSize);
+            win.querySelector('.font-weight').value = fontWeight;
+          },
+          buttons: [
+            { label: 'OK', value: true, primary: true },
+            { label: 'Cancel', value: false, cancel: true }
+          ]
+        }).then(function (ok) {
+          const win = document.querySelector('.modal-overlay .dialog');
+          if (!ok || !win) return;
+          fontFamily = win.querySelector('.font-family').value;
+          fontSize = parseInt(win.querySelector('.font-size').value, 10);
+          fontWeight = win.querySelector('.font-weight').value;
+          applyFont();
+          // update format menu label
+        });
+      }
       const menus = {
         file: function () {
           return [
@@ -206,6 +319,7 @@
           else if (k === 'n') { ev.preventDefault(); newDoc(); }
         }
         if (ev.key === 'F5') { ev.preventDefault(); insertText(new Date().toLocaleString()); }
+        if (ev.key === 'F3') { ev.preventDefault(); findNext(false); }
         if (ev.key === 'Tab') {
           ev.preventDefault();
           const s = area.selectionStart;
@@ -217,6 +331,7 @@
 
       if (path) load(path); else { updatePos(); area.focus(); }
       applyWrap();
+      applyFont();
       refreshTitle();
 
       return {

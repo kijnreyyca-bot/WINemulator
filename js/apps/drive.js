@@ -81,7 +81,7 @@
   function updateCar(s, dt) {
     const throttle = (KEY['w'] || KEY['ArrowUp']) ? 1 : 0;
     const brake = (KEY['s'] || KEY['ArrowDown']) ? 1 : 0;
-    const steerIn = ((KEY['a'] || KEY['ArrowLeft']) ? -1 : 0) + ((KEY['d'] || KEY['ArrowRight']) ? 1 : 0);
+    const steerIn = ((KEY['a'] || KEY['ArrowLeft']) ? 1 : 0) + ((KEY['d'] || KEY['ArrowRight']) ? -1 : 0);
     const handbrake = !!KEY[' '];
 
     s.offTrack = distToTrack(s.x, s.z) > ROAD_HALF + 1.6;
@@ -154,8 +154,8 @@
     const dx = wx - cam.x, dy = wy - cam.y, dz = wz - cam.z;
     const cx = dx * cam.rx + dy * cam.ry + dz * cam.rz;
     const cy = dx * cam.ux + dy * cam.uy + dz * cam.uz;
-    const cz = dx * cam.fx + dy * cam.fy + dz * cam.fz;
-    if (cz <= 0.2) return null;
+    let cz = dx * cam.fx + dy * cam.fy + dz * cam.fz;
+    if (cz < 0.3) cz = 0.3; // keep geometry behind the camera visible
     const f = canvas.height * 0.9;
     return { x: cx / cz * f + canvas.width / 2, y: -cy / cz * f + canvas.height / 2, z: cz, scale: f / cz };
   }
@@ -163,14 +163,32 @@
   function draw(ctx2, canvas, s) {
     const w = canvas.width, h = canvas.height;
     // sky
-    const grad = ctx2.createLinearGradient(0, 0, 0, h * 0.55);
-    grad.addColorStop(0, '#1e3a8a');
-    grad.addColorStop(0.6, '#60a5fa');
+    const grad = ctx2.createLinearGradient(0, 0, 0, h * 0.5);
+    grad.addColorStop(0, '#0f172a');
+    grad.addColorStop(0.5, '#3b82f6');
     grad.addColorStop(1, '#93c5fd');
     ctx2.fillStyle = grad;
-    ctx2.fillRect(0, 0, w, h * 0.55);
-    ctx2.fillStyle = '#3f7f25';
-    ctx2.fillRect(0, h * 0.55, w, h * 0.45);
+    ctx2.fillRect(0, 0, w, h * 0.5);
+    // ground base gradient
+    const ggrad = ctx2.createLinearGradient(0, h * 0.45, 0, h);
+    ggrad.addColorStop(0, '#1f5f1f');
+    ggrad.addColorStop(0.4, '#2d7a2d');
+    ggrad.addColorStop(1, '#1a4a1a');
+    ctx2.fillStyle = ggrad;
+    ctx2.fillRect(0, h * 0.5, w, h * 0.5);
+    // grass tufts
+    ctx2.fillStyle = 'rgba(0,0,0,0.18)';
+    for (let i = 0; i < 60; i++) {
+      const gx = (i * 97 + 13) % w;
+      const gy = h * 0.48 + (i * 53 % (h * 0.5));
+      ctx2.fillRect(gx, gy, 2, 3);
+    }
+    ctx2.fillStyle = 'rgba(255,255,255,0.06)';
+    for (let i = 0; i < 40; i++) {
+      const gx = (i * 137 + 7) % w;
+      const gy = h * 0.5 + (i * 89 % (h * 0.45));
+      ctx2.fillRect(gx, gy, 1, 2);
+    }
 
     // camera
     const carFwd = { x: Math.sin(s.yaw), z: Math.cos(s.yaw) };
@@ -200,6 +218,10 @@
       const dx = b.x - a.x, dz = b.z - a.z;
       const len = Math.hypot(dx, dz) || 1;
       const nx = -dz / len, nz = dx / len;
+      // cull segments far behind the camera
+      const midCz = (a.x + b.x) / 2 - cam.x, midCzz = (a.z + b.z) / 2 - cam.z;
+      const depth = midCz * cam.fx + midCzz * cam.fz;
+      if (depth < -12) continue;
       const pts = [
         { x: a.x + nx * ROAD_HALF, y: 0, z: a.z + nz * ROAD_HALF },
         { x: a.x - nx * ROAD_HALF, y: 0, z: a.z - nz * ROAD_HALF },
@@ -207,7 +229,6 @@
         { x: b.x + nx * ROAD_HALF, y: 0, z: b.z + nz * ROAD_HALF }
       ];
       const proj = pts.map(p => project(cam, p.x, p.y, p.z, canvas));
-      if (proj.some(p => !p)) continue;
       // road
       ctx2.fillStyle = (i % 2 === 0) ? '#4b5563' : '#374151';
       ctx2.beginPath();

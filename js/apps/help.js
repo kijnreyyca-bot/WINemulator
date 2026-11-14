@@ -106,7 +106,6 @@
       appCard('browser', 'ie', 'Internet Explorer', 'A retro browser with a small local web.') +
       appCard('firefox', 'firefox', 'Mozilla Firefox', 'A second browser shell that opens real web pages.') +
       appCard('minesweeper', 'mine', 'Minesweeper', 'The classic puzzle. Right-click plants a flag.') +
-      appCard('drive', 'car', 'Road Rush', 'A 3D driving game with semi-realistic physics.') +
       appCard('settings', 'settings', 'Control Panel', 'Appearance, wallpaper, sounds, performance and system tools.') +
       appCard('taskmgr', 'taskmgr', 'Task Manager', 'See running programs and end unresponsive tasks.') +
       appCard('vpc', 'vpc', 'Virtual PC', 'Boot real x86 code in WebAssembly with v86.') +

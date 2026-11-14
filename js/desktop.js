@@ -73,7 +73,6 @@
         taskmgr: 'taskmgr', 'task manager': 'taskmgr', iexplore: 'browser', ie: 'browser', internet: 'browser',
         vpc: 'vpc', 'virtual pc': 'vpc', virtualpc: 'vpc', virtual: 'vpc',
         firefox: 'firefox', mozilla: 'firefox', moz: 'firefox',
-        drive: 'drive', racing: 'drive', roadrush: 'drive', road: 'drive', forza: 'drive',
         help: 'help', welcome: 'help', about: 'help', recycle: 'explorer'
       };
       if (map[lower]) {
@@ -111,7 +110,6 @@
       { id: 'paint', label: 'Paint', icon: 'paint', open: function () { Win.wm.open('paint'); }, special: true },
       { id: 'vpc', label: 'Virtual PC', icon: 'vpc', open: function () { Win.wm.open('vpc'); }, special: true },
       { id: 'minesweeper', label: 'Minesweeper', icon: 'mine', open: function () { Win.wm.open('minesweeper'); }, special: true },
-      { id: 'drive', label: 'Road Rush', icon: 'car', open: function () { Win.wm.open('drive'); }, special: true },
       { id: 'recycle', label: 'Recycle Bin', icon: recycleCount ? 'recycle-full' : 'recycle', open: function () { openPath('::recycle'); }, special: true },
       { id: 'help', label: 'Help', icon: 'help', open: function () { Win.wm.open('help'); }, special: true }
     ];

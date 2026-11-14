@@ -10,7 +10,7 @@
 
   const APPS = {
     notepad: 'Notepad', paint: 'Paint', calc: 'Calculator', terminal: 'MS-DOS Prompt',
-    explorer: 'Windows Explorer', browser: 'Internet Explorer', firefox: 'Mozilla Firefox', minesweeper: 'Minesweeper',
+    explorer: 'Windows Explorer', browser: 'Internet Explorer', firefox: 'Mozilla Firefox', minesweeper: 'Minesweeper', drive: 'Road Rush',
     settings: 'Control Panel', taskmgr: 'Task Manager', help: 'Help', recycle: 'Recycle Bin',
     vpc: 'Virtual PC'
   };
@@ -109,6 +109,7 @@
       { separator: true },
       { label: 'Games', separator: false },
       { label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } },
+      { label: 'Road Rush', icon: 'car', action: function () { Win.wm.open('drive'); } },
       { separator: true },
       { label: 'Internet Explorer', icon: 'ie', action: function () { Win.wm.open('browser'); } },
       { label: 'Mozilla Firefox', icon: 'firefox', action: function () { Win.wm.open('firefox'); } },
@@ -156,6 +157,7 @@
       { separator: true },
       { label: 'Games', separator: false },
       { label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } },
+      { label: 'Road Rush', icon: 'car', action: function () { Win.wm.open('drive'); } },
       { separator: true },
       { label: 'Internet Explorer', icon: 'ie', action: function () { Win.wm.open('browser'); } },
       { label: 'Mozilla Firefox', icon: 'firefox', action: function () { Win.wm.open('firefox'); } },
@@ -194,6 +196,7 @@
     left.appendChild(startItem({ label: 'Calculator', icon: 'calc', action: function () { Win.wm.open('calc'); } }));
     left.appendChild(startItem({ label: 'MS-DOS Prompt', icon: 'terminal', action: function () { Win.wm.open('terminal'); } }));
     left.appendChild(startItem({ label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } }));
+    left.appendChild(startItem({ label: 'Road Rush', icon: 'car', action: function () { Win.wm.open('drive'); } }));
     left.appendChild(startItem({ label: 'Virtual PC', icon: 'vpc', action: function () { Win.wm.open('vpc'); } }));
     left.appendChild(startItem({ label: 'Control Panel', icon: 'settings', action: function () { Win.wm.open('settings'); } }));
     left.appendChild(el('div', { class: 'xp-sm-sep' }));

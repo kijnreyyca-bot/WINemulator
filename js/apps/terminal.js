@@ -209,12 +209,13 @@
     }
 
     // banner
+    const isBatchLaunch = !!(args.run || args.file);
     if (mode === 'ps') {
       printLine('Windows PowerShell', 'term-accent');
       printLine('Copyright (C) Microsoft Corporation. All rights reserved.', 'term-dim');
       printLine('', '');
       printLine('PS ' + cwd + '>', 'term-dim');
-    } else {
+    } else if (!isBatchLaunch) {
       if (Win.isSeven) {
         printLine('Microsoft Windows [Version ' + Win.osVersion + ']', 'term-dim');
         printLine('(c) Microsoft Corporation. All rights reserved.', 'term-dim');
@@ -1122,6 +1123,10 @@
     }
 
     function runCMD(raw, stdinLines) {
+      // caret escaping: ^> ^< ^| ^& ^^
+      raw = String(raw).replace(/\^([><|&^])/g, function (_, ch) {
+        return { '>':'__CARET_GT__', '<':'__CARET_LT__', '|':'__CARET_PIPE__', '&':'__CARET_AMP__', '^':'__CARET_CARET__' }[ch];
+      });
       const redir = parseRedirect(raw);
       raw = redir.cmd;
       const args = parseArgs(raw);
@@ -1206,6 +1211,20 @@
         case 'color': result = { lines: [] }; break;
         case 'date': result = { lines: ['Current date is ' + new Date().toDateString()] }; break;
         case 'time': result = { lines: ['Current time is ' + new Date().toLocaleTimeString()] }; break;
+        case 'timeout': {
+          let sec = 5;
+          const tIdx = args.indexOf('/t') > -1 ? args.indexOf('/t') : args.indexOf('/T') > -1 ? args.indexOf('/T') : -1;
+          if (tIdx > -1 && args[tIdx + 1]) sec = parseInt(args[tIdx + 1], 10) || 5;
+          else if (args[1] && !String(args[1]).startsWith('/')) sec = parseInt(args[1], 10) || 5;
+          sec = Math.max(0, Math.min(300, sec));
+          if (args.indexOf('/nobreak') > -1 || args.indexOf('/NOBREAK') > -1) {
+            // no key skip
+          }
+          const end = Date.now() + sec * 1000;
+          while (Date.now() < end) { /* busy wait */ }
+          result = { lines: [''] };
+          break;
+        }
         case 'whoami': result = { lines: ['winemulator\\' + env.USERNAME.toLowerCase()] }; break;
         case 'hostname': result = { lines: ['WINEMULATOR'] }; break;
         case 'mem': result = { lines: [
@@ -1319,7 +1338,18 @@
       if (result.clear) out.innerHTML = '';
 
       // redirection
-      if (redir.suppress) return { lines: [] };
+      function unescapeCarets(lines) {
+        return (lines || []).map(function (l) {
+          if (typeof l === 'string') {
+            return l.replace(/__CARET_GT__/g, '>').replace(/__CARET_LT__/g, '<').replace(/__CARET_PIPE__/g, '|').replace(/__CARET_AMP__/g, '&').replace(/__CARET_CARET__/g, '^');
+          }
+          if (l && typeof l.text === 'string') {
+            l.text = l.text.replace(/__CARET_GT__/g, '>').replace(/__CARET_LT__/g, '<').replace(/__CARET_PIPE__/g, '|').replace(/__CARET_AMP__/g, '&').replace(/__CARET_CARET__/g, '^');
+          }
+          return l;
+        });
+      }
+      if (redir.suppress) return { lines: unescapeCarets([]) };
       if (redir.target) {
         const content = (result.lines || []).join('\n');
         try {
@@ -1334,6 +1364,7 @@
         } catch (e) { printLine(e.message, 'term-err'); }
         return { lines: [] };
       }
+      if (result && result.lines) result.lines = unescapeCarets(result.lines);
       return result;
     }
 
@@ -1366,7 +1397,18 @@
         }
       }
       if (clearFlag) out.innerHTML = '';
-      if (redir.suppress) return { lines: [] };
+      function unescapeCarets(lines) {
+        return (lines || []).map(function (l) {
+          if (typeof l === 'string') {
+            return l.replace(/__CARET_GT__/g, '>').replace(/__CARET_LT__/g, '<').replace(/__CARET_PIPE__/g, '|').replace(/__CARET_AMP__/g, '&').replace(/__CARET_CARET__/g, '^');
+          }
+          if (l && typeof l.text === 'string') {
+            l.text = l.text.replace(/__CARET_GT__/g, '>').replace(/__CARET_LT__/g, '<').replace(/__CARET_PIPE__/g, '|').replace(/__CARET_AMP__/g, '&').replace(/__CARET_CARET__/g, '^');
+          }
+          return l;
+        });
+      }
+      if (redir.suppress) return { lines: unescapeCarets([]) };
       if (redir.target) {
         const content = linesOut.map(function (l) { return (typeof l === 'string' ? l : l.text); }).join('\n');
         // if values remain, format

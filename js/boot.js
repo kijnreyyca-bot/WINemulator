@@ -27,6 +27,20 @@
       '</div>';
   }
 
+  function xpSplashMarkup() {
+    return '<div class="xp-boot-splash">' +
+      '<div class="xp-logo"><span class="xp-ms">Microsoft</span><span class="xp-win">Windows</span><span class="xp-xp">xp</span></div>' +
+      '<div class="xp-boot-sub">Professional &middot; Web Edition</div>' +
+      '<div class="xp-progress"></div>' +
+      '<div class="xp-boot-copy">Copyright &copy; 1981&ndash;2026 WINemulator Project</div>' +
+      '<div class="bs-hint xp-boot-hint"></div>' +
+      '</div>';
+  }
+
+  function bootSplash() {
+    return Win.isXP ? xpSplashMarkup() : splashMarkup();
+  }
+
   function fast() {
     return Win.store.get('fastBoot') === true || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
@@ -59,7 +73,7 @@
       '  Secondary Master: CD-ROM 32X',
       '  Secondary Slave : None',
       '',
-      'Starting Windows 98...'
+      Win.isXP ? 'Starting Windows XP...' : 'Starting Windows 98...'
     ];
     const step = fast() ? 25 : 72;
     lines.forEach(function (line, i) {
@@ -82,7 +96,7 @@
     const splashAt = fast() ? 550 : 1500;
     later(function () {
       if (!booting) return;
-      bootLayer.innerHTML = splashMarkup();
+      bootLayer.innerHTML = bootSplash();
       bootLayer.classList.add('splash');
       bootLayer.style.background = '#000';
       const hint = bootLayer.querySelector('.bs-hint');
@@ -125,15 +139,28 @@
 
   /* --------------------------------------------------------------- logon */
   function loginUI() {
-    loginLayer.innerHTML =
-      '<div class="login-box">' +
-      '<div class="login-brand">' + Win.icon('flag', 34) + '<span><b>Microsoft</b> Windows<span class="login-98">98</span></span></div>' +
-      '<div class="login-welcome">Welcome to WINemulator</div>' +
-      '<div class="login-sub">Click your user name to log on.</div>' +
-      '<button class="login-user" type="button"><span class="lu-pic">' + Win.icon('user', 48) + '</span><span class="lu-text"><b>User</b><em>Web Edition</em></span><span class="lu-go">▸</span></button>' +
-      '<div class="login-hint">No password is required. Everything stays in your browser.</div>' +
-      '<div class="login-foot"><span>WINemulator 98</span><span>Second Edition</span></div>' +
-      '</div>';
+    if (Win.isXP) {
+      loginLayer.innerHTML =
+        '<div class="login-box xp-login-box">' +
+        '<div class="login-brand">' + Win.icon('flag', 34) + '<span class="xp-login-word"><b>Microsoft</b> Windows <em>xp</em></span></div>' +
+        '<div class="login-welcome">Welcome</div>' +
+        '<div class="login-sub">To begin, click your user name</div>' +
+        '<button class="login-user" type="button"><span class="lu-pic">' + Win.icon('user', 52) + '</span>' +
+        '<span class="lu-text"><b>User</b><em>Web Edition</em></span><span class="lu-go">➜</span></button>' +
+        '<div class="login-hint">No password is required. Everything stays in your browser.</div>' +
+        '<div class="login-foot"><span>WINemulator XP</span><span>Professional</span></div>' +
+        '</div>';
+    } else {
+      loginLayer.innerHTML =
+        '<div class="login-box">' +
+        '<div class="login-brand">' + Win.icon('flag', 34) + '<span><b>Microsoft</b> Windows<span class="login-98">98</span></span></div>' +
+        '<div class="login-welcome">Welcome to WINemulator</div>' +
+        '<div class="login-sub">Click your user name to log on.</div>' +
+        '<button class="login-user" type="button"><span class="lu-pic">' + Win.icon('user', 48) + '</span><span class="lu-text"><b>User</b><em>Web Edition</em></span><span class="lu-go">▸</span></button>' +
+        '<div class="login-hint">No password is required. Everything stays in your browser.</div>' +
+        '<div class="login-foot"><span>WINemulator 98</span><span>Second Edition</span></div>' +
+        '</div>';
+    }
     loginLayer.hidden = false;
     document.body.classList.add('logged-off');
     loginLayer.querySelector('.login-user').addEventListener('click', doLogin);
@@ -172,12 +199,12 @@
       powerLayer.hidden = false;
       powerLayer.className = 'power-layer';
       if (mode === 'restart') {
-        powerLayer.innerHTML = splashMarkup() + '<div class="shutdown-note">Restarting Windows...</div>';
+        powerLayer.innerHTML = bootSplash() + '<div class="shutdown-note">' + (Win.isXP ? 'Restarting Windows...' : 'Restarting Windows...') + '</div>';
         powerLayer.querySelector('.bs-hint').textContent = 'Please wait while Windows restarts...';
         Win.sound.play('shutdown');
         setTimeout(function () { powerLayer.hidden = true; start(); }, 1700);
       } else {
-        powerLayer.innerHTML = splashMarkup() + '<div class="shutdown-note">Shutting down Windows...</div>';
+        powerLayer.innerHTML = bootSplash() + '<div class="shutdown-note">' + (Win.isXP ? 'Windows is shutting down...' : 'Shutting down Windows...') + '</div>';
         powerLayer.querySelector('.bs-hint').textContent = 'Please wait while Windows shuts down...';
         Win.sound.play('shutdown');
         setTimeout(safeOff, 1500);
@@ -190,7 +217,7 @@
     powerLayer.className = 'power-layer safe-off';
     powerLayer.innerHTML =
       '<div class="safe-inner">' +
-      '<div class="safe-text">It&rsquo;s now safe to turn off<br>your computer.</div>' +
+      '<div class="safe-text">' + (Win.isXP ? 'Windows has shut down' : 'It&rsquo;s now safe to turn off<br>your computer.') + '</div>' +
       '<div class="safe-sub">WINemulator has shut down. You can close this tab.</div>' +
       '<div class="safe-actions"><button class="btn safe-restart" type="button">' + Win.icon('restart', 16) + ' Restart</button></div>' +
       '<div class="safe-hint">Or press any key to start again.</div>' +

@@ -3,75 +3,135 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#008080">
-  <title>WINemulator 98 — Windows in your browser</title>
-  <meta name="description" content="A fast, offline, no-install Windows 98-style desktop environment that runs entirely in your browser. Files, Paint, Minesweeper, MS-DOS and more.">
+  <meta name="theme-color" content="#0b1220">
+  <title>WINemulator — Choose Windows 98 or Windows XP</title>
+  <meta name="description" content="Choose a Windows 98 or Windows XP desktop that runs entirely in your browser. No installs, no virtual machine, works offline. Virtual PC can boot your own x86 disk images.">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
-  <meta property="og:title" content="WINemulator 98">
-  <meta property="og:description" content="A complete Windows-style desktop in your browser. Boots in seconds, works offline, no installs.">
+  <meta property="og:title" content="WINemulator — Choose your desktop">
+  <meta property="og:description" content="Windows 98 and Windows XP desktops in your browser. Fast, offline, and no installs.">
   <meta property="og:type" content="website">
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/desktop.css">
-  <link rel="stylesheet" href="css/apps.css">
+  <link rel="stylesheet" href="css/selector.css">
 </head>
-<body class="booting theme-classic wall-teal">
-  <main id="desktop" aria-label="Desktop">
-    <div id="icons" aria-label="Desktop icons"></div>
-    <div id="windows"></div>
-    <div id="snap-preview" hidden></div>
+<body>
+  <div class="selector-bg" aria-hidden="true"></div>
+  <main class="selector-shell">
+    <header class="sel-head">
+      <div class="sel-mark">
+        <span class="sel-flag" aria-hidden="true">
+          <i></i><i></i><i></i><i></i>
+        </span>
+        <div>
+          <h1>WINemulator</h1>
+          <p>Choose your desktop</p>
+        </div>
+      </div>
+      <div class="sel-meta">
+        <span class="sel-pill">No installs</span>
+        <span class="sel-pill">Works offline</span>
+        <span class="sel-pill">x86 Virtual PC</span>
+      </div>
+    </header>
+
+    <section class="os-grid" aria-label="Choose an operating system">
+      <a class="os-card os-98" href="desktop.html?os=98" data-os="98">
+        <span class="os-badge" data-last hidden>Last used</span>
+        <div class="os-preview">
+          <div class="pv-desktop pv-desktop-98">
+            <div class="pv-icons">
+              <span class="pv-icon"><i class="pv-monitor"></i><em>My Computer</em></span>
+              <span class="pv-icon"><i class="pv-folder"></i><em>My Documents</em></span>
+              <span class="pv-icon"><i class="pv-bin"></i><em>Recycle Bin</em></span>
+            </div>
+            <div class="pv-window pv-window-98">
+              <div class="pv-title"><span>Welcome to Windows 98</span><b></b><b></b><b class="x"></b></div>
+              <div class="pv-body">
+                <div class="pv-side"></div>
+                <div class="pv-lines"><i></i><i></i><i></i><i class="short"></i></div>
+              </div>
+            </div>
+            <div class="pv-taskbar pv-taskbar-98">
+              <span class="pv-start pv-start-98">Start</span>
+              <span class="pv-task"></span>
+              <span class="pv-tray">4:20 PM</span>
+            </div>
+          </div>
+        </div>
+        <div class="os-info">
+          <div class="os-title">
+            <h2>Windows 98</h2>
+            <span class="os-tag">Second Edition</span>
+          </div>
+          <p>The classic teal desktop. Notepad, Paint, Minesweeper, MS-DOS Prompt, Internet Explorer and the full Start menu.</p>
+          <ul class="os-list">
+            <li>Windows 98 window chrome and icons</li>
+            <li>MS-DOS mode and a real x86 Virtual PC</li>
+            <li>Fast, offline, zero dependencies</li>
+          </ul>
+          <span class="os-cta">Start Windows 98 <i aria-hidden="true">→</i></span>
+        </div>
+      </a>
+
+      <a class="os-card os-xp" href="desktop.html?os=xp" data-os="xp">
+        <span class="os-badge" data-last hidden>Last used</span>
+        <div class="os-preview">
+          <div class="pv-desktop pv-desktop-xp">
+            <div class="pv-sky" aria-hidden="true">
+              <span class="pv-cloud c1"></span><span class="pv-cloud c2"></span><span class="pv-cloud c3"></span>
+              <span class="pv-hill h1"></span><span class="pv-hill h2"></span>
+            </div>
+            <div class="pv-icons">
+              <span class="pv-icon"><i class="pv-monitor xp"></i><em>My Computer</em></span>
+              <span class="pv-icon"><i class="pv-folder xp"></i><em>My Documents</em></span>
+              <span class="pv-icon"><i class="pv-bin xp"></i><em>Recycle Bin</em></span>
+            </div>
+            <div class="pv-window pv-window-xp">
+              <div class="pv-title"><span>Welcome to Windows XP</span><b></b><b></b><b class="x"></b></div>
+              <div class="pv-body">
+                <div class="pv-side xp"></div>
+                <div class="pv-lines"><i></i><i></i><i></i><i class="short"></i></div>
+              </div>
+            </div>
+            <div class="pv-taskbar pv-taskbar-xp">
+              <span class="pv-start pv-start-xp">start</span>
+              <span class="pv-task xp"></span>
+              <span class="pv-tray xp">4:20 PM</span>
+            </div>
+          </div>
+        </div>
+        <div class="os-info">
+          <div class="os-title">
+            <h2>Windows XP</h2>
+            <span class="os-tag luna">Luna</span>
+          </div>
+          <p>The blue Luna desktop with the two-column Start menu, glossy XP icons, Bliss-style wallpaper and XP window controls.</p>
+          <ul class="os-list">
+            <li>Full XP Start menu and taskbar</li>
+            <li>Luna window chrome and XP icon set</li>
+            <li>Same apps and Virtual PC, XP styled</li>
+          </ul>
+          <span class="os-cta">Start Windows XP <i aria-hidden="true">→</i></span>
+        </div>
+      </a>
+    </section>
+
+    <section class="sel-note">
+      <div>
+        <h3>About Virtual PC</h3>
+        <p>Both desktops include a Virtual PC powered by <a href="https://github.com/copy/v86" target="_blank" rel="noopener">v86</a>. It runs real x86 code in your browser and can boot a Windows 98, FreeDOS or Linux disk image that you supply. No operating-system images are bundled.</p>
+      </div>
+      <div class="sel-warn">
+        <b>x86 only</b>
+        <span>v86 does not support 64-bit x86. Windows XP images may boot slowly and are not guaranteed.</span>
+      </div>
+    </section>
+
+    <footer class="sel-foot">
+      <span>WINemulator · original icons and artwork · MIT licensed</span>
+      <span><a href="desktop.html?os=98">Windows 98</a> · <a href="desktop.html?os=xp">Windows XP</a> · <a href="README.md">Read me</a></span>
+    </footer>
   </main>
 
-  <div id="taskbar" role="toolbar" aria-label="Taskbar">
-    <button id="start-button" class="start-button" type="button" aria-expanded="false" aria-controls="start-menu">
-      <span id="start-icon" aria-hidden="true"></span><span class="start-label">Start</span>
-    </button>
-    <div id="quicklaunch" class="quicklaunch" aria-label="Quick Launch"></div>
-    <div id="tasks" class="tasks" aria-label="Running programs"></div>
-    <div id="tray" class="tray">
-      <button id="tray-volume" class="tray-btn" type="button" title="Volume" aria-label="Volume"></button>
-      <button id="tray-network" class="tray-btn" type="button" title="Network connection" aria-label="Network connection"></button>
-      <button id="tray-clock" class="tray-clock" type="button" title="Date and time"></button>
-    </div>
-  </div>
-
-  <div id="start-menu" class="start-menu" hidden></div>
-  <div id="alttab" class="alttab" hidden></div>
-  <div id="calendar-pop" class="calendar-pop" hidden></div>
-  <div id="volume-pop" class="volume-pop" hidden></div>
-  <div id="modal-root"></div>
-  <div id="toast-root" class="toast-root" aria-live="polite"></div>
-  <div id="crt" hidden></div>
-
-  <div id="boot-layer" class="boot-layer" aria-label="Boot screen"></div>
-  <div id="login-layer" class="login-layer" hidden></div>
-  <div id="power-layer" class="power-layer" hidden></div>
-
-  <noscript>
-    <div style="position:fixed;inset:0;z-index:99999;background:#000;color:#ddd;display:flex;align-items:center;justify-content:center;font:14px monospace;padding:30px;text-align:center">
-      WINemulator needs JavaScript enabled to boot. Please enable JavaScript and reload.
-    </div>
-  </noscript>
-
-  <script src="js/icons.js"></script>
-  <script src="js/util.js"></script>
-  <script src="js/sound.js"></script>
-  <script src="js/fs.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/wm.js"></script>
-  <script src="js/taskbar.js"></script>
-  <script src="js/desktop.js"></script>
-  <script src="js/boot.js"></script>
-  <script src="js/apps/explorer.js"></script>
-  <script src="js/apps/notepad.js"></script>
-  <script src="js/apps/paint.js"></script>
-  <script src="js/apps/calc.js"></script>
-  <script src="js/apps/terminal.js"></script>
-  <script src="js/apps/minesweeper.js"></script>
-  <script src="js/apps/settings.js"></script>
-  <script src="js/apps/taskmgr.js"></script>
-  <script src="js/apps/browser.js"></script>
-  <script src="js/apps/help.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/selector.js"></script>
 </body>
 </html>

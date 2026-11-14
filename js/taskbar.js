@@ -11,7 +11,8 @@
   const APPS = {
     notepad: 'Notepad', paint: 'Paint', calc: 'Calculator', terminal: 'MS-DOS Prompt',
     explorer: 'Windows Explorer', browser: 'Internet Explorer', minesweeper: 'Minesweeper',
-    settings: 'Control Panel', taskmgr: 'Task Manager', help: 'Help', recycle: 'Recycle Bin'
+    settings: 'Control Panel', taskmgr: 'Task Manager', help: 'Help', recycle: 'Recycle Bin',
+    vpc: 'Virtual PC'
   };
 
   function menuIsOpen() { return startOpen; }
@@ -38,8 +39,8 @@
   }
 
   function startItem(opts) {
-    const item = el('div', { class: 'sm-item' + (opts.disabled ? ' disabled' : ''), role: 'menuitem', tabindex: '0' });
-    item.innerHTML = '<span class="sm-icon">' + (opts.icon ? Win.icon(opts.icon, 24) : '') + '</span>' +
+    const item = el('div', { class: 'sm-item' + (Win.isXP ? ' xp-sm-item' : '') + (opts.disabled ? ' disabled' : ''), role: 'menuitem', tabindex: '0' });
+    item.innerHTML = '<span class="sm-icon">' + (opts.icon ? Win.icon(opts.icon, Win.isXP ? 26 : 24) : '') + '</span>' +
       '<span class="sm-label"></span><span class="sm-arrow">' + (opts.sub ? '▸' : '') + '</span>';
     item.querySelector('.sm-label').textContent = opts.label;
     if (opts.sub) {
@@ -48,7 +49,7 @@
         if (subOwner === item) return;
         hideSub();
         subOwner = item;
-        subEl = el('div', { class: 'menu sm-sub' });
+        subEl = el('div', { class: 'menu sm-sub' + (Win.isXP ? ' xp-submenu' : '') });
         if (innerWidth < 760) subEl.classList.add('sub-inline');
         opts.sub().forEach(function (sub) {
           if (sub.separator) { subEl.appendChild(el('div', { class: 'menu-separator' })); return; }
@@ -111,6 +112,7 @@
       { separator: true },
       { label: 'Internet Explorer', icon: 'ie', action: function () { Win.wm.open('browser'); } },
       { label: 'Windows Explorer', icon: 'folder', action: function () { Win.wm.open('explorer', { path: 'C:\\' }); } },
+      { label: 'Virtual PC', icon: 'vpc', action: function () { Win.wm.open('vpc'); } },
       { label: 'Control Panel', icon: 'settings', action: function () { Win.wm.open('settings'); } },
       { label: 'Task Manager', icon: 'taskmgr', action: function () { Win.wm.open('taskmgr'); } }
     ];
@@ -143,8 +145,84 @@
     ];
   }
 
+  function allProgramsSub() {
+    return [
+      { label: 'Accessories', separator: false },
+      { label: 'Notepad', icon: 'notepad', action: function () { Win.wm.open('notepad'); } },
+      { label: 'Paint', icon: 'paint', action: function () { Win.wm.open('paint'); } },
+      { label: 'Calculator', icon: 'calc', action: function () { Win.wm.open('calc'); } },
+      { label: 'MS-DOS Prompt', icon: 'terminal', action: function () { Win.wm.open('terminal'); } },
+      { separator: true },
+      { label: 'Games', separator: false },
+      { label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } },
+      { separator: true },
+      { label: 'Internet Explorer', icon: 'ie', action: function () { Win.wm.open('browser'); } },
+      { label: 'Windows Explorer', icon: 'folder', action: function () { Win.wm.open('explorer', { path: 'C:\\' }); } },
+      { label: 'Virtual PC', icon: 'vpc', action: function () { Win.wm.open('vpc'); } },
+      { label: 'Control Panel', icon: 'settings', action: function () { Win.wm.open('settings'); } },
+      { label: 'Task Manager', icon: 'taskmgr', action: function () { Win.wm.open('taskmgr'); } }
+    ];
+  }
+
+  /* ------------------------------------------------------------- XP Start */
+  function buildStartXP() {
+    startEl.classList.add('xp-start');
+    startEl.innerHTML = '';
+
+    const user = (Win.store.get('lastUser') || 'User');
+    const head = el('div', { class: 'xp-sm-head' });
+    head.innerHTML = '<span class="xp-sm-avatar">' + Win.icon('user', 30) + '</span>' +
+      '<span class="xp-sm-user"><b></b><span>Web Edition</span></span>';
+    head.querySelector('b').textContent = user;
+    startEl.appendChild(head);
+
+    const bodyEl = el('div', { class: 'xp-sm-body' });
+    const left = el('div', { class: 'xp-sm-left' });
+    const right = el('div', { class: 'xp-sm-right' });
+    bodyEl.appendChild(left);
+    bodyEl.appendChild(right);
+    startEl.appendChild(bodyEl);
+
+    left.appendChild(startItem({ label: 'Internet Explorer', icon: 'ie', action: function () { Win.wm.open('browser'); } }));
+    left.appendChild(startItem({ label: 'E-mail', icon: 'mail', action: function () { Win.wm.open('browser', { url: 'winemulator://home' }); } }));
+    left.appendChild(el('div', { class: 'xp-sm-sep' }));
+    left.appendChild(startItem({ label: 'Notepad', icon: 'notepad', action: function () { Win.wm.open('notepad'); } }));
+    left.appendChild(startItem({ label: 'Paint', icon: 'paint', action: function () { Win.wm.open('paint'); } }));
+    left.appendChild(startItem({ label: 'Calculator', icon: 'calc', action: function () { Win.wm.open('calc'); } }));
+    left.appendChild(startItem({ label: 'MS-DOS Prompt', icon: 'terminal', action: function () { Win.wm.open('terminal'); } }));
+    left.appendChild(startItem({ label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } }));
+    left.appendChild(startItem({ label: 'Virtual PC', icon: 'vpc', action: function () { Win.wm.open('vpc'); } }));
+    left.appendChild(startItem({ label: 'Control Panel', icon: 'settings', action: function () { Win.wm.open('settings'); } }));
+    left.appendChild(el('div', { class: 'xp-sm-sep' }));
+    const all = startItem({ label: 'All Programs', icon: 'programs', sub: allProgramsSub });
+    all.classList.add('xp-all');
+    left.appendChild(all);
+
+    right.appendChild(startItem({ label: 'My Documents', icon: 'documents', action: function () { Win.wm.open('explorer', { path: 'C:\\My Documents' }); } }));
+    right.appendChild(startItem({ label: 'My Recent Documents', icon: 'folder-open', sub: docsSub }));
+    right.appendChild(startItem({ label: 'My Pictures', icon: 'image', action: function () { Win.wm.open('explorer', { path: 'C:\\My Documents\\Art' }); } }));
+    right.appendChild(startItem({ label: 'My Computer', icon: 'computer', action: function () { Win.wm.open('explorer', { path: '::computer' }); } }));
+    right.appendChild(el('div', { class: 'xp-sm-sep' }));
+    right.appendChild(startItem({ label: 'Help and Support', icon: 'help', action: function () { Win.wm.open('help'); } }));
+    right.appendChild(startItem({ label: 'Search', icon: 'search', action: findDialog }));
+    right.appendChild(startItem({ label: 'Run...', icon: 'run', action: function () { Win.ui.runDialog(); } }));
+    right.appendChild(el('div', { class: 'xp-sm-sep' }));
+    right.appendChild(startItem({ label: 'Switch to Windows 98', icon: 'windows', action: function () { if (Win.showOSChooser) Win.showOSChooser(); } }));
+
+    const foot = el('div', { class: 'xp-sm-footer' });
+    const logoffBtn = el('button', { class: 'xp-sm-foot-btn', type: 'button', html: Win.icon('logoff', 22) + '<span>Log Off</span>' });
+    logoffBtn.addEventListener('click', function (ev) { ev.stopPropagation(); closeStart(); logOff(); });
+    const offBtn = el('button', { class: 'xp-sm-foot-btn', type: 'button', html: Win.icon('shutdown', 22) + '<span>Turn Off Computer</span>' });
+    offBtn.addEventListener('click', function (ev) { ev.stopPropagation(); closeStart(); shutdownDialog(); });
+    foot.appendChild(logoffBtn);
+    foot.appendChild(offBtn);
+    startEl.appendChild(foot);
+  }
+
   function buildStart() {
     startEl.innerHTML = '';
+    startEl.classList.remove('xp-start');
+    if (Win.isXP) return buildStartXP();
     startEl.appendChild(el('div', { class: 'sm-banner', html: '<div class="sm-banner-inner"><span class="sm-b1">WIN</span><span class="sm-b2">emulator</span><span class="sm-b3">98</span></div>' }));
     const list = el('div', { class: 'sm-list' });
     list.appendChild(startItem({ label: 'Programs', icon: 'programs', sub: programsSub }));
@@ -153,7 +231,9 @@
     list.appendChild(startItem({ label: 'Find', icon: 'search', action: findDialog }));
     list.appendChild(startItem({ label: 'Help', icon: 'help', action: function () { Win.wm.open('help'); } }));
     list.appendChild(startItem({ label: 'Run...', icon: 'run', action: function () { Win.ui.runDialog(); } }));
+    list.appendChild(startItem({ label: 'Virtual PC', icon: 'vpc', action: function () { Win.wm.open('vpc'); } }));
     list.appendChild(el('div', { class: 'menu-separator' }));
+    list.appendChild(startItem({ label: 'Switch to Windows XP', icon: 'windows', action: function () { if (Win.showOSChooser) Win.showOSChooser(); } }));
     list.appendChild(startItem({ label: 'Log Off User...', icon: 'logoff', action: logOff }));
     list.appendChild(startItem({ label: 'Shut Down...', icon: 'shutdown', action: shutdownDialog }));
     startEl.appendChild(list);
@@ -201,16 +281,24 @@
   /* ------------------------------------------------------------- shutdown */
   function shutdownDialog() {
     let mode = 'shutdown';
-    Win.ui.dialog({
-      title: 'Shut Down Windows', icon: 'shutdown', width: 440,
-      html: '<div class="sd-wrap"><div class="sd-icon">' + Win.icon('computer', 48) + '</div>' +
-        '<div class="sd-main"><div class="sd-question">What do you want the computer to do?</div>' +
-        '<div class="sd-opts">' +
-        '<label><input type="radio" name="sd" value="shutdown" checked> Shut down</label>' +
+    const xp = Win.isXP;
+    const options = xp
+      ? '<label><input type="radio" name="sd" value="shutdown" checked> Turn Off</label>' +
+        '<label><input type="radio" name="sd" value="restart"> Restart</label>' +
+        '<label><input type="radio" name="sd" value="logoff"> Log Off</label>'
+      : '<label><input type="radio" name="sd" value="shutdown" checked> Shut down</label>' +
         '<label><input type="radio" name="sd" value="restart"> Restart</label>' +
         '<label><input type="radio" name="sd" value="dos"> Restart in MS-DOS mode</label>' +
-        '<label><input type="radio" name="sd" value="logoff"> Log off User</label>' +
-        '</div><div class="sd-note">Hold down Shift while choosing Restart to skip the boot screens.</div>' +
+        '<label><input type="radio" name="sd" value="logoff"> Log off User</label>';
+    const note = xp
+      ? 'Turn off the computer, restart, or log off and return to the welcome screen.'
+      : 'Hold down Shift while choosing Restart to skip the boot screens.';
+    Win.ui.dialog({
+      title: xp ? 'Turn off computer' : 'Shut Down Windows', icon: xp ? 'power' : 'shutdown', width: 440,
+      html: '<div class="sd-wrap"><div class="sd-icon">' + Win.icon(xp ? 'power' : 'computer', 48) + '</div>' +
+        '<div class="sd-main"><div class="sd-question">What do you want the computer to do?</div>' +
+        '<div class="sd-opts">' + options + '</div>' +
+        '<div class="sd-note">' + note + '</div>' +
         '</div></div>',
       onShow: function (win) {
         const ok = win.querySelector('.dialog-buttons .btn.default');
@@ -224,7 +312,8 @@
           r.addEventListener('change', function () {
             win.querySelector('.sd-note').textContent = r.value === 'dos' ? 'You will get a command prompt. Type WIN to start Windows again.' :
               r.value === 'logoff' ? 'Your programs will close and you will return to the logon screen.' :
-                'Hold down Shift while choosing Restart to skip the boot screens.';
+                xp ? 'Turn off the computer, restart, or log off and return to the welcome screen.' :
+                  'Hold down Shift while choosing Restart to skip the boot screens.';
           });
         });
       },
@@ -410,7 +499,9 @@
     tasksEl = document.getElementById('tasks');
     quickEl = document.getElementById('quicklaunch');
     clockEl = document.getElementById('tray-clock');
-    startBtn.querySelector('#start-icon').innerHTML = Win.icon('flag', 20);
+    startBtn.querySelector('#start-icon').innerHTML = Win.icon('flag', Win.isXP ? 22 : 20);
+    const startLabel = startBtn.querySelector('.start-label');
+    if (startLabel) startLabel.textContent = Win.isXP ? 'start' : 'Start';
     document.getElementById('tray-volume').innerHTML = Win.icon('volume', 16);
     document.getElementById('tray-network').innerHTML = Win.icon('network', 16);
     buildQuick();

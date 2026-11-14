@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#008080">
+  <title>WINemulator — Windows in your browser</title>
+  <meta name="description" content="A fast, offline, no-install Windows 98 and Windows XP desktop environment that runs entirely in your browser. Files, Paint, Minesweeper, MS-DOS, Virtual PC and more.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta property="og:title" content="WINemulator">
+  <meta property="og:description" content="A complete Windows-style desktop in your browser. Choose Windows 98 or Windows XP. Boots in seconds, works offline, no installs.">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/desktop.css">
+  <link rel="stylesheet" href="css/apps.css">
+  <link rel="stylesheet" href="css/xp.css">
+</head>
+<body class="booting theme-classic wall-teal">
+  <script>
+    (function () {
+      var q = new URLSearchParams(location.search);
+      var os = q.get('os');
+      if (os !== '98' && os !== 'xp') {
+        try { os = localStorage.getItem('winemulator.os'); } catch (e) {}
+      }
+      if (os !== '98' && os !== 'xp') os = '98';
+      try { localStorage.setItem('winemulator.os', os); } catch (e) {}
+      window.WIN_OS = os;
+      document.documentElement.setAttribute('data-os', os);
+      document.body.classList.add(os === 'xp' ? 'os-xp' : 'os-98');
+      if (os === 'xp') {
+        document.body.classList.remove('theme-classic', 'wall-teal');
+        document.body.classList.add('theme-xp', 'wall-bliss');
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', '#245edb');
+        document.title = 'WINemulator XP — Windows in your browser';
+      }
+    })();
+  </script>
+
+  <main id="desktop" aria-label="Desktop">
+    <div id="icons" aria-label="Desktop icons"></div>
+    <div id="windows"></div>
+    <div id="snap-preview" hidden></div>
+  </main>
+
+  <div id="taskbar" role="toolbar" aria-label="Taskbar">
+    <button id="start-button" class="start-button" type="button" aria-expanded="false" aria-controls="start-menu">
+      <span id="start-icon" aria-hidden="true"></span><span class="start-label">Start</span>
+    </button>
+    <div id="quicklaunch" class="quicklaunch" aria-label="Quick Launch"></div>
+    <div id="tasks" class="tasks" aria-label="Running programs"></div>
+    <div id="tray" class="tray">
+      <button id="tray-volume" class="tray-btn" type="button" title="Volume" aria-label="Volume"></button>
+      <button id="tray-network" class="tray-btn" type="button" title="Network connection" aria-label="Network connection"></button>
+      <button id="tray-clock" class="tray-clock" type="button" title="Date and time"></button>
+    </div>
+  </div>
+
+  <div id="start-menu" class="start-menu" hidden></div>
+  <div id="alttab" class="alttab" hidden></div>
+  <div id="calendar-pop" class="calendar-pop" hidden></div>
+  <div id="volume-pop" class="volume-pop" hidden></div>
+  <div id="modal-root"></div>
+  <div id="toast-root" class="toast-root" aria-live="polite"></div>
+  <div id="crt" hidden></div>
+
+  <div id="boot-layer" class="boot-layer" aria-label="Boot screen"></div>
+  <div id="login-layer" class="login-layer" hidden></div>
+  <div id="power-layer" class="power-layer" hidden></div>
+
+  <noscript>
+    <div style="position:fixed;inset:0;z-index:99999;background:#000;color:#ddd;display:flex;align-items:center;justify-content:center;font:14px monospace;padding:30px;text-align:center">
+      WINemulator needs JavaScript enabled to boot. Please enable JavaScript and reload.
+    </div>
+  </noscript>
+
+  <script src="js/icons.js"></script>
+  <script src="js/os.js"></script>
+  <script src="js/icons-xp.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/sound.js"></script>
+  <script src="js/fs.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/wm.js"></script>
+  <script src="js/taskbar.js"></script>
+  <script src="js/desktop.js"></script>
+  <script src="js/boot.js"></script>
+  <script src="js/apps/explorer.js"></script>
+  <script src="js/apps/notepad.js"></script>
+  <script src="js/apps/paint.js"></script>
+  <script src="js/apps/calc.js"></script>
+  <script src="js/apps/terminal.js"></script>
+  <script src="js/apps/minesweeper.js"></script>
+  <script src="js/apps/settings.js"></script>
+  <script src="js/apps/taskmgr.js"></script>
+  <script src="js/apps/browser.js"></script>
+  <script src="js/apps/help.js"></script>
+  <script src="js/apps/vpc.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

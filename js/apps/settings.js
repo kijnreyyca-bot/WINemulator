@@ -13,6 +13,7 @@
   ];
   const WALLS = [
     { id: 'teal', name: 'Teal' },
+    { id: 'bliss', name: 'Bliss' },
     { id: 'clouds', name: 'Clouds' },
     { id: 'azure', name: 'Azure' },
     { id: 'sunset', name: 'Sunset' },
@@ -24,6 +25,7 @@
   const SOLIDS = ['#008080', '#1e5891', '#0a6b6b', '#5a2c52', '#2a2f36', '#3f7cbe', '#005c5c', '#4b3f72'];
 
   function wallCss(wall, solid) {
+    if (wall === 'bliss') return 'url("assets/bliss.svg") center / cover no-repeat';
     if (wall === 'clouds') {
       return 'radial-gradient(closest-side at 20% 26%, rgba(255,255,255,.95), rgba(255,255,255,.45) 45%, transparent 72%),' +
         'radial-gradient(closest-side at 42% 22%, rgba(255,255,255,.8), transparent 70%),' +
@@ -105,12 +107,22 @@
           '<label class="set-check"><input type="checkbox" class="' + cls + '"' + (checked ? ' checked' : '') + '></label></div>';
       }
       function themeCards(st) {
-        return '<div class="set-themes">' + [
-          { id: 'classic', name: 'Windows Classic' },
-          { id: 'platinum', name: 'Platinum' },
-          { id: 'midnight', name: 'Midnight' }
-        ].map(function (t) {
-          return '<button class="set-theme' + (st.theme === t.id ? ' active' : '') + '" type="button" data-theme="' + t.id + '">' +
+        const list = Win.isXP
+          ? [
+              { id: 'xp', name: 'Windows XP Blue' },
+              { id: 'olive', name: 'Olive Green' },
+              { id: 'silver', name: 'Silver' }
+            ]
+          : [
+              { id: 'classic', name: 'Windows Classic' },
+              { id: 'platinum', name: 'Platinum' },
+              { id: 'midnight', name: 'Midnight' }
+            ];
+        let active = st.theme;
+        if (Win.isXP) active = ['xp', 'olive', 'silver'].indexOf(active) > -1 ? active : 'xp';
+        else active = ['classic', 'platinum', 'midnight'].indexOf(active) > -1 ? active : 'classic';
+        return '<div class="set-themes">' + list.map(function (t) {
+          return '<button class="set-theme' + (active === t.id ? ' active' : '') + '" type="button" data-theme="' + t.id + '">' +
             '<span class="set-theme-prev"><i></i></span><span class="set-theme-name">' + t.name + '</span></button>';
         }).join('') + '</div>';
       }
@@ -174,6 +186,12 @@
       function appearancePane() {
         const st = s();
         return '<h1 class="set-h1">Appearance</h1><p class="set-sub">Choose how windows and the desktop look. Changes are applied immediately.</p>' +
+          '<div class="set-group"><h3>' + Win.icon('computer', 16) + ' Operating system</h3>' +
+          '<p>This browser can run either desktop. Switching reloads the page and keeps your files and settings.</p>' +
+          '<div class="set-actions">' +
+          '<button class="btn" type="button" data-os-switch="98"' + (!Win.isXP ? ' disabled' : '') + '>' + Win.icon('flag', 15) + ' Windows 98' + (!Win.isXP ? ' (current)' : '') + '</button>' +
+          '<button class="btn" type="button" data-os-switch="xp"' + (Win.isXP ? ' disabled' : '') + '>' + Win.icon('windows', 15) + ' Windows XP' + (Win.isXP ? ' (current)' : '') + '</button>' +
+          '</div></div>' +
           '<div class="set-group"><h3>' + Win.icon('monitor', 16) + ' Windows theme</h3>' + themeCards(st) + '</div>' +
           '<div class="set-group"><h3>' + Win.icon('image', 16) + ' Desktop preview</h3>' + previewHtml(st) + '</div>' +
           '<div class="set-group"><h3>' + Win.icon('settings', 16) + ' Effects</h3>' +
@@ -185,6 +203,11 @@
       }
       function bindAppearance() {
         bindThemeCards();
+        paneEl.querySelectorAll('[data-os-switch]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            if (Win.switchOS) Win.switchOS(b.dataset.osSwitch);
+          });
+        });
         bindChecks({
           '.set-anim': function (i) { return { animations: i.checked }; },
           '.set-crt': function (i) { return { crt: i.checked }; },
@@ -318,8 +341,8 @@
         const uptime = U.fmtDuration(Date.now() - (Win.startedAt || Date.now()));
         const boot = Win.bootMs ? (Win.bootMs / 1000).toFixed(2) + ' seconds' : 'n/a';
         const rows = [
-          ['Operating system', 'Microsoft Windows 98 Second Edition (Web)'],
-          ['Version', '4.10.2222 — WINemulator ' + (Win.version || '1.0')],
+          ['Operating system', Win.isXP ? 'Microsoft Windows XP Professional (Web)' : 'Microsoft Windows 98 Second Edition (Web)'],
+          ['Version', (Win.isXP ? '5.1.2600' : '4.10.2222') + ' — WINemulator ' + (Win.version || '1.0')],
           ['Build', Win.build || 'web-2026'],
           ['Processor', 'WebCore x86 JIT (' + (si.cores || '?') + ' logical cores)'],
           ['Memory', (si.memory || 8) + ' GB reported'],
@@ -332,6 +355,7 @@
           ['Files', stats.files + ' files, ' + stats.dirs + ' folders'],
           ['Disk used', U.fmtBytes(stats.bytes) + ' of 2.00 GB'],
           ['Local storage', U.fmtBytes(stats.storageBytes)],
+          ['Virtual PC', 'v86 x86 emulator · ' + (window.V86 ? 'loaded' : 'loads on demand')],
           ['Recycle Bin', stats.recycle + ' item(s)']
         ];
         return '<h1 class="set-h1">System</h1><p class="set-sub">Information about this browser session and the virtual C: drive.</p>' +
@@ -402,9 +426,9 @@
         const si = Win.sysinfo ? Win.sysinfo() : {};
         return '<div class="set-about">' +
           '<div class="set-about-logo">' + Win.icon('flag', 60) + '</div>' +
-          '<div><div class="set-about-name">WINemulator 98</div>' +
-          '<div class="set-about-tag">Windows-style desktop, entirely in your browser</div>' +
-          '<p>A fast, zero-install desktop environment written in plain HTML, CSS and JavaScript. No framework, no build step, no external assets — every icon, sound and pixel is generated locally.</p>' +
+          '<div><div class="set-about-name">WINemulator ' + (Win.isXP ? 'XP' : '98') + '</div>' +
+          '<div class="set-about-tag">' + (Win.isXP ? 'The Windows XP Luna desktop, entirely in your browser' : 'Windows-style desktop, entirely in your browser') + '</div>' +
+          '<p>A fast, zero-install desktop environment written in plain HTML, CSS and JavaScript. No framework, no build step, no Microsoft assets — every icon, sound, wallpaper and pixel is generated locally.</p>' +
           '<p>Your files and settings live in this browser. WINemulator does not upload anything anywhere, and it keeps working when you are offline.</p></div>' +
           '</div>' +
           '<div class="set-group" style="margin-top:14px"><h3>' + Win.icon('info', 16) + ' System</h3>' +
@@ -414,7 +438,12 @@
           '<span>Kernel</span><b>JavaScript ' + (String(si.ua).indexOf('Firefox') > -1 ? 'Gecko' : 'WebKit/Blink') + '</b>' +
           '<span>Processor</span><b>' + (si.cores || '?') + ' logical cores</b>' +
           '<span>Display</span><b>' + (si.viewport || '') + ' viewport, ' + (si.dpr || 1) + 'x DPI</b>' +
-          '<span>License</span><b>MIT</b>' +
+          '<span>License</span><b>MIT · v86 BSD-2-Clause</b>' +
+          '</div></div>' +
+          '<div class="set-group"><h3>' + Win.icon('vpc', 16) + ' Virtual PC</h3>' +
+          '<p>Virtual PC embeds <b>v86</b>, an open-source x86 CPU and PC emulator written in WebAssembly. It runs real 32-bit x86 code and can boot a disk image you supply. No operating-system images are included.</p>' +
+          '<div class="set-actions">' +
+          '<button class="btn" type="button" data-open-app="vpc">' + Win.icon('vpc', 16) + ' Open Virtual PC</button>' +
           '</div></div>' +
           '<div class="set-group"><h3>' + Win.icon('help', 16) + ' Learn more</h3>' +
           '<div class="set-actions">' +

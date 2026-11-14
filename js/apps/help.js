@@ -32,16 +32,16 @@
   function pageWelcome() {
     return '<div class="hlp-hero">' +
       '<span class="hlp-flag">' + Win.icon('flag', 72) + '</span>' +
-      '<div><h1>Welcome to WINemulator 98</h1>' +
-      '<p>A complete Windows-style desktop that boots in your browser. No installs, no virtual machine, no waiting.</p></div>' +
+      '<div><h1>Welcome to WINemulator ' + (Win.isXP ? 'XP' : '98') + '</h1>' +
+      '<p>A complete Windows-style desktop that boots in your browser. No installs, no setup, no waiting.</p></div>' +
       '</div>' +
-      '<p class="hlp-lead">This copy is yours. Files, drawings, settings and even the wallpaper are saved locally in this browser, so everything is right where you left it next time.</p>' +
+      '<p class="hlp-lead">This copy is yours. Files, drawings, settings and even the wallpaper are saved locally in this browser, so everything is right where you left it next time. You can switch between the Windows 98 and Windows XP desktops whenever you like.</p>' +
       '<div class="hlp-cards">' +
       topicCard('tour', 'computer', 'Quick Tour', 'A two-minute walk through the desktop.') +
       topicCard('programs', 'programs', 'Programs', 'Notepad, Paint, Minesweeper and friends.') +
       topicCard('files', 'folder', 'Files & Storage', 'Where things are saved and how to find them.') +
-      topicCard('shortcuts', 'keyboard', 'Keyboard & Mouse', 'The shortcuts that save the most time.') +
-      topicCard('appearance', 'monitor', 'Make It Yours', 'Themes, wallpaper, sounds and effects.') +
+      topicCard('virtualpc', 'vpc', 'Virtual PC', 'Boot a real x86 disk image in the browser.') +
+      topicCard('oses', 'windows', 'Windows 98 & XP', 'Switch desktops and change the Luna theme.') +
       topicCard('offline', 'network', 'Offline & Privacy', 'How everything keeps working without the web.') +
       '</div>' +
       '<div class="hlp-note"><b>First time here?</b> Start with the Quick Tour, or just double-click an icon on the desktop. Nothing you do here can break the real computer.</div>' +
@@ -55,9 +55,10 @@
       '<li>Write a note in ' + appLink('notepad', 'Notepad') + ' and save it to <code>C:\\My Documents</code>.</li>' +
       '<li>Draw something in ' + appLink('paint', 'Paint') + ', then set it as a file on the virtual drive.</li>' +
       '<li>Play ' + appLink('minesweeper', 'Minesweeper') + ' on Beginner, Intermediate or Expert.</li>' +
+      '<li>Boot a genuine x86 boot sector in ' + appLink('vpc', 'Virtual PC') + ' — no disk image needed for the demo.</li>' +
       '<li>Browse the local web with ' + appLink('browser', 'Internet Explorer') + ' — try <code>winemulator://home</code>.</li>' +
       '<li>Type <code>HELP</code> in the ' + appLink('terminal', 'MS-DOS Prompt') + ' for a full command list.</li>' +
-      '<li>Change the theme, wallpaper or sounds in the ' + appLink('settings', 'Control Panel') + '.</li>' +
+      '<li>Change the theme, wallpaper, sounds or operating system in the ' + appLink('settings', 'Control Panel') + '.</li>' +
       '</ul>' +
       '<div class="hlp-footnote">WINemulator ' + (Win.version || '1.0.0') + ' &middot; Build ' + (Win.build || 'web-2026') +
       ' &middot; A simulation, not a real operating system. Nothing leaves this browser.</div>';
@@ -68,7 +69,11 @@
       '<h2>1. The desktop</h2>' +
       '<p>The icons on the left open programs and folders. Double-click one to start it. You can drag icons anywhere you like — their positions are remembered. Right-click an empty part of the desktop for wallpaper, refresh and new-document options.</p>' +
       '<h2>2. The Start menu</h2>' +
-      '<p>Click <b>Start</b> in the bottom-left corner, or press <code>Ctrl+Esc</code>. Programs, Documents, Settings, Find, Help and Run all live there. The bottom bar is the taskbar: every open window gets a button, and the tray on the right holds the clock, volume and network icons.</p>' +
+      '<p>Click <b>' + (Win.isXP ? 'start' : 'Start') + '</b> in the bottom-left corner, or press <code>Ctrl+Esc</code>. ' +
+      (Win.isXP
+        ? 'The XP Start menu is split into two columns: programs on the left, and My Documents, My Computer, Help and Run on the right. All Programs opens the full list, while Log Off and Turn Off Computer sit at the bottom.'
+        : 'Programs, Documents, Settings, Find, Help and Run all live there.') +
+      ' The bottom bar is the taskbar: every open window gets a button, and the tray on the right holds the clock, volume and network icons.</p>' +
       '<h2>3. Windows behave like windows</h2>' +
       '<ul>' +
       '<li>Drag the title bar to move a window.</li>' +
@@ -102,6 +107,7 @@
       appCard('minesweeper', 'mine', 'Minesweeper', 'The classic puzzle. Right-click plants a flag.') +
       appCard('settings', 'settings', 'Control Panel', 'Appearance, wallpaper, sounds, performance and system tools.') +
       appCard('taskmgr', 'taskmgr', 'Task Manager', 'See running programs and end unresponsive tasks.') +
+      appCard('vpc', 'vpc', 'Virtual PC', 'Boot real x86 code in WebAssembly with v86.') +
       appCard('help', 'help', 'Help', 'This guide. Press F1 from almost anywhere.') +
       '</div>' +
       '<h2>Handy commands</h2>' +
@@ -156,12 +162,22 @@
   }
 
   function pageAppearance() {
+    const themes = Win.isXP
+      ? '<b>Windows XP Blue</b>, <b>Olive Green</b> and <b>Silver</b>'
+      : 'the classic Windows look, a softer <b>Platinum</b> theme and a dark <b>Midnight</b> theme';
     return '<h1>Make It Yours</h1><p class="hlp-lead">The Control Panel changes the desktop in real time. Everything is remembered for next time.</p>' +
+      '<h2>Operating system</h2>' +
+      '<p>WINemulator includes both a Windows 98 desktop and a Windows XP Luna desktop. Open the OS selector from the Start menu, the desktop right-click menu, or the Appearance tab. Switching reloads the page but keeps your files and settings.</p>' +
+      '<div class="hlp-actions">' +
+      (Win.isXP
+        ? actionBtn('os-98', 'flag', 'Switch to Windows 98')
+        : actionBtn('os-xp', 'windows', 'Switch to Windows XP')) +
+      '</div>' +
       '<h2>Appearance</h2>' +
-      '<p>Choose between the classic Windows look, a softer Platinum theme and a dark Midnight theme. You can also turn window animations on or off, enable CRT scanlines, switch to a 24-hour clock and show a frame-rate meter.</p>' +
+      '<p>Choose between ' + themes + '. You can also turn window animations on or off, enable CRT scanlines, switch to a 24-hour clock and show a frame-rate meter. XP mode also offers a full-screen Bliss-style wallpaper and rounded Luna window chrome.</p>' +
       '<div class="hlp-actions">' + appBtn('settings', 'monitor', 'Open Appearance', 'appearance') + '</div>' +
       '<h2>Background</h2>' +
-      '<p>Pick Teal, Clouds, Azure, Sunset, Graphite or Grid — all drawn with CSS gradients, so there are no images to download. Choose <b>Solid Color</b> to pick any desktop color.</p>' +
+      '<p>Pick Teal, Bliss, Clouds, Azure, Sunset, Graphite or Grid — all drawn with CSS gradients or local SVG, so there are no images to download. Choose <b>Solid Color</b> to pick any desktop color.</p>' +
       '<div class="hlp-actions">' + appBtn('settings', 'image', 'Change wallpaper', 'background') + '</div>' +
       '<h2>Sounds</h2>' +
       '<p>WINemulator synthesises its sounds with the Web Audio API. There are no audio files. You can mute everything, adjust the master volume and preview each sound.</p>' +
@@ -278,33 +294,104 @@
       '<p>Reload the browser tab. WINemulator saves its state as it goes, so a reload usually brings everything back. If a single program misbehaves, closing its window and reopening it clears that program without touching your files.</p>';
   }
 
+  function pageVirtualPC() {
+    return '<h1>Virtual PC</h1><p class="hlp-lead">A real x86 computer, emulated in WebAssembly. This is not a simulation of a boot screen — the CPU instructions really run.</p>' +
+      '<h2>How it works</h2>' +
+      '<p>Virtual PC embeds <b>v86</b>, an open-source x86 PC emulator. The emulator core, the BIOS files and the WebAssembly runtime are stored locally in the <code>vendor/v86</code> folder, so once the page has been cached it works offline. The first time you start a machine, the browser loads the x86 core and then keeps it ready for later boots.</p>' +
+      '<h2>The demo disk</h2>' +
+      '<p>Choose <b>Boot the demo disk</b> and JavaScript assembles a genuine 1.44 MB floppy image byte by byte: a 16-bit real-mode boot sector that switches the VGA card to text mode, prints a message through the BIOS teletype interrupt, and halts. It is small, but it is real emulated x86 code executing from the first sector of a disk.</p>' +
+      '<h2>Booting your own image</h2>' +
+      '<ol>' +
+      '<li>Open ' + appLink('vpc', 'Virtual PC') + ' and choose <b>Load image…</b>.</li>' +
+      '<li>Pick a disk image: <code>.img</code>, <code>.ima</code>, <code>.iso</code>, <code>.raw</code>, <code>.bin</code> or <code>.dsk</code>.</li>' +
+      '<li>Virtual PC classifies the file automatically: an ISO is attached as a CD-ROM, images up to 2.88 MB as a floppy disk, and anything larger as a hard disk.</li>' +
+      '<li>The machine starts from the most suitable device. Use <b>Reset</b> to boot it again.</li>' +
+      '</ol>' +
+      '<p class="hlp-note"><b>No operating-system images are included.</b> Use an image you are legally allowed to run — FreeDOS, MS-DOS, a Linux ISO, or your own copy of Windows 98. The maximum accepted image size is 512 MB because browser memory is limited.</p>' +
+      '<h2>Controls</h2>' +
+      '<table class="hlp-kbd"><tr><th>Button</th><th>What it does</th></tr>' +
+      '<tr><td>Start</td><td>Boot the demo floppy.</td></tr>' +
+      '<tr><td>Pause / Resume</td><td>Freeze or continue the virtual CPU.</td></tr>' +
+      '<tr><td>Reset</td><td>Reboot the guest machine.</td></tr>' +
+      '<tr><td>Demo disk</td><td>Build and boot the generated floppy again.</td></tr>' +
+      '<tr><td>Load image…</td><td>Attach a disk image from your computer.</td></tr>' +
+      '<tr><td>Ctrl+Alt+Del</td><td>Send the classic three-finger salute to the guest.</td></tr>' +
+      '<tr><td>Fullscreen</td><td>Show the virtual screen on its own.</td></tr>' +
+      '<tr><td>RAM</td><td>Choose 32, 64, 128 or 256 MB before starting.</td></tr>' +
+      '</table>' +
+      '<h2>Keyboard and mouse</h2>' +
+      '<p>Click the virtual screen once to give it focus. Key presses are forwarded to the guest only while it has focus, so taskbar shortcuts, Alt+Tab and the rest of WINemulator keep working normally. Click outside the screen to give focus back to the desktop.</p>' +
+      '<h2>Important limits</h2>' +
+      '<ul>' +
+      '<li>v86 emulates <b>32-bit x86</b>. 64-bit x86 and x64 operating systems are not supported.</li>' +
+      '<li>Windows 98 is the realistic sweet spot. Windows XP may boot but is usually far too slow to be useful inside a browser tab.</li>' +
+      '<li>Large hard-disk images consume a lot of memory. If a guest fails to start, try a smaller image.</li>' +
+      '<li>Networking is not configured in this build. The guest runs as a standalone machine.</li>' +
+      '</ul>' +
+      '<div class="hlp-actions">' +
+      appBtn('vpc', 'vpc', 'Open Virtual PC') +
+      actionBtn('oses', 'windows', 'Compare the two desktops') +
+      '</div>' +
+      '<div class="hlp-footnote">v86 is an independent open-source project by Fabian Hemmer and contributors, distributed under the BSD 2-Clause licence. See <code>vendor/v86/LICENSE</code>.</div>';
+  }
+
+  function pageOS() {
+    return '<h1>Windows 98 &amp; XP</h1><p class="hlp-lead">One project, two complete desktops. Pick the one that matches your mood.</p>' +
+      '<h2>Choosing a desktop</h2>' +
+      '<p><code>index.html</code> is the operating-system selector. It remembers your choice in local storage and opens the matching shell. In the desktop itself you can switch at any time from the Start menu, the desktop right-click menu, or ' + appLink('settings', 'Control Panel') + ' → <b>Appearance</b>. The page reloads, but files and settings are shared between both desktops.</p>' +
+      '<h2>Windows 98</h2>' +
+      '<ul>' +
+      '<li>Teal desktop, grey window chrome and the classic single-column Start menu.</li>' +
+      '<li>Original 98-style icon set, BIOS text, boot splash, logon and "safe to turn off" screen.</li>' +
+      '<li>Themes: Windows Classic, Platinum and Midnight.</li>' +
+      '<li>Shut down, restart, log off or restart in MS-DOS mode.</li>' +
+      '</ul>' +
+      '<h2>Windows XP</h2>' +
+      '<ul>' +
+      '<li>Luna shell with the Bliss-style wallpaper, rounded blue windows and gradient title bars.</li>' +
+      '<li>Two-column XP Start menu with All Programs, My Documents, My Computer, Help and Run.</li>' +
+      '<li>XP boot splash, welcome/login screen, taskbar and Turn Off Computer dialog.</li>' +
+      '<li>Original XP-style icon recreations at a slightly larger desktop size.</li>' +
+      '<li>Themes: Windows XP Blue, Olive Green and Silver.</li>' +
+      '</ul>' +
+      '<p class="hlp-note">Every icon, wallpaper and sound is an original recreation made for this project. No Microsoft icon files or Windows installation files are included.</p>' +
+      '<div class="hlp-actions">' +
+      (Win.isXP
+        ? actionBtn('os-98', 'flag', 'Switch to Windows 98')
+        : actionBtn('os-xp', 'windows', 'Switch to Windows XP')) +
+      actionBtn('appearance', 'monitor', 'Theme settings') +
+      '</div>';
+  }
+
   function pageAbout() {
     const si = Win.sysinfo ? Win.sysinfo() : {};
     return '<div class="hlp-hero">' +
       '<span class="hlp-flag">' + Win.icon('flag', 64) + '</span>' +
       '<div><h1>About WINemulator</h1><p>A tribute to the desktop that made computers feel friendly.</p></div>' +
       '</div>' +
-      '<p class="hlp-lead">WINemulator is a self-contained Windows 98-style environment written in plain HTML, CSS and JavaScript. It is a simulation, not a real operating system, and it is not affiliated with Microsoft.</p>' +
+      '<p class="hlp-lead">WINemulator is a self-contained Windows 98 and Windows XP desktop environment written in plain HTML, CSS and JavaScript. It is a simulation, not a real operating system, and it is not affiliated with Microsoft.</p>' +
       '<h2>Version</h2>' +
       '<table class="hlp-kbd"><tr><th>Item</th><th>Value</th></tr>' +
-      '<tr><td>Edition</td><td>WINemulator 98, Second Edition (Web)</td></tr>' +
+      '<tr><td>Edition</td><td>WINemulator ' + (Win.isXP ? 'XP Professional' : '98 Second Edition') + ' (Web)</td></tr>' +
       '<tr><td>Version</td><td>' + U.escapeHtml(Win.version || '1.0.0') + '</td></tr>' +
       '<tr><td>Build</td><td>' + U.escapeHtml(Win.build || 'web-2026') + '</td></tr>' +
       '<tr><td>Engine</td><td>JavaScript, HTML and CSS — no frameworks</td></tr>' +
       '<tr><td>Display</td><td>' + U.escapeHtml(si.viewport || (innerWidth + '×' + innerHeight)) + ' at ' + (si.dpr || 1) + 'x</td></tr>' +
       '<tr><td>Storage</td><td>Browser local storage</td></tr>' +
+      '<tr><td>Virtual PC</td><td>v86 x86 emulator (BSD-2-Clause)</td></tr>' +
       '<tr><td>License</td><td>MIT</td></tr>' +
       '</table>' +
       '<h2>Credits</h2>' +
-      '<p>Every icon is an inline SVG drawn for this project. Every sound is synthesised with the Web Audio API. Wallpapers are CSS gradients. No external libraries, fonts, trackers or CDNs are used.</p>' +
-      '<p>Thanks to the classic Windows interface for the inspiration, and to everyone who ever lost an afternoon to Minesweeper.</p>' +
+      '<p>Every icon is an inline SVG drawn for this project. Every sound is synthesised with the Web Audio API. Wallpapers are CSS gradients or original SVG. No external libraries, fonts, trackers or CDNs are used.</p>' +
+      '<p><b>Virtual PC</b> is powered by <b>v86</b>, an open-source x86 PC emulator written in WebAssembly. Its runtime, BIOS files and licence are vendored under <code>vendor/v86</code> so the machine can run offline. WINemulator bundles no operating-system images.</p>' +
+      '<p>Thanks to the classic Windows interfaces for the inspiration, and to everyone who ever lost an afternoon to Minesweeper.</p>' +
       '<h2>Learn more</h2>' +
       '<div class="hlp-actions">' +
       actionBtn('open-ie', 'ie', 'Open local home page') +
       appBtn('settings', 'info', 'System information', 'about') +
       appBtn('taskmgr', 'taskmgr', 'Task Manager') +
       '</div>' +
-      '<div class="hlp-footnote">Microsoft, Windows and Windows 98 are trademarks of Microsoft Corporation. This project is an independent, non-commercial homage.</div>';
+      '<div class="hlp-footnote">Microsoft, Windows, Windows 98 and Windows XP are trademarks of Microsoft Corporation. This project is an independent, non-commercial homage.</div>';
   }
 
   /* ---------------------------------------------------------------- topics */
@@ -312,6 +399,8 @@
     { id: 'welcome', title: 'Welcome', group: 'Getting started', icon: 'flag', keywords: 'home start first run introduction help', page: pageWelcome },
     { id: 'tour', title: 'Quick Tour', group: 'Getting started', icon: 'computer', keywords: 'guide basics desktop start taskbar windows', page: pageTour },
     { id: 'programs', title: 'Programs', group: 'Using Windows', icon: 'programs', keywords: 'apps notepad paint calculator dos explorer browser minesweeper task manager', page: pagePrograms },
+    { id: 'virtualpc', title: 'Virtual PC', group: 'Using Windows', icon: 'vpc', keywords: 'v86 x86 emulator disk image iso floppy boot dos linux windows xp', page: pageVirtualPC },
+    { id: 'oses', title: 'Windows 98 & XP', group: 'Using Windows', icon: 'windows', keywords: 'switch operating system luna bliss xp 98 selector theme os', page: pageOS },
     { id: 'files', title: 'Files & Storage', group: 'Using Windows', icon: 'folder', keywords: 'drive folders save open recycle bin backup explorer', page: pageFiles },
     { id: 'appearance', title: 'Make It Yours', group: 'Using Windows', icon: 'monitor', keywords: 'theme wallpaper background sound volume settings control panel', page: pageAppearance },
     { id: 'shortcuts', title: 'Keyboard & Mouse', group: 'Reference', icon: 'keyboard', keywords: 'hotkeys keys mouse clicking drag double click', page: pageShortcuts },
@@ -593,6 +682,10 @@
           printTopic();
         } else if (action === 'export') {
           exportTopic();
+        } else if (action === 'os-98') {
+          if (Win.switchOS) Win.switchOS('98');
+        } else if (action === 'os-xp') {
+          if (Win.switchOS) Win.switchOS('xp');
         }
       }
 

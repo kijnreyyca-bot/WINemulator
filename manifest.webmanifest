@@ -1,7 +1,7 @@
 {
-  "name": "WINemulator 98",
+  "name": "WINemulator — Windows 98 & XP in your browser",
   "short_name": "WINemulator",
-  "description": "A fast, offline Windows 98-style desktop that runs entirely in your browser.",
+  "description": "A fast, offline Windows 98 and Windows XP desktop that runs entirely in your browser, with a real x86 Virtual PC.",
   "id": "./",
   "start_url": "./",
   "scope": "./",

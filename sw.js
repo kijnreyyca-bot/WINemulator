@@ -1,16 +1,23 @@
 /* WINemulator — offline cache */
 'use strict';
 
-const CACHE = 'winemulator-v1';
+const CACHE = 'winemulator-v2';
 const CORE = [
   './',
   './index.html',
+  './desktop.html',
   './manifest.webmanifest',
   './assets/favicon.svg',
+  './assets/bliss.svg',
   './css/base.css',
   './css/desktop.css',
   './css/apps.css',
+  './css/xp.css',
+  './css/selector.css',
   './js/icons.js',
+  './js/icons-xp.js',
+  './js/os.js',
+  './js/selector.js',
   './js/util.js',
   './js/sound.js',
   './js/fs.js',
@@ -29,14 +36,27 @@ const CORE = [
   './js/apps/taskmgr.js',
   './js/apps/browser.js',
   './js/apps/help.js',
+  './js/apps/vpc.js',
   './js/main.js'
+];
+const EXTRA = [
+  './vendor/v86/libv86.js',
+  './vendor/v86/v86.wasm',
+  './vendor/v86/seabios.bin',
+  './vendor/v86/vgabios.bin'
 ];
 
 self.addEventListener('install', function (event) {
   event.waitUntil(
-    caches.open(CACHE)
-      .then(function (cache) { return cache.addAll(CORE); })
-      .then(function () { return self.skipWaiting(); })
+    caches.open(CACHE).then(function (cache) {
+      return cache.addAll(CORE).then(function () {
+        return Promise.all(EXTRA.map(function (url) {
+          return fetch(url).then(function (res) {
+            if (res && res.status === 200 && res.type === 'basic') return cache.put(url, res);
+          }).catch(function () { return null; });
+        }));
+      });
+    }).then(function () { return self.skipWaiting(); })
   );
 });
 

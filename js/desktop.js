@@ -71,6 +71,7 @@
         explorer: 'explorer', cmd: 'terminal', command: 'terminal', terminal: 'terminal', dos: 'terminal',
         winmine: 'minesweeper', minesweeper: 'minesweeper', control: 'settings', settings: 'settings',
         taskmgr: 'taskmgr', 'task manager': 'taskmgr', iexplore: 'browser', ie: 'browser', internet: 'browser',
+        vpc: 'vpc', 'virtual pc': 'vpc', virtualpc: 'vpc', virtual: 'vpc',
         help: 'help', welcome: 'help', about: 'help', recycle: 'explorer'
       };
       if (map[lower]) {
@@ -105,6 +106,7 @@
       { id: 'ie', label: 'Internet Explorer', icon: 'ie', open: function () { Win.wm.open('browser'); }, special: true },
       { id: 'notepad', label: 'Notepad', icon: 'notepad', open: function () { Win.wm.open('notepad'); }, special: true },
       { id: 'paint', label: 'Paint', icon: 'paint', open: function () { Win.wm.open('paint'); }, special: true },
+      { id: 'vpc', label: 'Virtual PC', icon: 'vpc', open: function () { Win.wm.open('vpc'); }, special: true },
       { id: 'minesweeper', label: 'Minesweeper', icon: 'mine', open: function () { Win.wm.open('minesweeper'); }, special: true },
       { id: 'recycle', label: 'Recycle Bin', icon: recycleCount ? 'recycle-full' : 'recycle', open: function () { openPath('::recycle'); }, special: true },
       { id: 'help', label: 'Help', icon: 'help', open: function () { Win.wm.open('help'); }, special: true }
@@ -186,7 +188,7 @@
         dataset: { id: ic.id }, tabindex: '0', title: ic.label,
         style: { left: p.x + 'px', top: p.y + 'px' }, role: 'button'
       });
-      node.innerHTML = '<span class="di-icon">' + Win.icon(ic.icon, 34) + '</span><span class="di-label"></span>';
+      node.innerHTML = '<span class="di-icon">' + Win.icon(ic.icon, Win.isXP ? 46 : 34) + '</span><span class="di-label"></span>';
       node.querySelector('.di-label').textContent = ic.label;
       layer.appendChild(node);
       bindIcon(node, ic);
@@ -307,10 +309,17 @@
   /* ------------------------------------------------------------- settings */
   function applySettings() {
     const s = Win.store.all();
-    ['theme-classic', 'theme-platinum', 'theme-midnight'].forEach(function (c) { document.body.classList.remove(c); });
-    document.body.classList.add('theme-' + s.theme);
-    const wall = s.wallpaper || 'teal';
-    ['wall-teal', 'wall-clouds', 'wall-azure', 'wall-sunset', 'wall-graphite', 'wall-grid', 'wall-solid'].forEach(function (c) {
+    ['theme-classic', 'theme-platinum', 'theme-midnight', 'theme-xp', 'theme-olive', 'theme-silver'].forEach(function (c) { document.body.classList.remove(c); });
+    if (Win.isXP) {
+      const xpTheme = ['xp', 'olive', 'silver'].indexOf(s.theme) > -1 ? s.theme : 'xp';
+      document.body.classList.add('theme-' + xpTheme);
+    } else {
+      const theme = ['classic', 'platinum', 'midnight'].indexOf(s.theme) > -1 ? s.theme : 'classic';
+      document.body.classList.add('theme-' + theme);
+    }
+    let wall = s.wallpaper || 'teal';
+    if (Win.isXP && wall === 'teal') wall = 'bliss';
+    ['wall-teal', 'wall-clouds', 'wall-azure', 'wall-sunset', 'wall-graphite', 'wall-grid', 'wall-solid', 'wall-bliss'].forEach(function (c) {
       document.body.classList.remove(c);
     });
     document.body.classList.add('wall-' + wall);
@@ -372,7 +381,10 @@
       },
       { separator: true },
       { label: 'Display Properties', icon: 'monitor', action: function () { Win.wm.open('settings', { tab: 'appearance' }); } },
-      { label: 'Task Manager', icon: 'taskmgr', action: function () { Win.wm.open('taskmgr'); } }
+      { label: 'Task Manager', icon: 'taskmgr', action: function () { Win.wm.open('taskmgr'); } },
+      { separator: true },
+      { label: Win.isXP ? 'Switch to Windows 98' : 'Switch to Windows XP', icon: 'windows',
+        action: function () { if (Win.showOSChooser) Win.showOSChooser(); } }
     ], x, y);
   }
 

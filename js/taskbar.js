@@ -10,7 +10,7 @@
 
   const APPS = {
     notepad: 'Notepad', paint: 'Paint', calc: 'Calculator', terminal: 'MS-DOS Prompt',
-    explorer: 'Windows Explorer', browser: 'Internet Explorer', minesweeper: 'Minesweeper',
+    explorer: 'Windows Explorer', browser: 'Internet Explorer', firefox: 'Mozilla Firefox', minesweeper: 'Minesweeper',
     settings: 'Control Panel', taskmgr: 'Task Manager', help: 'Help', recycle: 'Recycle Bin',
     vpc: 'Virtual PC'
   };
@@ -111,6 +111,7 @@
       { label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } },
       { separator: true },
       { label: 'Internet Explorer', icon: 'ie', action: function () { Win.wm.open('browser'); } },
+      { label: 'Mozilla Firefox', icon: 'firefox', action: function () { Win.wm.open('firefox'); } },
       { label: 'Windows Explorer', icon: 'folder', action: function () { Win.wm.open('explorer', { path: 'C:\\' }); } },
       { label: 'Virtual PC', icon: 'vpc', action: function () { Win.wm.open('vpc'); } },
       { label: 'Control Panel', icon: 'settings', action: function () { Win.wm.open('settings'); } },
@@ -157,6 +158,7 @@
       { label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } },
       { separator: true },
       { label: 'Internet Explorer', icon: 'ie', action: function () { Win.wm.open('browser'); } },
+      { label: 'Mozilla Firefox', icon: 'firefox', action: function () { Win.wm.open('firefox'); } },
       { label: 'Windows Explorer', icon: 'folder', action: function () { Win.wm.open('explorer', { path: 'C:\\' }); } },
       { label: 'Virtual PC', icon: 'vpc', action: function () { Win.wm.open('vpc'); } },
       { label: 'Control Panel', icon: 'settings', action: function () { Win.wm.open('settings'); } },
@@ -184,6 +186,7 @@
     startEl.appendChild(bodyEl);
 
     left.appendChild(startItem({ label: 'Internet Explorer', icon: 'ie', action: function () { Win.wm.open('browser'); } }));
+    left.appendChild(startItem({ label: 'Mozilla Firefox', icon: 'firefox', action: function () { Win.wm.open('firefox'); } }));
     left.appendChild(startItem({ label: 'E-mail', icon: 'mail', action: function () { Win.wm.open('browser', { url: 'winemulator://home' }); } }));
     left.appendChild(el('div', { class: 'xp-sm-sep' }));
     left.appendChild(startItem({ label: 'Notepad', icon: 'notepad', action: function () { Win.wm.open('notepad'); } }));

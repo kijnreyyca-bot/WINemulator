@@ -104,6 +104,7 @@
       appCard('terminal', 'terminal', 'MS-DOS Prompt', 'A working command line for the virtual C: drive.') +
       appCard('explorer', 'folder', 'Windows Explorer', 'Browse, organize, copy and delete files and folders.') +
       appCard('browser', 'ie', 'Internet Explorer', 'A retro browser with a small local web.') +
+      appCard('firefox', 'firefox', 'Mozilla Firefox', 'A second browser shell that opens real web pages.') +
       appCard('minesweeper', 'mine', 'Minesweeper', 'The classic puzzle. Right-click plants a flag.') +
       appCard('settings', 'settings', 'Control Panel', 'Appearance, wallpaper, sounds, performance and system tools.') +
       appCard('taskmgr', 'taskmgr', 'Task Manager', 'See running programs and end unresponsive tasks.') +

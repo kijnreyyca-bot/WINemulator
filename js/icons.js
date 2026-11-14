@@ -93,6 +93,8 @@ window.Win = window.Win || {};
   DATA.start = DATA.flag;
   DATA['folder-new'] = DATA.folder;
   DATA.pause = '<rect x="8" y="7" width="5" height="18" rx="1.2" fill="#2f6fc0" stroke="#16406f"/><rect x="19" y="7" width="5" height="18" rx="1.2" fill="#2f6fc0" stroke="#16406f"/>';
+  DATA.firefox = '<circle cx="16" cy="16" r="13" fill="#3b82f6" stroke="#1e3a8a"/><path d="M16 3c-3.2 0-6.2 1.6-8 4.2 2.4-.6 5.2-.2 7.4 1.4-1.6-.2-3.4.4-4.6 1.8 2.6-.8 5.6.2 7 2.8-1.4-.6-3.2-.4-4.4.6 2.2 0 4.4 1.4 5 3.8-.8-.8-2-.8-3 0 1.6.4 3 2 3.2 4 .4-1.2.2-2.6-.6-3.6 1.8 1.4 2.4 4 1.4 6.2-.8-1.6-2.4-2.6-4-2.6 2 .8 3 3 3 5.2-1.2-1.8-3.2-2.6-5.2-2.4 1.6 1.2 2 3.4.8 5.2-1.6-2-4-2.6-6.2-1.8 2 .6 3.4 2.4 3.4 4.6-1.6-1.6-4-2-6-.8" fill="#f97316" stroke="#9a3412" stroke-width=".6"/>' +
+    '<ellipse cx="16" cy="16" rx="6" ry="6" fill="#dbeafe" opacity=".35"/>';
   DATA.vpc = '<rect x="2" y="4" width="21" height="16" rx="1" fill="#c8c8c8" stroke="#111"/><rect x="4" y="6" width="17" height="11" fill="#0a3d78"/><rect x="5" y="7" width="15" height="9" fill="#2a6db5"/><path d="M6 8h7v2H6z" fill="#8fc0ea" opacity=".7"/><rect x="9" y="20" width="7" height="2" fill="#9c9c9c" stroke="#111"/><rect x="5" y="22" width="15" height="2" fill="#c8c8c8" stroke="#111"/><rect x="12" y="13" width="16" height="12" rx="1" fill="#e8eef7" stroke="#16406f"/><rect x="13.5" y="14.5" width="13" height="7" fill="#2f6fc0"/><path d="M14.5 20 17 17l2 2.2 1.6-1.4 2.4 2.6z" fill="#7fd06b"/><circle cx="24" cy="16.6" r="1" fill="#ffe066"/><rect x="14" y="22.4" width="8" height="1.4" fill="#c9d4e2"/>';
 
 

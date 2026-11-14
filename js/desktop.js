@@ -72,6 +72,7 @@
         winmine: 'minesweeper', minesweeper: 'minesweeper', control: 'settings', settings: 'settings',
         taskmgr: 'taskmgr', 'task manager': 'taskmgr', iexplore: 'browser', ie: 'browser', internet: 'browser',
         vpc: 'vpc', 'virtual pc': 'vpc', virtualpc: 'vpc', virtual: 'vpc',
+        firefox: 'firefox', mozilla: 'firefox', moz: 'firefox',
         help: 'help', welcome: 'help', about: 'help', recycle: 'explorer'
       };
       if (map[lower]) {
@@ -104,6 +105,7 @@
       { id: 'computer', label: 'My Computer', icon: 'computer', open: function () { openPath('::computer'); }, special: true },
       { id: 'documents', label: 'My Documents', icon: 'documents', open: function () { openPath('C:\\My Documents'); }, special: true },
       { id: 'ie', label: 'Internet Explorer', icon: 'ie', open: function () { Win.wm.open('browser'); }, special: true },
+      { id: 'firefox', label: 'Mozilla Firefox', icon: 'firefox', open: function () { Win.wm.open('firefox'); }, special: true },
       { id: 'notepad', label: 'Notepad', icon: 'notepad', open: function () { Win.wm.open('notepad'); }, special: true },
       { id: 'paint', label: 'Paint', icon: 'paint', open: function () { Win.wm.open('paint'); }, special: true },
       { id: 'vpc', label: 'Virtual PC', icon: 'vpc', open: function () { Win.wm.open('vpc'); }, special: true },

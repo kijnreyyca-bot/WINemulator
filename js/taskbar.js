@@ -39,7 +39,7 @@
   }
 
   function startItem(opts) {
-    const item = el('div', { class: 'sm-item' + (Win.isXP ? ' xp-sm-item' : '') + (opts.disabled ? ' disabled' : ''), role: 'menuitem', tabindex: '0' });
+    const item = el('div', { class: 'sm-item' + (Win.isXP ? ' xp-sm-item' : '') + (Win.isSeven ? ' w7-sm-item' : '') + (opts.disabled ? ' disabled' : ''), role: 'menuitem', tabindex: '0' });
     item.innerHTML = '<span class="sm-icon">' + (opts.icon ? Win.icon(opts.icon, Win.isXP ? 26 : 24) : '') + '</span>' +
       '<span class="sm-label"></span><span class="sm-arrow">' + (opts.sub ? '▸' : '') + '</span>';
     item.querySelector('.sm-label').textContent = opts.label;
@@ -222,9 +222,97 @@
     startEl.appendChild(foot);
   }
 
+  function buildStartSeven() {
+    startEl.classList.add('w7-start');
+    startEl.innerHTML = '';
+
+    const user = (Win.store.get('lastUser') || 'User');
+    const head = el('div', { class: 'w7-sm-head' });
+    head.innerHTML = '<span class="w7-sm-avatar">' + Win.icon('user', 34) + '</span>' +
+      '<span class="w7-sm-searchwrap"><input class="w7-sm-search field" type="search" placeholder="Search programs and files" aria-label="Search"></span>';
+    head.querySelector('.w7-sm-avatar').insertAdjacentHTML('afterend', '<span class="w7-sm-user"><b></b></span>');
+    head.querySelector('b').textContent = user;
+    startEl.appendChild(head);
+
+    const bodyEl = el('div', { class: 'w7-sm-body' });
+    const left = el('div', { class: 'w7-sm-left' });
+    const right = el('div', { class: 'w7-sm-right' });
+    bodyEl.appendChild(left);
+    bodyEl.appendChild(right);
+    startEl.appendChild(bodyEl);
+
+    const search = head.querySelector('.w7-sm-search');
+    const leftItems = [
+      { label: 'Getting Started', icon: 'help', action: function () { Win.wm.open('help', { welcome: true }); } },
+      { label: 'Windows PowerShell', icon: 'powershell', action: function () { Win.wm.open('terminal', { mode: 'ps', cwd: 'C:\\\\Users\\\\User' }); } },
+      { label: 'Command Prompt', icon: 'terminal', action: function () { Win.wm.open('terminal', { mode: 'cmd', cwd: 'C:\\\\Users\\\\User' }); } },
+      { label: 'Notepad', icon: 'notepad', action: function () { Win.wm.open('notepad'); } },
+      { label: 'Paint', icon: 'paint', action: function () { Win.wm.open('paint'); } },
+      { label: 'Calculator', icon: 'calc', action: function () { Win.wm.open('calc'); } },
+      { label: 'Windows Explorer', icon: 'folder', action: function () { Win.wm.open('explorer', { path: 'C:\\\\' }); } },
+      { label: 'Internet Explorer', icon: 'ie', action: function () { Win.wm.open('browser'); } },
+      { label: 'Mozilla Firefox', icon: 'firefox', action: function () { Win.wm.open('firefox'); } },
+      { label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } },
+      { label: 'Virtual PC', icon: 'vpc', action: function () { Win.wm.open('vpc'); } },
+      { label: 'Control Panel', icon: 'settings', action: function () { Win.wm.open('settings'); } },
+      { label: 'Task Manager', icon: 'taskmgr', action: function () { Win.wm.open('taskmgr'); } }
+    ];
+    function renderLeft(filter) {
+      left.innerHTML = '';
+      const q = (filter || '').toLowerCase();
+      const list = q ? leftItems.filter(function (it) { return it.label.toLowerCase().indexOf(q) > -1; }) : leftItems;
+      list.forEach(function (it) { left.appendChild(startItem({ label: it.label, icon: it.icon, action: it.action })); });
+      if (!q) {
+        const all = startItem({ label: 'All Programs', icon: 'programs', sub: allProgramsSub });
+        all.classList.add('w7-all');
+        left.appendChild(all);
+      }
+      if (!list.length) left.appendChild(el('div', { class: 'w7-sm-empty', text: 'No programs match your search.' }));
+    }
+    renderLeft('');
+    search.addEventListener('input', function () { renderLeft(search.value); });
+    search.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { const first = left.querySelector('.sm-item'); if (first) first.click(); } });
+
+    right.appendChild(startItem({ label: 'User', icon: 'user', action: function () { Win.wm.open('explorer', { path: 'C:\\\\Users\\\\User' }); } }));
+    right.appendChild(startItem({ label: 'Documents', icon: 'documents', action: function () { Win.wm.open('explorer', { path: 'C:\\\\Users\\\\User\\\\Documents' }); } }));
+    right.appendChild(startItem({ label: 'Pictures', icon: 'image', action: function () { Win.wm.open('explorer', { path: 'C:\\\\Users\\\\User\\\\Pictures' }); } }));
+    right.appendChild(startItem({ label: 'Music', icon: 'sound', action: function () { Win.wm.open('explorer', { path: 'C:\\\\Users\\\\User\\\\Music' }); } }));
+    right.appendChild(startItem({ label: 'Computer', icon: 'computer', action: function () { Win.wm.open('explorer', { path: '::computer' }); } }));
+    right.appendChild(el('div', { class: 'xp-sm-sep' }));
+    right.appendChild(startItem({ label: 'Control Panel', icon: 'settings', action: function () { Win.wm.open('settings'); } }));
+    right.appendChild(startItem({ label: 'Devices and Printers', icon: 'print', action: function () { Win.ui.toast('Devices and Printers is not available in this simulation.', 'info', 2200); } }));
+    right.appendChild(startItem({ label: 'Default Programs', icon: 'programs', action: function () { Win.ui.toast('Default Programs is not available in this simulation.', 'info', 2200); } }));
+    right.appendChild(startItem({ label: 'Help and Support', icon: 'help', action: function () { Win.wm.open('help'); } }));
+    right.appendChild(el('div', { class: 'xp-sm-sep' }));
+    right.appendChild(startItem({ label: 'Switch operating system...', icon: 'windows', action: function () { if (Win.showOSChooser) Win.showOSChooser(); } }));
+
+    const foot = el('div', { class: 'w7-sm-footer' });
+    const offBtn = el('button', { class: 'w7-sm-shutdown', type: 'button', html: Win.icon('shutdown', 20) + '<span>Shut down</span>' });
+    offBtn.addEventListener('click', function (ev) { ev.stopPropagation(); closeStart(); shutdownDialog(); });
+    const arrow = el('button', { class: 'w7-sm-shutdown-arrow', type: 'button', html: '&#9650;', title: 'More options' });
+    arrow.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      Win.ui.menu([
+        { label: 'Switch user', icon: 'user', action: function () { if (Win.boot) Win.boot.logoff(); } },
+        { label: 'Log off', icon: 'logoff', action: function () { if (Win.boot) Win.boot.logoff(); } },
+        { separator: true },
+        { label: 'Lock', icon: 'lock', action: function () { if (Win.boot) Win.boot.logoff(); } },
+        { label: 'Restart', icon: 'restart', action: function () { if (Win.boot) Win.boot.power('restart'); } },
+        { label: 'Sleep', icon: 'pause', action: function () { if (Win.boot) Win.boot.power('shutdown'); } },
+        { label: 'Shut down', icon: 'shutdown', action: function () { if (Win.boot) Win.boot.power('shutdown'); } }
+      ], arrow.getBoundingClientRect().left, arrow.getBoundingClientRect().top - 150);
+    });
+    foot.appendChild(offBtn);
+    foot.appendChild(arrow);
+    startEl.appendChild(foot);
+
+    setTimeout(function () { if (search) search.focus(); }, 60);
+  }
+
   function buildStart() {
     startEl.innerHTML = '';
-    startEl.classList.remove('xp-start');
+    startEl.classList.remove('xp-start', 'w7-start');
+    if (Win.isSeven) return buildStartSeven();
     if (Win.isXP) return buildStartXP();
     startEl.appendChild(el('div', { class: 'sm-banner', html: '<div class="sm-banner-inner"><span class="sm-b1">WIN</span><span class="sm-b2">emulator</span><span class="sm-b3">98</span></div>' }));
     const list = el('div', { class: 'sm-list' });
@@ -502,9 +590,15 @@
     tasksEl = document.getElementById('tasks');
     quickEl = document.getElementById('quicklaunch');
     clockEl = document.getElementById('tray-clock');
-    startBtn.querySelector('#start-icon').innerHTML = Win.icon('flag', Win.isXP ? 22 : 20);
-    const startLabel = startBtn.querySelector('.start-label');
-    if (startLabel) startLabel.textContent = Win.isXP ? 'start' : 'Start';
+    if (Win.isSeven) {
+      startBtn.querySelector('#start-icon').innerHTML = Win.icon('orb', 26);
+      const startLabel = startBtn.querySelector('.start-label');
+      if (startLabel) startLabel.textContent = '';
+    } else {
+      startBtn.querySelector('#start-icon').innerHTML = Win.icon('flag', Win.isXP ? 22 : 20);
+      const startLabel = startBtn.querySelector('.start-label');
+      if (startLabel) startLabel.textContent = Win.isXP ? 'start' : 'Start';
+    }
     document.getElementById('tray-volume').innerHTML = Win.icon('volume', 16);
     document.getElementById('tray-network').innerHTML = Win.icon('network', 16);
     buildQuick();

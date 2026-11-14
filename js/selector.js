@@ -12,7 +12,7 @@
       card.classList.add('last-used');
     }
     card.addEventListener('click', function () {
-      const os = card.dataset.os === 'xp' ? 'xp' : '98';
+      const os = card.dataset.os === '7' ? '7' : card.dataset.os === 'xp' ? 'xp' : '98';
       try { localStorage.setItem('winemulator.os', os); } catch (e) {}
     });
     card.addEventListener('keydown', function (ev) {

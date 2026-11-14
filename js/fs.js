@@ -9,7 +9,7 @@
   let rev = 0;
 
   const INVALID = /[<>:"/\\|?*\x00-\x1f]/;
-  const TEXT_EXT = ['txt', 'log', 'md', 'bat', 'ini', 'sys', 'cfg', 'csv', 'json', 'js', 'css', 'xml', 'yml', 'yaml', 'html', 'htm'];
+  const TEXT_EXT = ['txt', 'log', 'md', 'bat', 'cmd', 'ps1', 'py', 'ini', 'sys', 'cfg', 'csv', 'json', 'js', 'css', 'xml', 'yml', 'yaml', 'html', 'htm', 'reg', 'inf', 'vbs', 'wsf'];
   const IMAGE_EXT = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg'];
 
   function now() { return Date.now(); }
@@ -116,8 +116,12 @@
     if (entry.type === 'dir') return 'File Folder';
     if (entry.kind === 'image') return (entry.ext || 'image').toUpperCase() + ' Image';
     if (entry.ext === 'txt') return 'Text Document';
-    if (entry.ext === 'bat') return 'MS-DOS Batch File';
-    if (entry.ext === 'ini' || entry.ext === 'sys') return 'Configuration File';
+    if (entry.ext === 'bat' || entry.ext === 'cmd') return 'Windows Command Script';
+    if (entry.ext === 'ps1') return 'Windows PowerShell Script';
+    if (entry.ext === 'py') return 'Python File';
+    if (entry.ext === 'reg') return 'Registry File';
+    if (entry.ext === 'vbs') return 'VBScript File';
+    if (entry.ext === 'ini' || entry.ext === 'sys' || entry.ext === 'inf') return 'Configuration File';
     return 'File';
   }
 
@@ -527,6 +531,40 @@
     tree.__v = VERSION;
   }
 
+  function ensureSevenFolders() {
+    if (!Win.isSeven) return;
+    const dirs = [
+      'C:\\Users', 'C:\\Users\\User', 'C:\\Users\\User\\Desktop', 'C:\\Users\\User\\Documents',
+      'C:\\Users\\User\\Downloads', 'C:\\Users\\User\\Pictures', 'C:\\Users\\User\\Music',
+      'C:\\Users\\User\\Videos', 'C:\\Users\\User\\Favorites', 'C:\\Users\\User\\AppData',
+      'C:\\Users\\User\\AppData\\Local', 'C:\\Users\\User\\AppData\\Local\\Temp',
+      'C:\\Users\\Public', 'C:\\Users\\Public\\Desktop', 'C:\\Users\\Public\\Documents',
+      'C:\\Windows\\Temp', 'C:\\Windows\\Fonts',
+      'C:\\Windows\\System32', 'C:\\Windows\\System32\\drivers', 'C:\\Windows\\System32\\drivers\\etc',
+      'C:\\ProgramData'
+    ];
+    dirs.forEach(function (p) {
+      try { Win.fs.mkdir(p, { parents: true, silent: true }); } catch (e) {}
+    });
+    const sys32Files = ['cmd.exe', 'powershell.exe', 'notepad.exe', 'explorer.exe', 'calc.exe', 'taskmgr.exe', 'regedit.exe', 'msconfig.exe', 'mmc.exe', 'mspaint.exe'];
+    sys32Files.forEach(function (name) {
+      const p = 'C:\\Windows\\System32\\' + name;
+      if (!Win.fs.exists(p)) {
+        try { Win.fs.write(p, '', { kind: 'binary', app: null, silent: true }); } catch (e) {}
+      }
+    });
+    const hostsPath = 'C:\\Windows\\System32\\drivers\\etc\\hosts';
+    if (!Win.fs.exists(hostsPath)) {
+      try { Win.fs.write(hostsPath, '127.0.0.1\tlocalhost\r\n::1\tlocalhost\r\n', { kind: 'text', app: null, silent: true }); } catch (e) {}
+    }
+    const welcomePath = 'C:\\Users\\User\\Documents\\Welcome.txt';
+    if (!Win.fs.exists(welcomePath)) {
+      try {
+        Win.fs.write(welcomePath, 'Welcome to Windows 7!\r\n\r\nThis is your personal folder. Save files here and they will be available from any program.\r\n', { kind: 'text', app: 'notepad', silent: true });
+      } catch (e) {}
+    }
+  }
+
   function init() {
     let ok = false;
     try {
@@ -542,6 +580,7 @@
       recycle = rr ? JSON.parse(rr) : [];
       if (!Array.isArray(recycle)) recycle = [];
     } catch (e) { recycle = []; }
+    ensureSevenFolders();
     persist();
     document.dispatchEvent(new CustomEvent('fs:change', { detail: { rev: rev } }));
   }

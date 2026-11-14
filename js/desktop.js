@@ -101,9 +101,23 @@
   /* ---------------------------------------------------------------- icons */
   function builtins() {
     const recycleCount = Win.fs.recycleCount();
+    if (Win.isSeven) {
+      return [
+        { id: 'computer', label: 'Computer', icon: 'computer', open: function () { openPath('::computer'); }, special: true },
+        { id: 'user', label: Win.store.get('lastUser') || 'User', icon: 'user', open: function () { openPath('C:\\Users\\User'); }, special: true },
+        { id: 'documents', label: 'Documents', icon: 'documents', open: function () { openPath('C:\\Users\\User\\Documents'); }, special: true },
+        { id: 'ie', label: 'Internet Explorer', icon: 'ie', open: function () { Win.wm.open('browser'); }, special: true },
+        { id: 'firefox', label: 'Mozilla Firefox', icon: 'firefox', open: function () { Win.wm.open('firefox'); }, special: true },
+        { id: 'notepad', label: 'Notepad', icon: 'notepad', open: function () { Win.wm.open('notepad'); }, special: true },
+        { id: 'paint', label: 'Paint', icon: 'paint', open: function () { Win.wm.open('paint'); }, special: true },
+        { id: 'minesweeper', label: 'Minesweeper', icon: 'mine', open: function () { Win.wm.open('minesweeper'); }, special: true },
+        { id: 'vpc', label: 'Virtual PC', icon: 'vpc', open: function () { Win.wm.open('vpc'); }, special: true },
+        { id: 'recycle', label: 'Recycle Bin', icon: recycleCount ? 'recycle-full' : 'recycle', open: function () { openPath('::recycle'); }, special: true }
+      ];
+    }
     return [
-      { id: 'computer', label: 'My Computer', icon: 'computer', open: function () { openPath('::computer'); }, special: true },
-      { id: 'documents', label: 'My Documents', icon: 'documents', open: function () { openPath('C:\\My Documents'); }, special: true },
+      { id: 'computer', label: Win.isXP ? 'My Computer' : 'My Computer', icon: 'computer', open: function () { openPath('::computer'); }, special: true },
+      { id: 'documents', label: Win.isXP ? 'My Documents' : 'My Documents', icon: 'documents', open: function () { openPath(Win.isXP ? 'C:\\My Documents' : 'C:\\My Documents'); }, special: true },
       { id: 'ie', label: 'Internet Explorer', icon: 'ie', open: function () { Win.wm.open('browser'); }, special: true },
       { id: 'firefox', label: 'Mozilla Firefox', icon: 'firefox', open: function () { Win.wm.open('firefox'); }, special: true },
       { id: 'notepad', label: 'Notepad', icon: 'notepad', open: function () { Win.wm.open('notepad'); }, special: true },
@@ -115,7 +129,10 @@
     ];
   }
 
-  function deskPath() { return 'C:\\Windows\\Desktop'; }
+  function deskPath() {
+    if (Win.isSeven) return 'C:\\Users\\User\\Desktop';
+    return 'C:\\Windows\\Desktop';
+  }
 
   function collectIcons() {
     const out = builtins();
@@ -284,6 +301,7 @@
       const items = [{ label: 'Open', icon: 'open', action: function () { try { ic.open(); } catch (e) { Win.ui.error(e.message, 'Error'); } } }];
       if (ic.path) {
         items.push({ separator: true });
+        items.push({ label: 'Open with...', icon: 'open', action: function () { openWithDialog(ic.path); } });
         items.push({ label: 'Rename', icon: 'textfile', action: function () { renameItem(ic); } });
         items.push({ label: 'Delete', icon: 'delete', action: function () { deleteItem(ic); } });
       }
@@ -300,6 +318,36 @@
       catch (e) { Win.ui.error(e.message, 'Rename'); }
     });
   }
+
+
+  function openWithDialog(path) {
+    const apps = [
+      { id: 'notepad', label: 'Notepad', icon: 'notepad' },
+      { id: 'paint', label: 'Paint', icon: 'paint' },
+      { id: 'browser', label: 'Internet Explorer', icon: 'ie' },
+      { id: 'firefox', label: 'Mozilla Firefox', icon: 'firefox' },
+      { id: 'terminal', label: 'Command Prompt', icon: 'terminal' }
+    ];
+    Win.ui.dialog({
+      title: 'Open With', icon: 'open', width: 360,
+      html: '<div class="openwith-list">' + apps.map(function (a) {
+        return '<button class="btn openwith-btn" type="button" data-app="' + a.id + '">' + Win.icon(a.icon, 18) + ' ' + a.label + '</button>';
+      }).join('') + '</div>',
+      onShow: function (win) {
+        win.querySelectorAll('.openwith-btn').forEach(function (b) {
+          b.addEventListener('click', function () {
+            const app = b.dataset.app;
+            if (app === 'paint' || app === 'notepad') Win.wm.open(app, { path: Win.fs.norm(path) });
+            else if (app === 'browser') Win.wm.open('browser', { url: 'file://' + path });
+            else Win.wm.open(app);
+            try { win.dispatchEvent(new CustomEvent('winemulator:close')); } catch (e) {}
+          });
+        });
+      },
+      buttons: [{ label: 'Cancel', value: false, cancel: true }]
+    });
+  }
+
   function deleteItem(ic) {
     Win.ui.confirm('Are you sure you want to send "' + ic.label + '" to the Recycle Bin?', 'Confirm Delete', 'warning').then(function (yes) {
       if (!yes) return;
@@ -311,8 +359,11 @@
   /* ------------------------------------------------------------- settings */
   function applySettings() {
     const s = Win.store.all();
-    ['theme-classic', 'theme-platinum', 'theme-midnight', 'theme-xp', 'theme-olive', 'theme-silver'].forEach(function (c) { document.body.classList.remove(c); });
-    if (Win.isXP) {
+    ['theme-classic', 'theme-platinum', 'theme-midnight', 'theme-xp', 'theme-olive', 'theme-silver', 'theme-aero', 'theme-frost', 'theme-dusk'].forEach(function (c) { document.body.classList.remove(c); });
+    if (Win.isSeven) {
+      const t = ['aero', 'frost', 'dusk'].indexOf(s.theme) > -1 ? s.theme : 'aero';
+      document.body.classList.add('theme-' + t);
+    } else if (Win.isXP) {
       const xpTheme = ['xp', 'olive', 'silver'].indexOf(s.theme) > -1 ? s.theme : 'xp';
       document.body.classList.add('theme-' + xpTheme);
     } else {
@@ -321,9 +372,12 @@
     }
     let wall = s.wallpaper || 'teal';
     if (Win.isXP && wall === 'teal') wall = 'bliss';
-    ['wall-teal', 'wall-clouds', 'wall-azure', 'wall-sunset', 'wall-graphite', 'wall-grid', 'wall-solid', 'wall-bliss'].forEach(function (c) {
+    ['wall-teal', 'wall-clouds', 'wall-azure', 'wall-sunset', 'wall-graphite', 'wall-grid', 'wall-solid', 'wall-bliss', 'wall-harmony'].forEach(function (c) {
       document.body.classList.remove(c);
     });
+    if (Win.isSeven && (wall === 'teal' || wall === 'bliss')) wall = 'harmony';
+    if (Win.isXP && (wall === 'teal' || wall === 'harmony')) wall = 'bliss';
+    if (!Win.isXP && !Win.isSeven && (wall === 'bliss' || wall === 'harmony')) wall = 'teal';
     document.body.classList.add('wall-' + wall);
     document.body.style.setProperty('--solid-wall', s.solid || '#008080');
     document.body.classList.toggle('no-anim', s.animations === false);
@@ -385,7 +439,7 @@
       { label: 'Display Properties', icon: 'monitor', action: function () { Win.wm.open('settings', { tab: 'appearance' }); } },
       { label: 'Task Manager', icon: 'taskmgr', action: function () { Win.wm.open('taskmgr'); } },
       { separator: true },
-      { label: Win.isXP ? 'Switch to Windows 98' : 'Switch to Windows XP', icon: 'windows',
+      { label: 'Switch operating system...', icon: 'windows',
         action: function () { if (Win.showOSChooser) Win.showOSChooser(); } }
     ], x, y);
   }
@@ -400,24 +454,24 @@
     }
     if (modal) return;
     const typing = U.isTyping(ev.target);
-    if (ev.ctrlKey && ev.key === 'Escape') { ev.preventDefault(); if (Win.taskbar) Win.taskbar.toggleStart(); return; }
-    if (ev.altKey && ev.key === 'F4') { ev.preventDefault(); const w = Win.wm.active(); if (w) Win.wm.close(w); return; }
-    if (ev.ctrlKey && ev.shiftKey && ev.key === 'Escape') { ev.preventDefault(); Win.wm.open('taskmgr'); return; }
-    if (ev.key === 'F1') { ev.preventDefault(); Win.wm.open('help'); return; }
-    if (ev.metaKey && !typing) {
+    if (ev.ctrlKey && ev.altKey && ev.key.toLowerCase() === 's') { ev.preventDefault(); if (Win.taskbar) Win.taskbar.toggleStart(); return; }
+    if (ev.ctrlKey && ev.altKey && ev.key.toLowerCase() === 'w') { ev.preventDefault(); const w = Win.wm.active(); if (w) Win.wm.close(w); return; }
+    if (ev.ctrlKey && ev.altKey && ev.key.toLowerCase() === 't') { ev.preventDefault(); Win.wm.open('taskmgr'); return; }
+    if (ev.ctrlKey && ev.altKey && ev.key.toLowerCase() === 'h') { ev.preventDefault(); Win.wm.open('help'); return; }
+    if (ev.ctrlKey && ev.altKey && !typing) {
       const k = ev.key.toLowerCase();
       if (k === 'e') { ev.preventDefault(); Win.wm.open('explorer', { path: 'C:\\' }); return; }
       if (k === 'r') { ev.preventDefault(); Win.ui.runDialog(); return; }
       if (k === 'd') { ev.preventDefault(); if (Win.taskbar) Win.taskbar.showDesktop(); return; }
     }
     if (typing) return;
-    if (ev.key === 'F5') { ev.preventDefault(); renderIcons(); return; }
+    if (ev.ctrlKey && ev.altKey && ev.key.toLowerCase() === 'f') { ev.preventDefault(); renderIcons(); return; }
     if (ev.key === 'Delete' && selected.size) {
       const id = Array.from(selected)[0];
       const ic = collectIcons().find(function (i) { return i.id === id; });
       if (ic && ic.path) { ev.preventDefault(); deleteItem(ic); }
     }
-    if (ev.key === 'F2' && selected.size === 1) {
+    if (ev.ctrlKey && ev.altKey && ev.key.toLowerCase() === 'n' && selected.size === 1) {
       const id = Array.from(selected)[0];
       const ic = collectIcons().find(function (i) { return i.id === id; });
       if (ic && ic.path) { ev.preventDefault(); renameItem(ic); }

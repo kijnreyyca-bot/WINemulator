@@ -59,7 +59,7 @@ body {
   color: #b7c9e6; border: 1px solid var(--line); background: rgba(20, 35, 62, .55);
   padding: 5px 9px; border-radius: 999px;
 }
-.os-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.os-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .os-card {
   position: relative; display: flex; flex-direction: column;
   background: linear-gradient(180deg, var(--card-hi), var(--card));
@@ -188,6 +188,49 @@ body {
 .sel-foot a { color: #8fa8cc; text-decoration: none; }
 .sel-foot a:hover { color: #cfe2ff; text-decoration: underline; }
 
+/* Windows 7 preview */
+.pv-desktop-7 {
+  background: linear-gradient(160deg, #0a2a4d 0%, #1b5f8f 40%, #0c4770 100%);
+  overflow: hidden;
+}
+.pv-aurora { position: absolute; inset: 0; overflow: hidden; }
+.pv-ribbon {
+  position: absolute; height: 62px; border-radius: 999px; filter: blur(14px); opacity: .78;
+}
+.pv-ribbon.r1 { left: -6%; top: 42%; width: 78%; background: linear-gradient(90deg, transparent, #5ff3e1, #48c8ff, transparent); transform: rotate(-6deg); }
+.pv-ribbon.r2 { right: -10%; top: 24%; width: 72%; height: 34px; background: linear-gradient(90deg, transparent, #a9f5ff, #63f0d1, transparent); transform: rotate(12deg); opacity: .6; }
+.pv-ribbon.r3 { left: 12%; top: 66%; width: 66%; height: 46px; background: linear-gradient(90deg, transparent, #7d8dff, #7ff1ff, transparent); transform: rotate(-14deg); opacity: .5; }
+.pv-glow { position: absolute; border-radius: 50%; filter: blur(28px); }
+.pv-glow.g1 { width: 240px; height: 240px; right: 18px; top: -30px; background: rgba(143, 242, 255, .45); }
+.pv-glow.g2 { width: 300px; height: 180px; left: -40px; bottom: -60px; background: rgba(31, 125, 255, .3); }
+.pv-desktop-7 .pv-icons .pv-icon em { color: #f4faff; text-shadow: 1px 1px 2px rgba(0,0,0,.7); }
+.pv-monitor.win7 { background: linear-gradient(145deg, #eef5ff, #8fb6d8); border: 1px solid #3a5f8a; border-radius: 3px; box-shadow: inset 0 0 0 2px #2f9fe0, 0 1px 2px rgba(0,0,0,.4); }
+.pv-monitor.win7::after { background: #9fb3c6; border-color: #3a5f8a; }
+.pv-folder.win7 { background: linear-gradient(180deg, #ffe98f, #e8b21c); border-color: #9a7008; border-radius: 3px; box-shadow: inset 0 1px rgba(255,255,255,.8); }
+.pv-folder.win7::before { background: #e8b21c; border-color: #9a7008; }
+.pv-bin.win7 { background: linear-gradient(180deg, #f4f8ff, #a8bdd8); border-color: #4b658a; border-radius: 4px; box-shadow: inset 0 1px rgba(255,255,255,.9); }
+.pv-window-7 { border: 1px solid rgba(30,70,110,.85); border-radius: 8px 8px 3px 3px; background: rgba(240,245,252,.9); box-shadow: 3px 6px 14px rgba(0,0,0,.4); overflow: hidden; }
+.pv-window-7 .pv-title {
+  height: 18px; display: flex; align-items: center; gap: 3px; padding: 0 4px;
+  background: linear-gradient(180deg, #d8ecfa 0%, #a9d3ee 42%, #7fb6dd 55%, #a8d0e9 100%);
+  border-bottom: 1px solid rgba(30,70,110,.5); color: #10344f; text-shadow: 0 1px 0 rgba(255,255,255,.7);
+}
+.pv-window-7 .pv-title span { flex: 1; font-size: 7.5px; font-weight: 700; }
+.pv-window-7 .pv-title b { width: 9px; height: 8px; border-radius: 3px; background: linear-gradient(180deg, #fff, #dcd8cb); border: 1px solid rgba(30,70,110,.5); }
+.pv-window-7 .pv-title b.x { background: linear-gradient(180deg, #ff9d7a, #d63a1b); border-color: #8a1a08; }
+.pv-window-7 .pv-body { display: flex; height: 84px; background: rgba(240,245,252,.9); }
+.pv-window-7 .pv-side.win7 { background: linear-gradient(180deg, #d8ecfa, #b9d6ee); border-right: 1px solid #a0bfdc; }
+.pv-window-7 .pv-lines { background: rgba(255,255,255,.9); }
+.pv-window-7 .pv-lines i { background: #b9cde7; }
+.pv-taskbar-7 { height: 24px; background: linear-gradient(180deg, rgba(30,60,95,.55) 0%, rgba(12,32,60,.75) 100%); border-top: 1px solid rgba(130,190,230,.55); backdrop-filter: blur(2px); }
+.pv-orb { width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #7fe0ff, #1e6fb0 45%, #062a4d 100%); border: 1px solid #9fe6ff; box-shadow: 0 0 8px rgba(70,150,220,.8); margin: 0 2px; }
+.pv-task.win7 { background: linear-gradient(180deg, #5a9cf8, #1e52c9); border: 1px solid #0e3b93; border-radius: 3px; }
+.pv-task.win7.alt { background: linear-gradient(180deg, #4a8ce8, #1642b3); }
+.pv-tray.win7 { background: linear-gradient(180deg, rgba(20,40,70,.5), rgba(10,24,46,.7)); border: 1px solid rgba(130,190,230,.4); border-radius: 3px; color: #fff; }
+.os-7 .os-cta { background: linear-gradient(180deg, #2f8fe0, #1b5f9e); border-color: #7fd0ff; box-shadow: 0 6px 16px rgba(20, 80, 180, .35), inset 0 1px rgba(255,255,255,.25); }
+.os-7:hover .os-cta i { transform: translateX(3px); }
+.os-7 .os-list li::before { background: #7fd0ff; box-shadow: 0 0 8px rgba(127,208,255,.8); }
+.os-card.os-7:hover, .os-card.os-7:focus-visible { border-color: rgba(127, 208, 255, .7); }
 @media (max-width: 840px) {
   .selector-shell { width: min(680px, 94vw); }
   .os-grid { grid-template-columns: 1fr; }

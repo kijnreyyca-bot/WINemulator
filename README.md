@@ -1,6 +1,6 @@
-# WINemulator — Windows 98 & XP in your browser
+# WINemulator — Windows 98, XP & 7 in your browser
 
-A fast, self-contained Windows 98 **and** Windows XP desktop that runs entirely in your browser. No installation, no build step, no framework and no server required. Every icon is an original inline SVG, every sound is synthesised with the Web Audio API, and your files live in the browser's local storage.
+A fast, self-contained Windows 98, Windows XP **and** Windows 7 desktop that runs entirely in your browser. No installation, no build step, no framework and no server required. Every icon is an original inline SVG, every sound is synthesised with the Web Audio API, and your files live in the browser's local storage.
 
 **Open `index.html` or visit the GitHub Pages build.** Pick Windows 98 or Windows XP, and the chosen desktop boots in a second or two and keeps working offline.
 

@@ -4,7 +4,7 @@
 window.Win = window.Win || {};
 (function () {
   'use strict';
-  if (!Win.isXP) return;
+  if (!Win.isXP && !Win.isSeven) return;
 
   const XP = {
     flag:

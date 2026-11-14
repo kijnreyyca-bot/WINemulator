@@ -1,7 +1,7 @@
 /* WINemulator — offline cache */
 'use strict';
 
-const CACHE = 'winemulator-v6';
+const CACHE = 'winemulator-v7';
 const CORE = [
   './',
   './index.html',
@@ -9,13 +9,16 @@ const CORE = [
   './manifest.webmanifest',
   './assets/favicon.svg',
   './assets/bliss.svg',
+  './assets/harmony.svg',
   './css/base.css',
   './css/desktop.css',
   './css/apps.css',
   './css/xp.css',
+  './css/win7.css',
   './css/selector.css',
   './js/icons.js',
   './js/icons-xp.js',
+  './js/icons-7.js',
   './js/os.js',
   './js/selector.js',
   './js/util.js',

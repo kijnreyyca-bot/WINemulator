@@ -5,36 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#008080">
   <title>WINemulator — Windows in your browser</title>
-  <meta name="description" content="A fast, offline, no-install Windows 98 and Windows XP desktop environment that runs entirely in your browser. Files, Paint, Minesweeper, MS-DOS, Virtual PC and more.">
+  <meta name="description" content="A fast, offline, no-install Windows 98, Windows XP and Windows 7 desktop environment that runs entirely in your browser. Files, Paint, Minesweeper, CMD, PowerShell, Virtual PC and more.">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
   <meta property="og:title" content="WINemulator">
-  <meta property="og:description" content="A complete Windows-style desktop in your browser. Choose Windows 98 or Windows XP. Boots in seconds, works offline, no installs.">
+  <meta property="og:description" content="A complete Windows-style desktop in your browser. Choose Windows 98, Windows XP or Windows 7. Boots in seconds, works offline, no installs.">
   <meta property="og:type" content="website">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/desktop.css">
   <link rel="stylesheet" href="css/apps.css">
   <link rel="stylesheet" href="css/xp.css">
+  <link rel="stylesheet" href="css/win7.css">
 </head>
 <body class="booting theme-classic wall-teal">
   <script>
     (function () {
       var q = new URLSearchParams(location.search);
       var os = q.get('os');
-      if (os !== '98' && os !== 'xp') {
+      if (os !== '98' && os !== 'xp' && os !== '7') {
         try { os = localStorage.getItem('winemulator.os'); } catch (e) {}
       }
-      if (os !== '98' && os !== 'xp') os = '98';
+      if (os !== '98' && os !== 'xp' && os !== '7') os = '98';
       try { localStorage.setItem('winemulator.os', os); } catch (e) {}
+
+      /* Give each desktop its own default look the first time it is opened. */
+      if (os === '7') {
+        try {
+          var raw = localStorage.getItem('winemulator.settings');
+          var st = raw ? JSON.parse(raw) : {};
+          var changed = false;
+          if (!st.wallpaper || st.wallpaper === 'teal' || st.wallpaper === 'bliss') { st.wallpaper = 'harmony'; changed = true; }
+          if (!st.theme || ['classic', 'platinum', 'midnight', 'xp', 'olive', 'silver'].indexOf(st.theme) > -1) { st.theme = 'aero'; changed = true; }
+          if (changed) localStorage.setItem('winemulator.settings', JSON.stringify(st));
+        } catch (e) {}
+      } else if (os === 'xp') {
+        try {
+          var rawX = localStorage.getItem('winemulator.settings');
+          var stX = rawX ? JSON.parse(rawX) : {};
+          var changedX = false;
+          if (!stX.wallpaper || stX.wallpaper === 'teal' || stX.wallpaper === 'harmony') { stX.wallpaper = 'bliss'; changedX = true; }
+          if (!stX.theme || ['classic', 'platinum', 'midnight', 'aero', 'frost', 'dusk'].indexOf(stX.theme) > -1) { stX.theme = 'xp'; changedX = true; }
+          if (changedX) localStorage.setItem('winemulator.settings', JSON.stringify(stX));
+        } catch (e) {}
+      }
+
       window.WIN_OS = os;
       document.documentElement.setAttribute('data-os', os);
-      document.body.classList.add(os === 'xp' ? 'os-xp' : 'os-98');
+      document.body.classList.add(os === '7' ? 'os-7' : os === 'xp' ? 'os-xp' : 'os-98');
       if (os === 'xp') {
         document.body.classList.remove('theme-classic', 'wall-teal');
         document.body.classList.add('theme-xp', 'wall-bliss');
         var meta = document.querySelector('meta[name="theme-color"]');
         if (meta) meta.setAttribute('content', '#245edb');
         document.title = 'WINemulator XP — Windows in your browser';
+      } else if (os === '7') {
+        document.body.classList.remove('theme-classic', 'wall-teal');
+        document.body.classList.add('theme-aero', 'wall-harmony');
+        var meta7 = document.querySelector('meta[name="theme-color"]');
+        if (meta7) meta7.setAttribute('content', '#0b6d8f');
+        document.title = 'WINemulator 7 — Windows in your browser';
       }
     })();
   </script>
@@ -79,6 +108,7 @@
   <script src="js/icons.js"></script>
   <script src="js/os.js"></script>
   <script src="js/icons-xp.js"></script>
+  <script src="js/icons-7.js"></script>
   <script src="js/util.js"></script>
   <script src="js/sound.js"></script>
   <script src="js/fs.js"></script>

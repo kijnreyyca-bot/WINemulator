@@ -37,7 +37,19 @@
       '</div>';
   }
 
+  function sevenSplashMarkup() {
+    return '<div class="w7-boot-splash">' +
+      '<div class="w7-boot-orb">' + Win.icon('orb', 74) + '</div>' +
+      '<div class="w7-boot-word">Starting Windows</div>' +
+      '<div class="w7-boot-sub">Windows 7 Ultimate &middot; Web Edition</div>' +
+      '<div class="w7-boot-bar"><div class="w7-boot-fill"></div></div>' +
+      '<div class="w7-boot-copy">Copyright &copy; 2009&ndash;2026 WINemulator Project</div>' +
+      '<div class="bs-hint w7-boot-hint"></div>' +
+      '</div>';
+  }
+
   function bootSplash() {
+    if (Win.isSeven) return sevenSplashMarkup();
     return Win.isXP ? xpSplashMarkup() : splashMarkup();
   }
 
@@ -73,7 +85,7 @@
       '  Secondary Master: CD-ROM 32X',
       '  Secondary Slave : None',
       '',
-      Win.isXP ? 'Starting Windows XP...' : 'Starting Windows 98...'
+      Win.isSeven ? 'Starting Windows 7...' : Win.isXP ? 'Starting Windows XP...' : 'Starting Windows 98...'
     ];
     const step = fast() ? 25 : 72;
     lines.forEach(function (line, i) {
@@ -139,7 +151,18 @@
 
   /* --------------------------------------------------------------- logon */
   function loginUI() {
-    if (Win.isXP) {
+    if (Win.isSeven) {
+      loginLayer.innerHTML =
+        '<div class="login-box w7-login-box">' +
+        '<div class="login-brand">' + Win.icon('flag', 34) + '<span class="w7-login-word"><b>Microsoft</b> Windows <em>7</em></span></div>' +
+        '<div class="login-welcome">Welcome</div>' +
+        '<div class="login-sub">To begin, click your user name</div>' +
+        '<button class="login-user" type="button"><span class="lu-pic">' + Win.icon('user', 52) + '</span>' +
+        '<span class="lu-text"><b>User</b><em>Web Edition</em></span><span class="lu-go">➜</span></button>' +
+        '<div class="login-hint">No password is required. Everything stays in your browser.</div>' +
+        '<div class="login-foot"><span>WINemulator 7</span><span>Ultimate</span></div>' +
+        '</div>';
+    } else if (Win.isXP) {
       loginLayer.innerHTML =
         '<div class="login-box xp-login-box">' +
         '<div class="login-brand">' + Win.icon('flag', 34) + '<span class="xp-login-word"><b>Microsoft</b> Windows <em>xp</em></span></div>' +
@@ -217,7 +240,7 @@
     powerLayer.className = 'power-layer safe-off';
     powerLayer.innerHTML =
       '<div class="safe-inner">' +
-      '<div class="safe-text">' + (Win.isXP ? 'Windows has shut down' : 'It&rsquo;s now safe to turn off<br>your computer.') + '</div>' +
+      '<div class="safe-text">' + (Win.isSeven ? 'Windows has shut down' : Win.isXP ? 'Windows has shut down' : 'It&rsquo;s now safe to turn off<br>your computer.') + '</div>' +
       '<div class="safe-sub">WINemulator has shut down. You can close this tab.</div>' +
       '<div class="safe-actions"><button class="btn safe-restart" type="button">' + Win.icon('restart', 16) + ' Restart</button></div>' +
       '<div class="safe-hint">Or press any key to start again.</div>' +

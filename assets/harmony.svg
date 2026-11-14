@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Aurora desktop wallpaper">
+  <defs>
+    <linearGradient id="w7-bg" x1="0" y1="0" x2="0.25" y2="1">
+      <stop offset="0" stop-color="#03192e"/>
+      <stop offset="0.34" stop-color="#073a63"/>
+      <stop offset="0.64" stop-color="#0b6d8f"/>
+      <stop offset="0.84" stop-color="#0a5578"/>
+      <stop offset="1" stop-color="#05243d"/>
+    </linearGradient>
+    <radialGradient id="w7-glow" cx="0.7" cy="0.3" r="0.62">
+      <stop offset="0" stop-color="#8ff2ff" stop-opacity="0.48"/>
+      <stop offset="0.42" stop-color="#38b6e8" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#0a3355" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="w7-rib1" x1="0" y1="0" x2="1" y2="0.4">
+      <stop offset="0" stop-color="#5ff3e1" stop-opacity="0"/>
+      <stop offset="0.22" stop-color="#7ff7f0" stop-opacity="0.5"/>
+      <stop offset="0.54" stop-color="#48c8ff" stop-opacity="0.85"/>
+      <stop offset="0.78" stop-color="#3f8bff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#7b6cff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="w7-rib2" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2d7be0" stop-opacity="0"/>
+      <stop offset="0.3" stop-color="#58c8ff" stop-opacity="0.55"/>
+      <stop offset="0.62" stop-color="#a9f5ff" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#63f0d1" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="w7-rib3" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#9a6bff" stop-opacity="0"/>
+      <stop offset="0.45" stop-color="#7d8dff" stop-opacity="0.4"/>
+      <stop offset="0.7" stop-color="#7ff1ff" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#2fa7ff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="w7-orb" cx="0.35" cy="0.3" r="0.7">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="0.35" stop-color="#bff6ff" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#5bc9ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="w7-vign" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000" stop-opacity="0.22"/>
+      <stop offset="0.35" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.55"/>
+    </linearGradient>
+    <filter id="w7-blur" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="26"/>
+    </filter>
+    <filter id="w7-blur-soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#w7-bg)"/>
+  <rect width="1600" height="900" fill="url(#w7-glow)"/>
+
+  <!-- soft depth haze -->
+  <ellipse cx="1180" cy="250" rx="520" ry="300" fill="#7fe9ff" opacity="0.08" filter="url(#w7-blur)"/>
+  <ellipse cx="320" cy="720" rx="460" ry="260" fill="#1f7dff" opacity="0.12" filter="url(#w7-blur)"/>
+
+  <!-- flowing aurora ribbons -->
+  <g filter="url(#w7-blur-soft)" opacity="0.9">
+    <path d="M-80 620C210 380 420 690 720 520s470-330 1010-170" fill="none" stroke="url(#w7-rib1)" stroke-width="86" stroke-linecap="round"/>
+    <path d="M-60 735C260 520 470 800 790 640s480-300 940-140" fill="none" stroke="url(#w7-rib2)" stroke-width="34" stroke-linecap="round" opacity="0.8"/>
+    <path d="M40 445C320 250 540 480 850 330s440-190 800-70" fill="none" stroke="url(#w7-rib3)" stroke-width="58" stroke-linecap="round" opacity="0.55"/>
+  </g>
+
+  <!-- crisp highlights on the ribbons -->
+  <path d="M-40 604C220 402 430 676 726 508s466-318 986-162" fill="none" stroke="#d8ffff" stroke-width="2.2" opacity="0.5"/>
+  <path d="M-20 714C270 520 486 786 800 628s472-294 930-134" fill="none" stroke="#bff4ff" stroke-width="1.6" opacity="0.35"/>
+
+  <!-- light shafts -->
+  <g opacity="0.18" filter="url(#w7-blur-soft)">
+    <path d="M1020-60 720 900 860 900 1160-60z" fill="#bff9ff"/>
+    <path d="M1220-60 980 900 1070 900 1310-60z" fill="#8fdcff"/>
+    <path d="M880-60 590 900 660 900 950-60z" fill="#d9ffff"/>
+  </g>
+
+  <!-- bokeh motes -->
+  <g fill="url(#w7-orb)">
+    <circle cx="1240" cy="210" r="70" opacity="0.45"/>
+    <circle cx="1370" cy="360" r="32" opacity="0.4"/>
+    <circle cx="1110" cy="440" r="20" opacity="0.5"/>
+    <circle cx="980" cy="170" r="14" opacity="0.55"/>
+    <circle cx="1330" cy="640" r="11" opacity="0.45"/>
+    <circle cx="760" cy="260" r="9" opacity="0.35"/>
+    <circle cx="700" cy="700" r="16" opacity="0.25"/>
+    <circle cx="1180" cy="780" r="8" opacity="0.35"/>
+    <circle cx="520" cy="180" r="10" opacity="0.25"/>
+    <circle cx="380" cy="330" r="6" opacity="0.3"/>
+  </g>
+
+  <!-- subtle glass grid -->
+  <g stroke="#bff4ff" stroke-width="1" opacity="0.045">
+    <path d="M0 150h1600M0 300h1600M0 450h1600M0 600h1600M0 750h1600"/>
+    <path d="M160 0v900M320 0v900M480 0v900M640 0v900M800 0v900M960 0v900M1120 0v900M1280 0v900M1440 0v900"/>
+  </g>
+
+  <rect width="1600" height="900" fill="url(#w7-vign)"/>
+</svg>

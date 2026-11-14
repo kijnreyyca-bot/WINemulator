@@ -9,7 +9,36 @@
     return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' });
   }
 
-  Win.apps.explorer = {
+  
+
+  function openWithDialog(path) {
+    const apps = [
+      { id: 'notepad', label: 'Notepad', icon: 'notepad' },
+      { id: 'paint', label: 'Paint', icon: 'paint' },
+      { id: 'browser', label: 'Internet Explorer', icon: 'ie' },
+      { id: 'firefox', label: 'Mozilla Firefox', icon: 'firefox' },
+      { id: 'terminal', label: 'Command Prompt', icon: 'terminal' }
+    ];
+    Win.ui.dialog({
+      title: 'Open With', icon: 'open', width: 360,
+      html: '<div class="openwith-list">' + apps.map(function (a) {
+        return '<button class="btn openwith-btn" type="button" data-app="' + a.id + '">' + Win.icon(a.icon, 18) + ' ' + a.label + '</button>';
+      }).join('') + '</div>',
+      onShow: function (win) {
+        win.querySelectorAll('.openwith-btn').forEach(function (b) {
+          b.addEventListener('click', function () {
+            const app = b.dataset.app;
+            if (app === 'paint' || app === 'notepad') Win.wm.open(app, { path: Win.fs.norm(path) });
+            else if (app === 'browser') Win.wm.open('browser', { url: 'file://' + path });
+            else Win.wm.open(app);
+          });
+        });
+      },
+      buttons: [{ label: 'Cancel', value: false, cancel: true }]
+    });
+  }
+
+Win.apps.explorer = {
     name: 'Windows Explorer', title: 'Windows Explorer', icon: 'folder',
     width: 780, height: 540, minWidth: 430, minHeight: 300,
     mount: function (body, ctx) {
@@ -558,6 +587,7 @@
             items.push({ label: 'Cut', icon: 'cut', action: function () { doCopy(true); } });
             items.push({ label: 'Copy', icon: 'copy', action: function () { doCopy(false); } });
             items.push({ separator: true });
+            items.push({ label: 'Open with...', icon: 'open', action: function () { openWithDialog(entry.path); } });
             items.push({ label: 'Rename', icon: 'textfile', action: doRename });
             items.push({ label: 'Delete', icon: 'delete', action: function () { doDelete(); } });
             items.push({ separator: true });

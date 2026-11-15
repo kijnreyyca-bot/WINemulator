@@ -1139,21 +1139,43 @@
       if (Win.fs.exists(t0) && (t0.toLowerCase().endsWith('.bat') || t0.toLowerCase().endsWith('.cmd'))) {
         const node = Win.fs.resolve(t0);
         const content = String(node.content || '');
-        const lines = content.split(/\r?\n/);
-        let echoOn = true;
-        lines.forEach(function (l) {
-          const line = l.trim();
-          if (!line || line.startsWith('REM') || line.startsWith('rem') || line.startsWith('::')) return;
-          if (/^@echo\s+off$/i.test(line)) { echoOn = false; return; }
-          if (/^echo\s+off$/i.test(line)) { echoOn = false; return; }
-          if (/^@echo\s+on$/i.test(line)) { echoOn = true; return; }
-          const expanded = expandVars(line, env);
-          if (echoOn) printLine(cwd + '>' + line, 'term-dim');
-          // execute via runCMD recursively (without batch detection? allow)
-          const r = runCMD(expanded, null);
-          if (r && r.lines) printLines(r.lines);
-          if (r && r.clear) out.innerHTML = '';
-        });
+        (async function () {
+          const lines = content.split(/\r?\n/);
+          let echoOn = true;
+          let paused = false;
+          for (let li = 0; li < lines.length; li++) {
+            const line = lines[li].trim();
+            if (!line || line.toUpperCase().startsWith('REM') || line.startsWith('::')) continue;
+            if (/^@?echo\s+off$/i.test(line)) { echoOn = false; continue; }
+            if (/^@?echo\s+on$/i.test(line)) { echoOn = true; continue; }
+            const waitM = line.match(/^wait\s+(\d+)/i);
+            if (waitM) { await new Promise(function (res) { setTimeout(res, (parseInt(waitM[1], 10) || 0) * 1000); }); continue; }
+            const toM = line.match(/^timeout\s+/i);
+            if (toM) {
+              let sec = 5;
+              const ti = line.toLowerCase().indexOf('/t');
+              if (ti > -1) { const m = line.slice(ti).match(/\/t\s+(\d+)/i); if (m) sec = parseInt(m[1], 10) || 5; }
+              await new Promise(function (res) { setTimeout(res, sec * 1000); }); continue;
+            }
+            if (/^pause$/i.test(line)) {
+              printLine('Press any key to continue . . .');
+              paused = true;
+              await new Promise(function (res) {
+                const handler = function () { document.removeEventListener('keydown', handler); res(); };
+                document.addEventListener('keydown', handler);
+              });
+              continue;
+            }
+            const expanded = expandVars(line, env);
+            if (echoOn) printLine(cwd + '>' + line, 'term-dim');
+            const r = runCMD(expanded, null);
+            if (r && r.lines) printLines(r.lines);
+            if (r && r.clear) out.innerHTML = '';
+          }
+          if (isBatchLaunch && !paused) {
+            setTimeout(function () { try { ctx.close(true); } catch (e) {} }, 400);
+          }
+        })();
         return { lines: [] };
       }
 
@@ -1434,14 +1456,14 @@
       return { lines: linesOut };
     }
 
-    function run(raw) {
+    function run(raw, silent) {
       const t = raw.trim();
       if (!t) return;
       history.push(t);
       if (history.length > 200) history.shift();
       histIndex = history.length;
 
-      printLine((mode === 'ps' ? 'PS ' + cwd + '> ' : (Win.isSeven ? cwd + '>' : cwd + '>')) + t, 'term-dim');
+      if (!silent) printLine((mode === 'ps' ? 'PS ' + cwd + '> ' : (Win.isSeven ? cwd + '>' : cwd + '>')) + t, 'term-dim');
 
       let result;
       if (mode === 'ps') result = runPS(t, null);
@@ -1527,7 +1549,7 @@
     setPrompt();
     if (args.run || args.file) {
       const rf = args.run || args.file;
-      setTimeout(function () { run(rf); }, 120);
+      setTimeout(function () { run(rf, true); }, 120);
     }
     setTimeout(function () { input.focus(); }, 60);
 

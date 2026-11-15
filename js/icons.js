@@ -98,6 +98,7 @@ window.Win = window.Win || {};
   DATA.vpc = '<rect x="2" y="4" width="21" height="16" rx="1" fill="#c8c8c8" stroke="#111"/><rect x="4" y="6" width="17" height="11" fill="#0a3d78"/><rect x="5" y="7" width="15" height="9" fill="#2a6db5"/><path d="M6 8h7v2H6z" fill="#8fc0ea" opacity=".7"/><rect x="9" y="20" width="7" height="2" fill="#9c9c9c" stroke="#111"/><rect x="5" y="22" width="15" height="2" fill="#c8c8c8" stroke="#111"/><rect x="12" y="13" width="16" height="12" rx="1" fill="#e8eef7" stroke="#16406f"/><rect x="13.5" y="14.5" width="13" height="7" fill="#2f6fc0"/><path d="M14.5 20 17 17l2 2.2 1.6-1.4 2.4 2.6z" fill="#7fd06b"/><circle cx="24" cy="16.6" r="1" fill="#ffe066"/><rect x="14" y="22.4" width="8" height="1.4" fill="#c9d4e2"/>';
 
 
+  DATA.eaglercraft = '<image href="assets/eaglercraft.png" width="32" height="32" preserveAspectRatio="xMidYMid slice"/>';
   const ns = 'http://www.w3.org/2000/svg';
   const sprite = document.createElementNS(ns, 'svg');
   sprite.setAttribute('id', 'icon-sprite');

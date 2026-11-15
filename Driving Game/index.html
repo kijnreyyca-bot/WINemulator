@@ -40,7 +40,7 @@
 <body>
 <div id="menu">
   <h1>3D Driving Simulator</h1>
-  <p>Open world - traffic & vehicles</p>
+  <p>Open world - traffic & roads</p>
   <div class="row"><label>Seed:</label><input id="seed" type="number" value="12345"></div>
   <button id="play">PLAY</button>
   <button id="garagebtn">GARAGE</button>
@@ -91,6 +91,7 @@ const CHUNK_SIZE = 120;
 const LOAD_RADIUS = 2;
 const ROAD_SPACING = 180;
 const ROAD_WIDTH = 9;
+const DIRT_ROAD_WIDTH = 6;
 
 let seed = 12345;
 let rng = makeRng(seed);
@@ -116,6 +117,7 @@ scene.add(new THREE.Mesh(skyGeo, new THREE.MeshBasicMaterial({color:0x87ceeb, si
 
 const grassMat = new THREE.MeshLambertMaterial({color:0x3a7d3a});
 const roadMat = new THREE.MeshLambertMaterial({color:0x333333});
+const dirtRoadMat = new THREE.MeshLambertMaterial({color:0x8b6f47});
 const lineMat = new THREE.MeshBasicMaterial({color:0xffffff});
 const trunkMat = new THREE.MeshLambertMaterial({color:0x5a3a1a});
 const leafMat = new THREE.MeshLambertMaterial({color:0x2d6a2d});
@@ -126,7 +128,8 @@ function terrainHeight(x,z){
   return h;
 }
 
-const roadSegments = [];
+// ---------- Road network ----------
+const roadSegments = []; // {x1,z1,x2,z2,type:'asphalt'|'dirt', width}
 const nodeCache = new Map();
 function nodePos(i,j){
   const key = i+','+j;
@@ -145,8 +148,27 @@ function buildRoads(){
       const a = nodePos(i,j);
       const b = nodePos(i+1,j);
       const c = nodePos(i,j+1);
-      roadSegments.push({x1:a.x,z1:a.z,x2:b.x,z2:b.z});
-      roadSegments.push({x1:a.x,z1:a.z,x2:c.x,z2:c.z});
+      roadSegments.push({x1:a.x,z1:a.z,x2:b.x,z2:b.z,type:'asphalt',width:ROAD_WIDTH});
+      roadSegments.push({x1:a.x,z1:a.z,x2:c.x,z2:c.z,type:'asphalt',width:ROAD_WIDTH});
+      // dirt roads (diagonal connections) occasionally
+      if (((i+j)%3)===0) {
+        const d = nodePos(i+1,j+1);
+        roadSegments.push({x1:a.x,z1:a.z,x2:d.x,z2:d.z,type:'dirt',width:DIRT_ROAD_WIDTH});
+      }
+    }
+  }
+  // roundabouts: add circular segments at some nodes
+  for(let i=-range;i<=range;i++){
+    for(let j=-range;j<=range;j++){
+      if ((i+j)%4 !== 0) continue;
+      const p = nodePos(i,j);
+      const R = 18;
+      const steps = 12;
+      for(let k=0;k<steps;k++){
+        const a1 = (k/steps)*Math.PI*2;
+        const a2 = ((k+1)/steps)*Math.PI*2;
+        roadSegments.push({x1:p.x+Math.cos(a1)*R, z1:p.z+Math.sin(a1)*R, x2:p.x+Math.cos(a2)*R, z2:p.z+Math.sin(a2)*R, type:'asphalt', width:6});
+      }
     }
   }
 }
@@ -161,9 +183,30 @@ function isOnRoad(x,z){
     t = Math.max(0, Math.min(1, t));
     const px = seg.x1 + t*dx, pz = seg.z1 + t*dz;
     const dist = Math.hypot(x-px, z-pz);
-    if (dist < ROAD_WIDTH/2 + 2) return true;
+    if (dist < seg.width/2 + 2) return true;
   }
   return false;
+}
+
+// ---------- Traffic lights ----------
+const trafficLights = [];
+function buildTrafficLights(){
+  // place at intersections (nodes) with probability
+  const range = 6;
+  for(let i=-range;i<=range;i++){
+    for(let j=-range;j<=range;j++){
+      if (Math.abs(i)%2!==0 || Math.abs(j)%2!==0) continue;
+      const p = nodePos(i,j);
+      const r = makeRng(seed ^ (i*12345+j*67890));
+      if (r() < 0.45) continue;
+      trafficLights.push({x:p.x, z:p.z, phase: r()*Math.PI*2, cycle: 8 + r()*4});
+    }
+  }
+}
+buildTrafficLights();
+function lightState(tl, time){
+  const phase = (time + tl.phase) % tl.cycle;
+  return phase < tl.cycle/2 ? 'green' : 'red';
 }
 
 // ---------- VEHICLES ----------
@@ -212,6 +255,7 @@ function createChunk(cx,cz){
   terrain.receiveShadow = true;
   group.add(terrain);
 
+  // roads in this chunk
   for(const seg of roadSegments){
     const mx = (seg.x1+seg.x2)/2;
     const mz = (seg.z1+seg.z2)/2;
@@ -220,19 +264,41 @@ function createChunk(cx,cz){
     const dx = seg.x2-seg.x1, dz = seg.z2-seg.z1;
     const len = Math.hypot(dx,dz);
     if (len < 1) continue;
-    const roadMesh = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_WIDTH, len), roadMat);
+    const mat = seg.type==='dirt' ? dirtRoadMat : roadMat;
+    const w = seg.width;
+    const roadMesh = new THREE.Mesh(new THREE.PlaneGeometry(w, len), mat);
     roadMesh.rotation.x = -Math.PI/2;
     roadMesh.position.set(mx, 0.05, mz);
     roadMesh.rotation.z = -Math.atan2(dz,dx);
     roadMesh.receiveShadow = true;
     group.add(roadMesh);
-    const line = new THREE.Mesh(new THREE.PlaneGeometry(0.3, len*0.95), lineMat);
-    line.rotation.x = -Math.PI/2;
-    line.position.set(mx, 0.06, mz);
-    line.rotation.z = -Math.atan2(dz,dx);
-    group.add(line);
+    if (seg.type==='asphalt') {
+      const line = new THREE.Mesh(new THREE.PlaneGeometry(0.3, len*0.95), lineMat);
+      line.rotation.x = -Math.PI/2;
+      line.position.set(mx, 0.06, mz);
+      line.rotation.z = -Math.atan2(dz,dx);
+      group.add(line);
+    }
   }
 
+  // traffic lights in this chunk
+  for(const tl of trafficLights){
+    if (tl.x < baseX-CHUNK_SIZE/2 || tl.x > baseX+CHUNK_SIZE/2) continue;
+    if (tl.z < baseZ-CHUNK_SIZE/2 || tl.z > baseZ+CHUNK_SIZE/2) continue;
+    // pole
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.15,4,6), new THREE.MeshLambertMaterial({color:0x333}));
+    pole.position.set(tl.x, 2, tl.z);
+    group.add(pole);
+    const light = new THREE.Mesh(new THREE.SphereGeometry(0.5,8,6), new THREE.MeshBasicMaterial({color:0x00ff00}));
+    light.position.set(tl.x, 4.2, tl.z);
+    light.userData.tl = tl;
+    group.add(light);
+    tl.mesh = light;
+  }
+
+  // roundabouts visual: already in roadSegments
+
+  // trees
   const treePositions = [];
   const numTrees = 30;
   for(let t=0;t<numTrees;t++){
@@ -361,7 +427,6 @@ const traffic = [];
 const TRAFFIC_COUNT = 12;
 const trafficMats = [0x4cc9f0,0xffb703,0x2a9d8f,0x8d99ae,0xffffff,0x495057,0x7209b7,0xf72585];
 function spawnTraffic(){
-  // clear
   for(const t of traffic){ scene.remove(t.group); }
   traffic.length=0;
   const rng = makeRng(seed+999);
@@ -384,34 +449,25 @@ function spawnTraffic(){
 }
 spawnTraffic();
 
-function updateTraffic(dt){
+function updateTraffic(dt, time){
   for(const tr of traffic){
-    // advance along current seg
     const seg = tr.seg;
     const dx = seg.x2-seg.x1, dz = seg.z2-seg.z1;
     const len = Math.hypot(dx,dz);
     if (len < 1) continue;
-    // current position along seg
-    const cx = tr.group.position.x, cz = tr.group.position.z;
-    // compute t
-    let t = ((cx-seg.x1)*dx + (cz-seg.z1)*dz)/ (len*len);
+    let t = ((tr.group.position.x-seg.x1)*dx + (tr.group.position.z-seg.z1)*dz)/ (len*len);
     t = Math.max(0, Math.min(1, t));
-    // speed
     tr.speed += (tr.targetSpeed - tr.speed)*dt*2;
-    // move
     const step = tr.speed*dt;
     t += step/len;
     if (t >= 1) {
-      // pick next seg sharing endpoint
       const endX = seg.x2, endZ = seg.z2;
       const candidates = roadSegments.filter(s => (Math.hypot(s.x1-endX,s.z1-endZ)<1) || (Math.hypot(s.x2-endX,s.z2-endZ)<1));
       if (candidates.length) {
         let next = candidates[Math.floor(Math.random()*candidates.length)];
-        // orient
         if (Math.hypot(next.x1-endX,next.z1-endZ)<1) {
           tr.seg = next; tr.t = 0;
         } else {
-          // reverse segment
           tr.seg = {x1:next.x2,z1:next.z2,x2:next.x1,z2:next.z1};
           tr.t = 0;
         }
@@ -430,17 +486,46 @@ function updateTraffic(dt){
     tr.group.position.z = z;
     tr.group.position.y = terrainHeight(x,z)+0.5;
     tr.group.rotation.y = yaw;
-    // wheels spin
     for(const w of tr.wheels) w.rotation.x += tr.speed*dt*2;
-    // simple collision avoidance: slow if player too close
+    // traffic light check: slow if red
+    let targetSpd = tr.aggressive?24:16;
+    for(const tl of trafficLights){
+      const d = Math.hypot(x-tl.x, z-tl.z);
+      if (d < 30) {
+        const st = lightState(tl, time);
+        // determine if traveling along NS or EW
+        const isNS = Math.abs(Math.cos(yaw)) > Math.abs(Math.sin(yaw));
+        if (st === 'red') {
+          // red for this direction? alternate: if green NS, red EW
+          const greenNS = (Math.floor(time/tl.cycle + tl.phase/tl.cycle)%2)===0;
+          if ((isNS && !greenNS) || (!isNS && greenNS)) {
+            targetSpd = 0;
+          }
+        }
+      }
+    }
+    // collision avoidance with player
     const pdist = Math.hypot(x - car.position.x, z - car.position.z);
-    if (pdist < 12) tr.targetSpeed = Math.max(4, tr.speed*0.5);
-    else tr.targetSpeed = tr.speed < tr.targetSpeed ? tr.targetSpeed : (tr.aggressive?24:16);
+    if (pdist < 12) targetSpd = Math.max(4, targetSpd*0.5);
+    // collision avoidance with other traffic
+    for(const other of traffic){
+      if (other===tr) continue;
+      const od = Math.hypot(x-other.group.position.x, z-other.group.position.z);
+      if (od < 8) { targetSpd = Math.min(targetSpd, other.speed*0.8); }
+    }
+    tr.targetSpeed = targetSpd;
+  }
+  // update traffic light meshes
+  for(const tl of trafficLights){
+    if (tl.mesh) {
+      const st = lightState(tl, time);
+      tl.mesh.material.color.setHex(st==='green'?0x00ff00:0xff0000);
+    }
   }
 }
 
 // ---------- vehicle ----------
-const state = { x:0, z:0, yaw:0, speed:0, steer:0, gear:1, rpm:0.2, handbrake:false, cameraMode:0, damage:0, distance:0, destroyed:false, destroying:false, destroyTimer:0, nitro:100, nitroCooldown:0 };
+const state = { x:0, z:0, yaw:0, speed:0, steer:0, gear:1, rpm:0.2, handbrake:false, cameraMode:0, damage:0, distance:0, destroyed:false, destroying:false, destroyTimer:0, nitro:100, nitroCooldown:0, collisionGrace:0 };
 const keys = {};
 window.addEventListener('keydown', e=>{
   keys[e.key.toLowerCase()]=true;
@@ -454,7 +539,7 @@ window.addEventListener('keyup', e=>{
   if(e.key===' ') state.handbrake=false;
 });
 function resetCar(){
-  state.x=0; state.z=0; state.yaw=0; state.speed=0; state.steer=0; state.damage=0; state.distance=0; state.destroyed=false; state.destroying=false; state.destroyTimer=0; state.nitro=100; state.nitroCooldown=0; state.nitroBoost=0;
+  state.x=0; state.z=0; state.yaw=0; state.speed=0; state.steer=0; state.damage=0; state.distance=0; state.destroyed=false; state.destroying=false; state.destroyTimer=0; state.nitro=100; state.nitroCooldown=0; state.nitroBoost=0; state.collisionGrace=0;
   car.position.set(0,0.5,0); car.rotation.y=0; car.rotation.z=0; car.visible=true;
   document.getElementById('destroyed').style.display='none';
   document.querySelector('.dmg').textContent='0%';
@@ -464,7 +549,6 @@ function resetCar(){
   document.querySelector('.nitro').textContent='100%';
   document.querySelector('.nitrofill').style.width='100%';
 }
-
 
 const smokeParticles = [];
 const smokeGeo = new THREE.SphereGeometry(0.3,6,6);
@@ -531,6 +615,30 @@ function updateExplosion(dt){
   }
 }
 
+function updateChunks(px,pz){
+  const cx = Math.floor(px/CHUNK_SIZE);
+  const cz = Math.floor(pz/CHUNK_SIZE);
+  const needed = new Set();
+  for(let dx=-LOAD_RADIUS;dx<=LOAD_RADIUS;dx++){
+    for(let dz=-LOAD_RADIUS;dz<=LOAD_RADIUS;dz++){
+      needed.add(chunkKey(cx+dx,cz+dz));
+    }
+  }
+  for(const key of needed){
+    if (!chunks.has(key)) {
+      const [x,z] = key.split(',').map(Number);
+      createChunk(x,z);
+    }
+  }
+  for(const key of Array.from(chunks.keys())){
+    if (!needed.has(key)) {
+      const [x,z] = key.split(',').map(Number);
+      removeChunk(x,z);
+    }
+  }
+  rebuildColliders();
+}
+
 function updatePhysics(dt){
   if (state.destroying || state.destroyed) return;
   const v = VEHICLES[selectedVehicle];
@@ -545,7 +653,6 @@ function updatePhysics(dt){
   let brakeInput = keys['s']||keys['arrowdown'] ? 1 : 0;
   let steerInput = (keys['a']||keys['arrowleft']?1:0) - (keys['d']||keys['arrowright']?1:0);
 
-  // nitro
   if (state.nitroBoost>0) { state.nitroBoost -= dt; }
   const nitroMul = state.nitroBoost>0 ? 2.0 : 1.0;
   const nitroDrain = state.nitroBoost>0 ? 25*dt : 0;
@@ -577,6 +684,9 @@ function updatePhysics(dt){
   const nx = car.position.x + fwd.x*state.speed*dt;
   const nz = car.position.z + fwd.z*state.speed*dt;
 
+  // collision grace
+  state.collisionGrace = Math.max(0, state.collisionGrace - dt);
+
   const carBox = new THREE.Box3(
     new THREE.Vector3(nx-1, 0, nz-2),
     new THREE.Vector3(nx+1, 1.4, nz+2)
@@ -591,20 +701,23 @@ function updatePhysics(dt){
     }
   }
   if (collided) {
-    let dmg = 0;
-    if (impactSpeed < 8) dmg = 2 + Math.floor(Math.random()*4);
-    else if (impactSpeed < 18) dmg = 6 + Math.floor(Math.random()*7);
-    else if (impactSpeed < 30) dmg = 13 + Math.floor(Math.random()*13);
-    else dmg = 26 + Math.floor(Math.random()*15);
-    dmg = Math.round(dmg / v.dmgResist);
-    state.damage = Math.min(100, state.damage + dmg);
-    state.speed *= -0.3;
-    if (state.damage >= 25) {
-      const intensity = Math.min(1, state.damage/100);
-      const enginePos = car.position.clone().add(new THREE.Vector3(0,1.2,1.5).applyAxisAngle(new THREE.Vector3(0,1,0), state.yaw));
-      spawnSmoke(enginePos, intensity);
+    if (state.collisionGrace <= 0) {
+      let dmg = 0;
+      if (impactSpeed < 8) dmg = 2 + Math.floor(Math.random()*4);
+      else if (impactSpeed < 18) dmg = 6 + Math.floor(Math.random()*7);
+      else if (impactSpeed < 30) dmg = 13 + Math.floor(Math.random()*13);
+      else dmg = 26 + Math.floor(Math.random()*15);
+      dmg = Math.round(dmg / v.dmgResist);
+      state.damage = Math.min(100, state.damage + dmg);
+      state.collisionGrace = 2.0;
+      if (state.damage >= 25) {
+        const intensity = Math.min(1, state.damage/100);
+        const enginePos = car.position.clone().add(new THREE.Vector3(0,1.2,1.5).applyAxisAngle(new THREE.Vector3(0,1,0), state.yaw));
+        spawnSmoke(enginePos, intensity);
+      }
+      if (state.damage >= 100) triggerDestroyed();
     }
-    if (state.damage >= 100) triggerDestroyed();
+    state.speed *= -0.3;
   } else {
     car.position.x = nx;
     car.position.z = nz;
@@ -665,7 +778,7 @@ function animate(){
     } else if (!state.destroyed) {
       updatePhysics(dt);
       updateChunks(car.position.x, car.position.z);
-      updateTraffic(dt);
+      updateTraffic(dt, now/1000);
       updateSmoke(dt);
       updateExplosion(dt);
     }
@@ -697,7 +810,6 @@ function animate(){
     ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(0,0,180,180);
     ctx.strokeStyle='rgba(255,255,255,0.25)'; ctx.lineWidth=1;
     for(let i=-5;i<=5;i++){ const p=i*36+90; ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,180);ctx.stroke(); ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(180,p);ctx.stroke(); }
-    // traffic dots
     ctx.fillStyle='#00b4d8';
     for(const tr of traffic){ const mx=90+(tr.group.position.x/1200*180); const mz=90+(tr.group.position.z/1200*180); ctx.beginPath();ctx.arc(mx,mz,2,0,Math.PI*2);ctx.fill(); }
     ctx.fillStyle='#e63946';
@@ -749,6 +861,7 @@ document.getElementById('play').addEventListener('click', ()=>{
   explosionParticles.length=0;
   car.children[0].material.color.setHex(VEHICLES[selectedVehicle].color);
   resetCar();
+  spawnTraffic();
   updateChunks(0,0);
   document.getElementById('menu').style.display='none';
   document.getElementById('hud').style.display='block';

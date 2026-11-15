@@ -109,6 +109,7 @@
       { separator: true },
       { label: 'Games', separator: false },
       { label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } },
+      { label: 'Platformer', icon: 'game', action: function () { Win.wm.open('platformer'); } },
       { separator: true },
       { label: 'Internet Explorer', icon: 'ie', action: function () { Win.wm.open('browser'); } },
       { label: 'Mozilla Firefox', icon: 'firefox', action: function () { Win.wm.open('firefox'); } },
@@ -156,6 +157,7 @@
       { separator: true },
       { label: 'Games', separator: false },
       { label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } },
+      { label: 'Platformer', icon: 'game', action: function () { Win.wm.open('platformer'); } },
       { separator: true },
       { label: 'Internet Explorer', icon: 'ie', action: function () { Win.wm.open('browser'); } },
       { label: 'Mozilla Firefox', icon: 'firefox', action: function () { Win.wm.open('firefox'); } },
@@ -253,6 +255,7 @@
       { label: 'Internet Explorer', icon: 'ie', action: function () { Win.wm.open('browser'); } },
       { label: 'Mozilla Firefox', icon: 'firefox', action: function () { Win.wm.open('firefox'); } },
       { label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } },
+      { label: 'Platformer', icon: 'game', action: function () { Win.wm.open('platformer'); } },
       { label: 'Virtual PC', icon: 'vpc', action: function () { Win.wm.open('vpc'); } },
       { label: 'Control Panel', icon: 'settings', action: function () { Win.wm.open('settings'); } },
       { label: 'Task Manager', icon: 'taskmgr', action: function () { Win.wm.open('taskmgr'); } }

@@ -72,8 +72,27 @@
       if (/^[a-z]:\\/i.test(raw)) {
         return Win.fs.exists(raw) ? resolve(openPath(raw)) : reject(new Error('Windows cannot find "' + raw + '". Check the path and try again.'));
       }
-      if (lower === 'msdos' || lower === 'dos') {
-        if (Win.boot) Win.boot.dos();
+      const msdosRun = raw.match(/^(msdos|dos)(?:\s+(.*))?$/i);
+      if (msdosRun) {
+        let arg = (msdosRun[2] || '').trim();
+        if (arg.charAt(0) === '-') arg = arg.slice(1).trim();
+        arg = arg.replace(/^"+|"+$/g, '');
+        if (!arg) {
+          if (Win.boot) Win.boot.dos();
+          return resolve();
+        }
+        if (/^(dos|main)$/i.test(arg)) {
+          if (Win.boot) Win.boot.dos({ classic: true });
+          return resolve();
+        }
+        if (/^(cmd|command|cmd\.exe|command\.com)$/i.test(arg)) {
+          if (Win.boot) Win.boot.dos({ classic: false });
+          return resolve();
+        }
+        const base = Win.isModern ? 'C:\\Users\\User' : 'C:\\WINDOWS';
+        const f = Win.fs.norm(/^[a-z]:\\/i.test(arg) ? arg : Win.fs.join(base, arg));
+        if (!Win.fs.exists(f)) return reject(new Error('Windows cannot find "' + arg + '". Check the path and try again.'));
+        if (Win.boot) Win.boot.dos({ file: f });
         return resolve();
       }
       const map = {

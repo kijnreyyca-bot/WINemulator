@@ -122,6 +122,8 @@
     mount: function (body, ctx) {
     body.classList.add('app-terminal');
     const args = ctx.args || {};
+    const headless = !!args.headless;
+    const batchPauseCb = args.onBatchPause;
     let mode = (args.mode === 'ps' || args.mode === 'powershell') ? 'ps' : 'cmd';
     let cwd = args.cwd ? normPath(args.cwd, 'C:\\') : (Win.isModern ? 'C:\\Users\\User' : 'C:\\WINDOWS');
     let history = [], histIndex = 0;
@@ -188,6 +190,7 @@
       d.textContent = text;
       out.appendChild(d);
       while (out.children.length > 1200) out.removeChild(out.firstChild);
+      if (args.onOut) { try { args.onOut(text, cls || ''); } catch (e) {} }
       scroll();
     }
     function printHtml(html, cls) {
@@ -196,6 +199,10 @@
       out.appendChild(d);
       while (out.children.length > 1200) out.removeChild(out.firstChild);
       scroll();
+    }
+    function clearOut() {
+      out.innerHTML = '';
+      if (args.onClear) { try { args.onClear(); } catch (e) {} }
     }
     function blank() { printLine(''); }
 
@@ -213,7 +220,7 @@
       printLine('Copyright (C) Microsoft Corporation. All rights reserved.', 'term-dim');
       printLine('', '');
       printLine('PS ' + cwd + '>', 'term-dim');
-    } else if (!isBatchLaunch) {
+    } else if (!isBatchLaunch && !headless) {
       if (Win.isModern) {
         printLine('Microsoft Windows [Version ' + Win.osVersion + ']', 'term-dim');
         printLine('(c) Microsoft Corporation. All rights reserved.', 'term-dim');
@@ -489,7 +496,8 @@
         'MD         Creates a directory.',
         'MEM        Displays the amount of used and free memory in your system.',
         'MOVE       Moves one or more files from one directory to another directory.',
-        'MSDOS      Switches the computer into MS-DOS mode.',
+        'MSDOS      Switches the computer into MS-DOS mode. MSDOS - DOS opens the main',
+        '           MS-DOS shell; MSDOS - <file> runs a .bat file or opens a file there.',
         'PATH       Displays or sets a search path for executable files.',
         'PING       Tests the connection to another TCP/IP computer.',
         'PROMPT     Changes the command prompt.',
@@ -807,7 +815,7 @@
         } else if (cl === 'whoami') {
           values = ['winemulator\\' + env.USERNAME.toLowerCase()];
         } else if (cl === 'cls' || cl === 'clear-host' || cl === 'clear') {
-          out.innerHTML = '';
+          clearOut();
           return { lines: [], clear: true };
         } else if (cl === 'cd' || cl === 'set-location' || cl === 'sl' || cl === 'chdir') {
           if (args.length) {
@@ -1102,7 +1110,7 @@
           }
           return { lines: [], values: null };
         } else if (cl === 'clear-host' || cl === 'cls' || cl === 'clear') {
-          out.innerHTML = '';
+          clearOut();
           return { lines: [], clear: true, values: null };
         } else {
           // unknown command: maybe an alias to cmd? try cmd exec
@@ -1158,17 +1166,19 @@
             if (/^pause$/i.test(line)) {
               printLine('Press any key to continue . . .');
               paused = true;
+              if (batchPauseCb) { try { batchPauseCb(true); } catch (e) {} }
               await new Promise(function (res) {
                 const handler = function () { document.removeEventListener('keydown', handler); res(); };
-                document.addEventListener('keydown', handler);
+                setTimeout(function () { document.addEventListener('keydown', handler); }, 0);
               });
+              if (batchPauseCb) { try { batchPauseCb(false); } catch (e) {} }
               continue;
             }
             const expanded = expandVars(line, env);
             if (echoOn) printLine(cwd + '>' + line, 'term-dim');
             const r = runCMD(expanded, null);
             if (r && r.lines) printLines(r.lines);
-            if (r && r.clear) out.innerHTML = '';
+            if (r && r.clear) clearOut();
           }
           if (isBatchLaunch && !paused) {
             setTimeout(function () { try { ctx.close(true); } catch (e) {} }, 400);
@@ -1286,10 +1296,27 @@
           break;
         }
         case 'logoff': if (Win.boot) Win.boot.logoff(); result = { lines: [] }; break;
-        case 'msdos': case 'dos':
-          if (Win.boot) setTimeout(function () { Win.boot.dos(); }, 60);
-          result = { lines: ['Switching to MS-DOS mode...'] };
+        case 'msdos': case 'dos': {
+          let arg = args.slice(1).join(' ').trim();
+          if (arg.charAt(0) === '-') arg = arg.slice(1).trim();
+          arg = arg.replace(/^"+|"+$/g, '');
+          let opt = null;
+          if (!arg) opt = {};
+          else if (/^(dos|main)$/i.test(arg)) opt = { classic: true };
+          else if (/^(cmd|command|cmd\.exe|command\.com)$/i.test(arg)) opt = { classic: false };
+          else {
+            const f = normPath(arg, cwd);
+            if (!Win.fs.exists(f)) {
+              result = { lines: ['The system cannot find the file ' + arg + '.'], code: 1 };
+              break;
+            }
+            opt = { file: f };
+          }
+          if (opt) opt.cwd = cwd;
+          if (Win.boot) setTimeout(function () { Win.boot.dos(opt); }, 60);
+          result = { lines: [opt && opt.file ? ('Opening ' + Win.fs.baseName(opt.file) + ' in MS-DOS mode...') : (opt && opt.classic ? 'Switching to the main MS-DOS shell...' : 'Switching to MS-DOS mode...')] };
           break;
+        }
         case 'exit': ctx.close(true); result = { lines: [] }; break;
         case 'pause': result = { lines: ['Press any key to continue . . .'] }; break;
         case 'rem': result = { lines: [] }; break;
@@ -1364,7 +1391,7 @@
 
       // handle echo off from result
       if (result.echoOff) { /* no-op state not persisted */ }
-      if (result.clear) out.innerHTML = '';
+      if (result.clear) clearOut();
 
       // redirection
       function unescapeCarets(lines) {
@@ -1425,7 +1452,7 @@
           values = r.lines.map(function (l) { return (typeof l === 'string') ? l : l.text; });
         }
       }
-      if (clearFlag) out.innerHTML = '';
+      if (clearFlag) clearOut();
       function unescapeCarets(lines) {
         return (lines || []).map(function (l) {
           if (typeof l === 'string') {
@@ -1500,7 +1527,7 @@
           if (ev.key === 'Enter' || ev.key === ' ') ev.preventDefault();
           finish();
         };
-        if (pauseMatch) document.addEventListener('keydown', onPauseKey, true);
+        if (pauseMatch) setTimeout(function () { document.addEventListener('keydown', onPauseKey, true); }, 0);
         else timer = setTimeout(finish, ms);
         return;
       }
@@ -1509,7 +1536,7 @@
       if (mode === 'ps') result = runPS(t, null);
       else result = runCMD(t, null);
 
-      if (result.clear) out.innerHTML = '';
+      if (result.clear) clearOut();
       if (result.lines && result.lines.length) printLines(result.lines);
       if (result.code && result.code !== 0 && result.lines && !result.lines.length) {
         // nothing
@@ -1573,7 +1600,7 @@
         input.value = '';
       } else if (ev.key === 'l' && ev.ctrlKey) {
         ev.preventDefault();
-        out.innerHTML = '';
+        clearOut();
       } else if (ev.key === 'u' && ev.ctrlKey) {
         ev.preventDefault();
         input.value = '';
@@ -1591,9 +1618,13 @@
       const rf = args.run || args.file;
       setTimeout(function () { run(rf, true); }, 120);
     }
-    setTimeout(function () { input.focus(); }, 60);
+    if (!headless) setTimeout(function () { input.focus(); }, 60);
 
     return {
+      headless: headless,
+      run: function (line, silent) { run(line, silent); },
+      getCwd: function () { return cwd; },
+      setCwd: function (p) { const t = normPath(p, cwd); if (t) { cwd = t; setPrompt(); } },
       onReopen: function (a) {
         if (a && a.mode && a.mode !== mode) setMode(a.mode === 'ps' || a.mode === 'powershell' ? 'ps' : 'cmd');
         if (a && a.cwd) { cwd = normPath(a.cwd, cwd); setPrompt(); }

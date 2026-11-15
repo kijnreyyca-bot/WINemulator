@@ -284,13 +284,15 @@
   }
 
   /* ------------------------------------------------------------ ms-dos mode */
-  function dosMode() {
+  function dosMode(options) {
+    options = options || {};
     document.getElementById('modal-root').innerHTML = '';
     Win.wm.closeAll(true);
     document.body.classList.add('powered-off', 'dos-mode-on');
     powerLayer.hidden = false;
     powerLayer.className = 'power-layer dos-mode';
-    let cwd = Win.isModern ? 'C:\\Users\\User' : 'C:\\WINDOWS';
+    let cwd = options.cwd ? options.cwd : (Win.isModern ? 'C:\\Users\\User' : 'C:\\WINDOWS');
+    let classic = !!options.classic;
     let output = (Win.isNine
       ? 'Microsoft Windows 9\n   MS-DOS mode\n\nType HELP for a list of commands. Type WINDOWS.SYS to start Windows.\n\n'
       : 'Microsoft(R) Windows 98\n   (C)Copyright Microsoft Corp 1981-1998.\n\nType HELP for a list of commands. Type WINDOWS.SYS to start Windows.\n\n');
@@ -307,58 +309,212 @@
       setTimeout(function () { out.scrollTop = out.scrollHeight; }, 10);
     };
     const print = function (s) { output += s + '\n'; draw(); };
+    const focusInput = function () { setTimeout(function () { try { input.focus(); } catch (e) {} }, 0); };
+
+    /* Headless Command Prompt engine shared with the CMD app. It gives the
+       DOS shell the full Windows command set. */
+    let shell = null;
+    const shellOut = function (text) { output += String(text == null ? '' : text) + '\n'; draw(); };
+    const shellClear = function () { output = ''; };
+    function getShell() {
+      if (shell) return shell;
+      if (!(Win.apps && Win.apps.terminal && Win.apps.terminal.mount)) return null;
+      const fake = document.createElement('div');
+      const api = Win.apps.terminal.mount(fake, {
+        args: {
+          headless: true,
+          cwd: cwd,
+          onOut: shellOut,
+          onClear: shellClear,
+          onBatchPause: function (v) {
+            input.readOnly = !!v;
+            if (!v) focusInput();
+          }
+        },
+        body: fake, win: {},
+        setTitle: function () {}, setIcon: function () {}, setDirty: function () {},
+        close: function () {}, minimize: function () {}, maximize: function () {},
+        restore: function () {}, focus: function () {}
+      });
+      if (api) shell = api;
+      return shell;
+    }
+    function syncShell() {
+      const sh = getShell();
+      if (!sh) return null;
+      try { if (sh.getCwd() !== cwd) sh.setCwd(cwd); } catch (e) {}
+      return sh;
+    }
+    function runInShell(line) {
+      const sh = syncShell();
+      if (!sh) { print('Bad command or file name'); return; }
+      try { sh.run(line, true); }
+      catch (e) { print('Error: ' + (e.message || e)); }
+      try { cwd = sh.getCwd() || cwd; } catch (e) {}
+      draw();
+    }
+    function normDos(p) {
+      if (!p) return '';
+      p = String(p).trim().replace(/^"+|"+$/g, '');
+      return Win.fs.norm(p.indexOf(':') > -1 ? p : Win.fs.join(cwd, p));
+    }
+    function openInDos(name) {
+      const p = normDos(name);
+      if (!p || !Win.fs.exists(p)) { print('File not found'); return; }
+      const node = Win.fs.resolve(p);
+      if (!node || node.type === 'dir') { print('Access denied'); return; }
+      const lower = p.toLowerCase();
+      if (lower.endsWith('.bat') || lower.endsWith('.cmd')) {
+        runInShell(p);
+        return;
+      }
+      const content = Win.fs.read(p);
+      if (content === null || content === undefined || node.kind === 'image') {
+        print('Cannot open this file in MS-DOS mode.');
+        return;
+      }
+      output += String(content).replace(/\r\n/g, '\n');
+      if (!/\n$/.test(content)) output += '\n';
+      draw();
+    }
+    function dosHelp() {
+      print('MS-DOS mode commands:');
+      print('  DIR / CD / TYPE / CLS / VER / MEM / DATE / TIME / ECHO');
+      print('  MSDOS - DOS      Switch to the main MS-DOS shell');
+      print('  MSDOS - CMD      Enable all Command Prompt commands');
+      print('  MSDOS - <file>   Run a .bat file or open a file');
+      print('  WINDOWS.SYS      Start Windows (WIN.SYS also works)');
+      print('  EXIT             Leave MS-DOS mode');
+      if (!classic) print('This shell also accepts the full Command Prompt command set.');
+      else print('Type MSDOS - CMD to enable the full Command Prompt command set.');
+    }
+    function handleMsdos(rest) {
+      let arg = String(rest || '').trim();
+      if (arg.charAt(0) === '-') arg = arg.slice(1).trim();
+      if (!arg) {
+        print(classic
+          ? 'The main MS-DOS shell is active. Type MSDOS - CMD to enable Command Prompt commands.'
+          : 'Command Prompt commands are enabled. Type MSDOS - DOS for the main MS-DOS shell.');
+        return;
+      }
+      if (/^(dos|main)$/i.test(arg)) {
+        classic = true;
+        print('Switched to the main MS-DOS shell.');
+        return;
+      }
+      if (/^(cmd|command|cmd\.exe|command\.com)$/i.test(arg)) {
+        classic = false;
+        print('Command Prompt commands enabled.');
+        return;
+      }
+      openInDos(arg);
+    }
     const run = function (raw) {
-      const line = raw.trim();
-      output += cwd + '>' + raw + '\n';
+      const line = String(raw == null ? '' : raw).trim();
+      output += cwd + '>' + String(raw == null ? '' : raw) + '\n';
       if (!line) { draw(); return; }
       const parts = line.split(/\s+/);
       const cmd = parts[0].toLowerCase();
       const rest = line.slice(parts[0].length).trim();
-      if (cmd === 'cls') output = '';
-      else if (cmd === 'windows.sys' || cmd === 'win.sys') { powerLayer.hidden = true; document.body.classList.remove('powered-off', 'dos-mode-on'); start(); return; }
-      else if (cmd === 'help') print('DIR      List files        CD       Change folder\nTYPE     Show a file       CLS      Clear screen\nVER      DOS version       MEM      Memory info\nDATE     Show date         TIME     Show time\nECHO     Print text        WINDOWS.SYS  Start Windows\nEXIT     Leave this mode   HELP     This list');
-      else if (cmd === 'dir') {
-        const list = Win.fs.list(cwd);
-        print(' Volume in drive C is WINEMULATOR');
-        print(' Directory of ' + cwd + '\n');
-        let files = 0, dirs = 0, bytes = 0;
-        list.forEach(function (e) {
-          if (e.type === 'dir') { dirs++; print(e.name.padEnd(20) + '<DIR>         ' + U.fmtDate(e.modified)); }
-          else { files++; bytes += e.size; print(e.name.padEnd(20) + String(e.size).padStart(10) + '  ' + U.fmtDate(e.modified)); }
-        });
-        print('       ' + files + ' file(s)  ' + bytes.toLocaleString() + ' bytes');
-        print('       ' + dirs + ' dir(s)   2,147,483,648 bytes free');
+
+      if (cmd === 'cls') { output = ''; draw(); return; }
+      if (cmd === 'windows.sys' || cmd === 'win.sys') {
+        powerLayer.hidden = true;
+        document.body.classList.remove('powered-off', 'dos-mode-on');
+        if (shell) { shell = null; }
+        start();
+        return;
       }
-      else if (cmd === 'cd' || cmd === 'chdir') {
-        if (!rest) print(cwd);
-        else {
-          const target = Win.fs.norm(rest.indexOf(':') > -1 ? rest : Win.fs.join(cwd, rest));
-          const node = Win.fs.resolve(target);
-          if (node && node.type === 'dir') cwd = target;
-          else print('Invalid directory');
+      if (cmd === 'exit') { print('Use WINDOWS.SYS (or WIN.SYS) to return to Windows, or close this tab.'); return; }
+      if (cmd === 'powershell' || cmd === 'pwsh') { print('Windows PowerShell is not available in MS-DOS mode.'); return; }
+      if (cmd === 'msdos' || cmd === 'dos') { handleMsdos(rest); return; }
+      if (cmd === 'help' || cmd === '?') { dosHelp(); return; }
+
+      // asynchronous delays
+      const waitM = line.match(/^wait\s+(\d+)\s*$/i);
+      const timeoutM = line.match(/^timeout(?:\s+(?:\/t\s*)?(\d+)(?:\s+\/nobreak)?)\s*$/i);
+      if (waitM || timeoutM) {
+        const sec = Math.max(0, Math.min(300, parseInt((waitM || timeoutM)[1], 10) || 0));
+        input.readOnly = true;
+        draw();
+        setTimeout(function () { input.readOnly = false; focusInput(); }, sec * 1000);
+        return;
+      }
+      if (/^pause\s*$/i.test(line)) {
+        print('Press any key to continue . . .');
+        input.readOnly = true;
+        const onKey = function () {
+          document.removeEventListener('keydown', onKey, true);
+          input.readOnly = false;
+          focusInput();
+        };
+        setTimeout(function () { document.addEventListener('keydown', onKey, true); }, 0);
+        return;
+      }
+
+      if (classic) {
+        const maybeBat = normDos(cmd);
+        if ((cmd.endsWith('.bat') || cmd.endsWith('.cmd')) && Win.fs.exists(maybeBat)) {
+          runInShell(maybeBat);
+          return;
         }
+        if (cmd === 'dir') {
+          const list = Win.fs.list(cwd);
+          print(' Volume in drive C is WINEMULATOR');
+          print(' Directory of ' + cwd + '\n');
+          let files = 0, dirs = 0, bytes = 0;
+          list.forEach(function (e) {
+            if (e.type === 'dir') { dirs++; print(e.name.padEnd(20) + '<DIR>         ' + U.fmtDate(e.modified)); }
+            else { files++; bytes += e.size; print(e.name.padEnd(20) + String(e.size).padStart(10) + '  ' + U.fmtDate(e.modified)); }
+          });
+          print('       ' + files + ' file(s)  ' + bytes.toLocaleString() + ' bytes');
+          print('       ' + dirs + ' dir(s)   2,147,483,648 bytes free');
+        }
+        else if (cmd === 'cd' || cmd === 'chdir') {
+          if (!rest) print(cwd);
+          else {
+            const target = normDos(rest);
+            const node = Win.fs.resolve(target);
+            if (node && node.type === 'dir') cwd = target;
+            else print('Invalid directory');
+          }
+        }
+        else if (cmd === 'type') {
+          const p = normDos(rest);
+          const content = p ? Win.fs.read(p) : null;
+          if (content === null || content === undefined) print('File not found');
+          else print(content);
+        }
+        else if (cmd === 'ver') print(Win.isNine ? '\nWindows 9 [Version 6.4.9841]  MS-DOS mode  WINemulator Web Edition\n' : '\nWindows 98 [Version 4.10.2222]  WINemulator Web Edition\n');
+        else if (cmd === 'mem') print('\nMemory Type        Total       Used       Free\n----------------  --------   --------   --------\nConventional         640K       112K       528K\nUpper                155K       155K         0K\nExtended (XMS)    64,512K    12,288K    52,224K\n----------------  --------   --------   --------\nTotal memory      65,307K    12,555K    52,752K\n');
+        else if (cmd === 'date') print('Current date is ' + new Date().toDateString());
+        else if (cmd === 'time') print('Current time is ' + new Date().toLocaleTimeString());
+        else if (cmd === 'echo') print(rest);
+        else print('Bad command or file name');
+        draw();
+        return;
       }
-      else if (cmd === 'type') {
-        const p = rest ? Win.fs.norm(rest.indexOf(':') > -1 ? rest : Win.fs.join(cwd, rest)) : '';
-        const content = p ? Win.fs.read(p) : null;
-        if (content === null || content === undefined) print('File not found');
-        else print(content);
-      }
-      else if (cmd === 'ver') print(Win.isNine ? '\nWindows 9 [Version 6.4.9841]  MS-DOS mode  WINemulator Web Edition\n' : '\nWindows 98 [Version 4.10.2222]  WINemulator Web Edition\n');
-      else if (cmd === 'mem') print('\nMemory Type        Total       Used       Free\n----------------  --------   --------   --------\nConventional         640K       112K       528K\nUpper                155K       155K         0K\nExtended (XMS)    64,512K    12,288K    52,224K\n----------------  --------   --------   --------\nTotal memory      65,307K    12,555K    52,752K\n');
-      else if (cmd === 'date') print('Current date is ' + new Date().toDateString());
-      else if (cmd === 'time') print('Current time is ' + new Date().toLocaleTimeString());
-      else if (cmd === 'echo') print(rest);
-      else if (cmd === 'exit') print('Use WINDOWS.SYS (or WIN.SYS) to return to Windows, or close this tab.');
-      else print('Bad command or file name');
-      draw();
+
+      // enhanced mode: everything else is handled by the Command Prompt engine
+      runInShell(line);
     };
     input.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Enter') { const v = input.value; input.value = ''; run(v); }
+      if (ev.key === 'Enter') {
+        if (input.readOnly) return;
+        const v = input.value; input.value = ''; run(v);
+      }
     });
     draw();
     setTimeout(function () { input.focus(); }, 100);
     powerLayer.addEventListener('pointerdown', function () { setTimeout(function () { input.focus(); }, 0); });
+
+    if (options.file) {
+      setTimeout(function () {
+        output += cwd + '>msdos - ' + Win.fs.baseName(options.file) + '\n';
+        draw();
+        openInDos(options.file);
+      }, 300);
+    }
   }
 
   window.addEventListener('pointerdown', function () { Win.sound.unlock(); }, { passive: true });

@@ -1,7 +1,7 @@
 /* WINemulator — offline cache */
 'use strict';
 
-const CACHE = 'winemulator-v39';
+const CACHE = 'winemulator-v40';
 const CORE = [
   './',
   './index.html',
@@ -41,13 +41,17 @@ const CORE = [
   './js/apps/calc.js',
   './js/apps/terminal.js',
   './js/apps/runner.js',
+  './js/apps/eaglercraft.js',
+  './js/apps/driving.js',
   './js/apps/settings.js',
   './js/apps/taskmgr.js',
   './js/apps/browser.js',
   './js/apps/firefox.js',
   './js/apps/help.js',
   './js/apps/vpc.js',
-  './js/main.js'
+  './js/main.js',
+  './Driving Game/index.html',
+  './Driving Game/three.min.js'
 ];
 const EXTRA = [
   './vendor/v86/libv86.js',

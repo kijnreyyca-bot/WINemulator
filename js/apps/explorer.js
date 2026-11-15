@@ -24,10 +24,11 @@
       html: '<div class="openwith-list">' + apps.map(function (a) {
         return '<button class="btn openwith-btn" type="button" data-app="' + a.id + '">' + Win.icon(a.icon, 18) + ' ' + a.label + '</button>';
       }).join('') + '</div>',
-      onShow: function (win) {
+      onShow: function (win, close) {
         win.querySelectorAll('.openwith-btn').forEach(function (b) {
           b.addEventListener('click', function () {
             const app = b.dataset.app;
+            try { close(true); } catch (e) {}
             if (app === 'paint' || app === 'notepad') Win.wm.open(app, { path: Win.fs.norm(path) });
             else if (app === 'browser') Win.wm.open('browser', { url: 'file://' + path });
             else if (app === 'terminal') {

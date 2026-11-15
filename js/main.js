@@ -46,6 +46,13 @@
     }, true);
     Win.boot.start();
     if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+      const hadController = !!navigator.serviceWorker.controller;
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (!hadController || refreshing) return;
+        refreshing = true;
+        location.reload();
+      });
       window.addEventListener('load', function () {
         navigator.serviceWorker.register('sw.js').catch(function () {});
       });

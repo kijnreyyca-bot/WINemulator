@@ -162,9 +162,6 @@
       ctx.setTitle(mode === 'ps' ? 'Windows PowerShell' : (Win.isSeven ? 'Command Prompt' : 'MS-DOS Prompt'));
       ctx.setIcon(mode === 'ps' ? 'powershell' : 'terminal');
       setPrompt();
-      const isBatch = !!(args && (args.run || args.file));
-      if (mode === 'ps') printLine('Windows PowerShell', 'term-accent');
-      else if (!isBatch) printLine(Win.isSeven ? 'Microsoft Windows [Version ' + Win.osVersion + ']' : 'Microsoft(R) Windows 98', 'term-dim');
     }
 
     function setPrompt() {
@@ -1237,8 +1234,6 @@
         case 'wait': {
           let sec = parseInt(args[1], 10) || 0;
           sec = Math.max(0, Math.min(300, sec));
-          const end = Date.now() + sec * 1000;
-          while (Date.now() < end) { /* busy wait */ }
           result = { lines: [] };
           break;
         }
@@ -1251,8 +1246,6 @@
           if (args.indexOf('/nobreak') > -1 || args.indexOf('/NOBREAK') > -1) {
             // no key skip
           }
-          const end = Date.now() + sec * 1000;
-          while (Date.now() < end) { /* busy wait */ }
           result = { lines: [''] };
           break;
         }
@@ -1472,6 +1465,40 @@
       histIndex = history.length;
 
       if (!silent) printLine((mode === 'ps' ? 'PS ' + cwd + '> ' : (Win.isSeven ? cwd + '>' : cwd + '>')) + t, 'term-dim');
+
+      // asynchronous pause commands: wait / timeout / pause
+      const waitMatch = t.match(/^wait\s+(\d+)\s*$/i);
+      const timeoutMatch = t.match(/^timeout(?:\s+\/t)?\s+(\d+)(?:\s+\/nobreak)?\s*$/i);
+      const pauseMatch = /^pause\s*$/i.test(t);
+      if (waitMatch || timeoutMatch || pauseMatch) {
+        let ms = 0;
+        if (waitMatch || timeoutMatch) {
+          const sec = parseInt((waitMatch || timeoutMatch)[1], 10) || 0;
+          ms = Math.max(0, Math.min(300, sec)) * 1000;
+        } else {
+          printLine('Press any key to continue . . .');
+        }
+        input.readOnly = true;
+        let finished = false;
+        let timer = null;
+        const finish = function () {
+          if (finished) return;
+          finished = true;
+          if (timer) clearTimeout(timer);
+          document.removeEventListener('keydown', onPauseKey, true);
+          input.readOnly = false;
+          setPrompt();
+          scroll();
+          try { input.focus(); } catch (e) {}
+        };
+        const onPauseKey = function (ev) {
+          if (ev.key === 'Enter' || ev.key === ' ') ev.preventDefault();
+          finish();
+        };
+        if (pauseMatch) document.addEventListener('keydown', onPauseKey, true);
+        else timer = setTimeout(finish, ms);
+        return;
+      }
 
       let result;
       if (mode === 'ps') result = runPS(t, null);

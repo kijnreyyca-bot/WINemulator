@@ -75,7 +75,7 @@
       const map = {
         notepad: 'notepad', mspaint: 'paint', paint: 'paint', calc: 'calc', calculator: 'calc',
         explorer: 'explorer', cmd: 'terminal', command: 'terminal', terminal: 'terminal', dos: 'terminal',
-        winmine: 'minesweeper', minesweeper: 'minesweeper', control: 'settings', settings: 'settings',
+        winmine: 'minesweeper', minesweeper: 'minesweeper', platformer: 'platformer', game: 'platformer', games: 'platformer', control: 'settings', settings: 'settings',
         taskmgr: 'taskmgr', 'task manager': 'taskmgr', iexplore: 'browser', ie: 'browser', internet: 'browser',
         vpc: 'vpc', 'virtual pc': 'vpc', virtualpc: 'vpc', virtual: 'vpc',
         firefox: 'firefox', mozilla: 'firefox', moz: 'firefox',
@@ -117,6 +117,7 @@
         { id: 'notepad', label: 'Notepad', icon: 'notepad', open: function () { Win.wm.open('notepad'); }, special: true },
         { id: 'paint', label: 'Paint', icon: 'paint', open: function () { Win.wm.open('paint'); }, special: true },
         { id: 'minesweeper', label: 'Minesweeper', icon: 'mine', open: function () { Win.wm.open('minesweeper'); }, special: true },
+        { id: 'platformer', label: 'Platformer', icon: 'game', open: function () { Win.wm.open('platformer'); }, special: true },
         { id: 'vpc', label: 'Virtual PC', icon: 'vpc', open: function () { Win.wm.open('vpc'); }, special: true },
         { id: 'recycle', label: 'Recycle Bin', icon: recycleCount ? 'recycle-full' : 'recycle', open: function () { openPath('::recycle'); }, special: true }
       ];
@@ -130,6 +131,7 @@
       { id: 'paint', label: 'Paint', icon: 'paint', open: function () { Win.wm.open('paint'); }, special: true },
       { id: 'vpc', label: 'Virtual PC', icon: 'vpc', open: function () { Win.wm.open('vpc'); }, special: true },
       { id: 'minesweeper', label: 'Minesweeper', icon: 'mine', open: function () { Win.wm.open('minesweeper'); }, special: true },
+      { id: 'platformer', label: 'Platformer', icon: 'game', open: function () { Win.wm.open('platformer'); }, special: true },
       { id: 'recycle', label: 'Recycle Bin', icon: recycleCount ? 'recycle-full' : 'recycle', open: function () { openPath('::recycle'); }, special: true },
       { id: 'help', label: 'Help', icon: 'help', open: function () { Win.wm.open('help'); }, special: true }
     ];
@@ -339,17 +341,17 @@
       html: '<div class="openwith-list">' + apps.map(function (a) {
         return '<button class="btn openwith-btn" type="button" data-app="' + a.id + '">' + Win.icon(a.icon, 18) + ' ' + a.label + '</button>';
       }).join('') + '</div>',
-      onShow: function (win) {
+      onShow: function (win, close) {
         win.querySelectorAll('.openwith-btn').forEach(function (b) {
           b.addEventListener('click', function () {
             const app = b.dataset.app;
+            try { close(true); } catch (e) {}
             if (app === 'paint' || app === 'notepad') Win.wm.open(app, { path: Win.fs.norm(path) });
             else if (app === 'browser') Win.wm.open('browser', { url: 'file://' + path });
             else if (app === 'terminal') {
               const parent = Win.fs.parentPath(path) || 'C:\\';
               Win.wm.open('terminal', { mode: path.toLowerCase().endsWith('.ps1') ? 'ps' : 'cmd', cwd: parent, run: Win.fs.baseName(path) });
             } else Win.wm.open(app);
-            try { win.dispatchEvent(new CustomEvent('winemulator:close')); } catch (e) {}
           });
         });
       },

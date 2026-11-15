@@ -1,7 +1,7 @@
 /* WINemulator — offline cache */
 'use strict';
 
-const CACHE = 'winemulator-v18';
+const CACHE = 'winemulator-v20';
 const CORE = [
   './',
   './index.html',
@@ -83,20 +83,17 @@ self.addEventListener('fetch', function (event) {
   try { url = new URL(req.url); } catch (e) { return; }
   if (url.origin !== self.location.origin) return;
 
+  // Network-first so code updates land on the first reload; cache is the offline fallback.
   event.respondWith(
-    caches.match(req, { ignoreSearch: true }).then(function (cached) {
-      const fresh = fetch(req).then(function (res) {
-        if (res && res.status === 200 && res.type === 'basic') {
-          const copy = res.clone();
-          caches.open(CACHE).then(function (cache) { cache.put(req, copy); }).catch(function () {});
-        }
-        return res;
-      }).catch(function () { return null; });
-
-      if (cached) return cached;
-
-      return fresh.then(function (res) {
-        if (res) return res;
+    fetch(req).then(function (res) {
+      if (res && res.status === 200 && res.type === 'basic') {
+        const copy = res.clone();
+        caches.open(CACHE).then(function (cache) { cache.put(req, copy); }).catch(function () {});
+      }
+      return res;
+    }).catch(function () {
+      return caches.match(req, { ignoreSearch: true }).then(function (cached) {
+        if (cached) return cached;
         if (req.mode === 'navigate') {
           return caches.match('./index.html').then(function (fallback) {
             return fallback || new Response('WINemulator is offline and its cache is empty. Reconnect once to install it.', {

@@ -6,6 +6,10 @@
   let timers = [];
   let booting = false;
   let bootStarted = 0;
+  let biosSetup = false, biosMenu = false;
+  let setupTab = 0, setupSel = 0, bootMenuSel = 0;
+  let bootOrder = ['Hard Disk (WINEMULATOR VIRTUAL HD)', 'CD-ROM Drive (32X)', 'Floppy Drive (A:)', 'Network (PXE)'];
+  let biosKeyHandlerRef = null;
 
   function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
   function clearTimers() { timers.forEach(clearTimeout); timers = []; }
@@ -13,7 +17,8 @@
   function biosMarkup() {
     return '<div class="bios-screen">' +
       '<pre class="bios-text"></pre>' +
-      '<div class="bios-bottom"><span class="bios-mem">Memory Test: <b class="memval">0</b>K OK</span><span class="bios-skip">Press any key to skip</span></div>' +
+      '<div class="bios-bottom"><span class="bios-mem">Memory Test: <b class="memval">0</b>K OK</span>' +
+      '<span class="bios-keys">DEL: Setup  F12: Boot Menu  F8: Safe Mode  ESC: Skip</span></div>' +
       '</div>';
   }
 
@@ -145,6 +150,8 @@
     if (!booting) return;
     booting = false;
     clearTimers();
+    if (biosKeyHandlerRef) { document.removeEventListener('keydown', biosKeyHandlerRef); biosKeyHandlerRef = null; }
+    biosSetup = false; biosMenu = false;
     Win.bootMs = Math.round(performance.now() - bootStarted);
     document.body.classList.remove('booting');
     document.body.classList.add('booted');
@@ -550,9 +557,186 @@
     if (ev.key === 'Escape' || ev.key === 'Enter' || ev.key === ' ') skip(ev);
   });
 
+  function biosBootMenuMarkup() {
+    return '<div class="bios-bootmenu">' +
+      '<div class="bios-bm-title">WINemulator BIOS Boot Menu</div>' +
+      '<div class="bios-bm-sub">Please select boot device:</div>' +
+      '<ul class="bios-bm-list" id="bios-bm-list"></ul>' +
+      '<div class="bios-bm-foot">Enter: Select   Up/Down: Navigate   ESC: Cancel</div>' +
+      '</div>';
+  }
+
+  function renderBootMenu() {
+    const list = document.getElementById('bios-bm-list');
+    if (!list) return;
+    list.innerHTML = bootOrder.map(function (d, i) {
+      return '<li class="' + (i === bootMenuSel ? 'active' : '') + '">' + (i + 1) + '. ' + d + '</li>';
+    }).join('');
+  }
+
+  function enterBootMenu() {
+    if (!booting) return;
+    clearTimers();
+    biosMenu = true;
+    biosSetup = false;
+    bootMenuSel = 0;
+    bootLayer.innerHTML = biosBootMenuMarkup();
+    bootLayer.className = 'boot-layer bios-menu-layer';
+    renderBootMenu();
+  }
+
+  function setupTabsHtml() {
+    return SETUP_TABS.map(function (t, i) {
+      return '<span class="bios-tab' + (i === setupTab ? ' active' : '') + '">' + t + '</span>';
+    }).join('   ');
+  }
+
+  const SETUP_TABS = ['Main', 'Advanced', 'Boot', 'Security', 'Exit'];
+
+  function setupItems() {
+    const now = new Date();
+    if (setupTab === 0) {
+      return [
+        { label: 'System Time', value: now.toLocaleTimeString() },
+        { label: 'System Date', value: now.toDateString() },
+        { label: 'Legacy Diskette A:', value: '1.44M, 3.5 in.' },
+        { label: 'Primary Hard Disk 0', value: 'WINEMULATOR VIRTUAL HD' },
+        { label: 'Memory (SDRAM)', value: '65536 KB' },
+        { label: 'Video Adapter', value: 'Canvas/VGA 1024x768' }
+      ];
+    }
+    if (setupTab === 1) {
+      return [
+        { label: 'CPU Type', value: 'WebCore x86 @ 3.20 GHz' },
+        { label: 'Hyper-Threading', value: 'Disabled' },
+        { label: 'ACPI Support', value: 'Enabled' },
+        { label: 'USB Legacy Support', value: 'Enabled' },
+        { label: 'Plug & Play OS', value: 'Yes' }
+      ];
+    }
+    if (setupTab === 2) {
+      const items = bootOrder.map(function (d, i) { return { label: 'Boot Device ' + (i + 1), value: d }; });
+      items.push({ label: 'Quick Boot', value: 'Enabled' });
+      return items;
+    }
+    if (setupTab === 3) {
+      return [
+        { label: 'Supervisor Password', value: 'Not Installed' },
+        { label: 'User Password', value: 'Not Installed' },
+        { label: 'Password on Boot', value: 'Disabled' }
+      ];
+    }
+    return [
+      { label: 'Save Changes and Exit', value: '', action: 'save' },
+      { label: 'Discard Changes and Exit', value: '', action: 'discard' },
+      { label: 'Load Optimized Defaults', value: '', action: 'defaults' }
+    ];
+  }
+
+  function setupMarkup() {
+    return '<div class="bios-setup">' +
+      '<div class="bios-setup-title">CMOS Setup Utility - Copyright (C) 1985-2026 WINemulator</div>' +
+      '<div class="bios-setup-tabs" id="bios-tabs"></div>' +
+      '<div class="bios-setup-body" id="bios-body"></div>' +
+      '<div class="bios-setup-foot">F10=Save &amp; Exit  ESC=Exit  &larr;/&rarr;=Tab  &uarr;/&darr;=Select  Enter=Select  +/-=Change</div>' +
+      '</div>';
+  }
+
+  function renderSetup() {
+    const tabs = document.getElementById('bios-tabs');
+    if (tabs) tabs.innerHTML = setupTabsHtml();
+    const body = document.getElementById('bios-body');
+    if (!body) return;
+    const items = setupItems();
+    if (setupSel >= items.length) setupSel = 0;
+    body.innerHTML = items.map(function (it, i) {
+      const sel = i === setupSel ? ' sel' : '';
+      const val = it.value ? '<span class="bios-val">' + it.value + '</span>' : '';
+      return '<div class="bios-row' + sel + '"><span class="bios-lbl">' + it.label + '</span>' + val + '</div>';
+    }).join('');
+  }
+
+  function enterSetup() {
+    if (!booting) return;
+    clearTimers();
+    booting = false;
+    biosSetup = true;
+    biosMenu = false;
+    setupSel = 0;
+    bootLayer.innerHTML = setupMarkup();
+    bootLayer.className = 'boot-layer bios-setup-layer';
+    renderSetup();
+  }
+
+  function resumeBoot() {
+    biosSetup = false;
+    biosMenu = false;
+    booting = true;
+    bootLayer.className = 'boot-layer';
+    bootLayer.innerHTML = bootSplash();
+    bootLayer.classList.add('splash');
+    bootLayer.style.background = '#000';
+    const hint = bootLayer.querySelector('.bs-hint, .xp-boot-hint, .w7-boot-hint, .w9-boot-hint');
+    if (hint) hint.textContent = 'Starting Windows...';
+    later(finish, fast() ? 550 : 1500);
+  }
+
+  function handleSetupKey(e) {
+    const items = setupItems();
+    if (e.key === 'ArrowRight') { setupTab = (setupTab + 1) % SETUP_TABS.length; setupSel = 0; renderSetup(); e.preventDefault(); }
+    else if (e.key === 'ArrowLeft') { setupTab = (setupTab + SETUP_TABS.length - 1) % SETUP_TABS.length; setupSel = 0; renderSetup(); e.preventDefault(); }
+    else if (e.key === 'ArrowDown') { setupSel = (setupSel + 1) % items.length; renderSetup(); e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { setupSel = (setupSel + items.length - 1) % items.length; renderSetup(); e.preventDefault(); }
+    else if (e.key === 'Enter') {
+      const it = items[setupSel];
+      if (it && it.action === 'save') resumeBoot();
+      else if (it && it.action === 'discard') resumeBoot();
+      else if (it && it.action === 'defaults') { setupSel = 0; renderSetup(); }
+      e.preventDefault();
+    }
+    else if (e.key === '+' || e.key === '=') {
+      if (setupTab === 2 && setupSel < bootOrder.length) {
+        const i = setupSel;
+        if (i > 0) { const t = bootOrder[i]; bootOrder[i] = bootOrder[i-1]; bootOrder[i-1] = t; setupSel = i-1; renderSetup(); }
+      }
+      e.preventDefault();
+    }
+    else if (e.key === '-' || e.key === '_') {
+      if (setupTab === 2 && setupSel < bootOrder.length) {
+        const i = setupSel;
+        if (i < bootOrder.length - 1) { const t = bootOrder[i]; bootOrder[i] = bootOrder[i+1]; bootOrder[i+1] = t; setupSel = i+1; renderSetup(); }
+      }
+      e.preventDefault();
+    }
+    else if (e.key === 'F10') { resumeBoot(); e.preventDefault(); }
+    else if (e.key === 'Escape') { resumeBoot(); e.preventDefault(); }
+  }
+
+  function biosKeyHandler(e) {
+    if (biosMenu) {
+      if (e.key === 'ArrowUp') { bootMenuSel = (bootMenuSel + bootOrder.length - 1) % bootOrder.length; renderBootMenu(); e.preventDefault(); }
+      else if (e.key === 'ArrowDown') { bootMenuSel = (bootMenuSel + 1) % bootOrder.length; renderBootMenu(); e.preventDefault(); }
+      else if (e.key === 'Enter') { resumeBoot(); e.preventDefault(); }
+      else if (e.key === 'Escape') { resumeBoot(); e.preventDefault(); }
+      return;
+    }
+    if (biosSetup) { handleSetupKey(e); return; }
+    if (!booting) return;
+    if (e.key === 'Delete') { enterSetup(); e.preventDefault(); }
+    else if (e.key === 'F12') { enterBootMenu(); e.preventDefault(); }
+    else if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { skip(e); }
+  }
+
+  document.addEventListener('keydown', biosKeyHandler);
+
   Win.boot = {
     start: start, finish: finish, power: power, logoff: logoff, login: doLogin,
     dos: dosMode,
-    get isBooting() { return booting; }
+    get isBooting() { return booting || biosSetup || biosMenu; },
+    enterSetup: enterSetup,
+    enterBootMenu: enterBootMenu,
+    resumeBoot: resumeBoot,
+    forceSetup: function () { booting = true; enterSetup(); },
+    forceBootMenu: function () { booting = true; enterBootMenu(); }
   };
 })();

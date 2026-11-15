@@ -508,3 +508,25 @@ body:not(.show-fps) .fps-meter { display: none; }
   .fd-side { display: none; }
   .fd-main { min-height: 46vh; max-height: 52vh; }
 }
+
+/* BIOS setup / boot menu */
+.bios-screen { background:#000; color:#c0c0c0; font-family: "Lucida Console", "Courier New", monospace; font-size:13px; padding:8px; }
+.bios-bottom { display:flex; justify-content:space-between; margin-top:6px; color:#808080; }
+.bios-keys { color:#ffff00; }
+.bios-setup { background:#0000aa; color:#ffffff; font-family:"Lucida Console","Courier New",monospace; font-size:14px; padding:10px; height:100%; }
+.bios-setup-title { color:#ffff00; margin-bottom:8px; }
+.bios-setup-tabs { margin-bottom:10px; color:#ffffff; }
+.bios-tab { padding:0 6px; }
+.bios-tab.active { background:#ffffff; color:#0000aa; }
+.bios-setup-body { background:#000000; padding:6px; min-height:200px; }
+.bios-row { display:flex; justify-content:space-between; padding:1px 4px; }
+.bios-row.sel { background:#ffffff; color:#0000aa; }
+.bios-val { color:#ffff00; }
+.bios-row.sel .bios-val { color:#0000aa; }
+.bios-setup-foot { margin-top:10px; color:#c0c0c0; font-size:12px; }
+.bios-bootmenu { background:#000; color:#ffffff; font-family:"Lucida Console","Courier New",monospace; font-size:14px; padding:20px; }
+.bios-bm-title { color:#ffff00; margin-bottom:8px; }
+.bios-bm-list { list-style:none; padding:0; margin:10px 0; }
+.bios-bm-list li { padding:2px 6px; }
+.bios-bm-list li.active { background:#ffffff; color:#0000aa; }
+.bios-bm-foot { color:#808080; margin-top:10px; }

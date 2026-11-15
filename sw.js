@@ -1,13 +1,15 @@
 /* WINemulator — offline cache */
 'use strict';
 
-const CACHE = 'winemulator-v25';
+const CACHE = 'winemulator-v26';
 const CORE = [
   './',
   './index.html',
   './desktop.html',
   './manifest.webmanifest',
   './assets/favicon.svg',
+  './assets/favicon.png',
+  './assets/favicon.ico',
   './assets/bliss.svg',
   './assets/harmony.svg',
   './assets/hero.svg',

@@ -1,7 +1,7 @@
 /* WINemulator — offline cache */
 'use strict';
 
-const CACHE = 'winemulator-v30';
+const CACHE = 'winemulator-v31';
 const CORE = [
   './',
   './index.html',
@@ -40,7 +40,8 @@ const CORE = [
   './js/apps/paint.js',
   './js/apps/calc.js',
   './js/apps/terminal.js',
-  './js/apps/minesweeper.js',
+  './js/apps/runner.js',
+  './js/apps/dosbox.js',
   './js/apps/platformer.js',
   './js/apps/settings.js',
   './js/apps/taskmgr.js',

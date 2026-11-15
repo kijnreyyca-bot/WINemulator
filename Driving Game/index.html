@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3D Driving Simulator</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#0b1a2a;font-family:Tahoma,Verdana,sans-serif;color:#fff;}
+  #menu{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(180deg,#0b1a2a,#1a3a5a);z-index:10;}
+  #menu h1{font-size:48px;margin:0 0 8px;letter-spacing:2px;text-shadow:0 2px 8px #000;}
+  #menu p{opacity:.8;margin:0 0 24px;}
+  #menu button{padding:12px 36px;font-size:18px;border:0;border-radius:4px;background:#e63946;color:#fff;cursor:pointer;margin:6px;}
+  #menu button:hover{background:#ff4d5a;}
+  #hud{position:fixed;left:16px;bottom:16px;color:#fff;font-size:14px;text-shadow:0 1px 3px #000;pointer-events:none;}
+  #hud .speed{font-size:36px;font-weight:bold;}
+  #hud .rpm{width:200px;height:8px;background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden;margin-top:4px;}
+  #hud .rpm>div{height:100%;width:0%;background:linear-gradient(90deg,#2a9d4a,#e6b800,#e04a3a);}
+  #minimap{position:fixed;right:16px;bottom:16px;width:160px;height:160px;border:2px solid rgba(255,255,255,.4);border-radius:8px;background:rgba(0,0,0,.4);}
+  canvas{display:block;}
+</style>
+</head>
+<body>
+<div id="menu">
+  <h1>3D Driving Simulator</h1>
+  <p>Forza-inspired open area driving</p>
+  <button id="play">PLAY</button>
+  <button id="quit">QUIT</button>
+</div>
+<div id="hud" style="display:none;">
+  <div class="speed">0 km/h</div>
+  <div class="rpm"><div></div></div>
+  <div class="gear">Gear: 1</div>
+  <div class="controls">W/S accelerate/brake  A/D steer  Space handbrake  R reset  C camera</div>
+</div>
+<canvas id="minimap"></canvas>
+<script src="three.min.js"></script>
+<script>
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x87ceeb, 80, 260);
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 500);
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+// Lights
+const sun = new THREE.DirectionalLight(0xffffff, 1.1);
+sun.position.set(50,80,30);
+sun.castShadow = true;
+sun.shadow.mapSize.width = 1024;
+sun.shadow.mapSize.height = 1024;
+scene.add(sun);
+scene.add(new THREE.AmbientLight(0x8899bb, 0.6));
+
+// Sky
+const skyGeo = new THREE.SphereGeometry(400, 32, 16);
+const skyMat = new THREE.MeshBasicMaterial({ color: 0x87ceeb, side: THREE.BackSide });
+scene.add(new THREE.Mesh(skyGeo, skyMat));
+
+// Ground
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(400,400), new THREE.MeshLambertMaterial({color:0x3a7d3a}));
+ground.rotation.x = -Math.PI/2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Roads: a grid of asphalt strips
+const roadMat = new THREE.MeshLambertMaterial({color:0x333333});
+function road(w,l,x,z,rot){
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w,l), roadMat);
+  m.rotation.x = -Math.PI/2;
+  m.position.set(x,0.01,z);
+  m.rotation.z = rot||0;
+  m.receiveShadow = true;
+  scene.add(m);
+  // lane markings
+  const mk = new THREE.Mesh(new THREE.PlaneGeometry(0.15, l*0.9), new THREE.MeshBasicMaterial({color:0xffffff}));
+  mk.rotation.x = -Math.PI/2;
+  mk.position.set(x,0.02,z);
+  mk.rotation.z = rot||0;
+  scene.add(mk);
+}
+for(let i=-5;i<=5;i++){ road(8,400, i*40, 0, 0); road(8,400, 0, i*40, Math.PI/2); }
+
+// Trees
+const trunkMat = new THREE.MeshLambertMaterial({color:0x5a3a1a});
+const leafMat = new THREE.MeshLambertMaterial({color:0x2d6a2d});
+function tree(x,z){
+  const t = new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.4,3,6), trunkMat);
+  t.position.set(x,1.5,z); t.castShadow=true; scene.add(t);
+  const c = new THREE.Mesh(new THREE.SphereGeometry(2.5,8,6), leafMat);
+  c.position.set(x,5,z); c.castShadow=true; scene.add(c);
+}
+for(let i=0;i<80;i++){
+  const x = (Math.random()-0.5)*360;
+  const z = (Math.random()-0.5)*360;
+  if (Math.abs(x%40)<6 && Math.abs(z%40)<6) continue;
+  tree(x,z);
+}
+
+// Car
+const car = new THREE.Group();
+const body = new THREE.Mesh(new THREE.BoxGeometry(2,0.8,4), new THREE.MeshLambertMaterial({color:0xe63946}));
+body.position.y=0.6; body.castShadow=true; car.add(body);
+const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.6,0.7,2), new THREE.MeshLambertMaterial({color:0x222}));
+cabin.position.set(0,1.3,-0.3); cabin.castShadow=true; car.add(cabin);
+const wheelGeo = new THREE.CylinderGeometry(0.35,0.35,0.25,12);
+const wheelMat = new THREE.MeshLambertMaterial({color:0x111});
+const wheels = [];
+for(const [x,z] of [[-1.1,1.4],[1.1,1.4],[-1.1,-1.4],[1.1,-1.4]]){
+  const w = new THREE.Mesh(wheelGeo, wheelMat);
+  w.rotation.z = Math.PI/2;
+  w.position.set(x,0.35,z);
+  w.castShadow=true;
+  car.add(w);
+  wheels.push(w);
+}
+car.position.set(0,0,0);
+scene.add(car);
+
+// Physics state
+const state = { x:0, z:0, yaw:0, speed:0, steer:0, gear:1, rpm:0.2, handbrake:false, cameraMode:0 };
+const keys = {};
+window.addEventListener('keydown', e=>{
+  keys[e.key.toLowerCase()]=true;
+  if(e.key===' '){ state.handbrake=true; e.preventDefault(); }
+  if(e.key.toLowerCase()==='r') resetCar();
+  if(e.key.toLowerCase()==='c') state.cameraMode=(state.cameraMode+1)%3;
+});
+window.addEventListener('keyup', e=>{
+  keys[e.key.toLowerCase()]=false;
+  if(e.key===' ') state.handbrake=false;
+});
+
+function resetCar(){ state.x=0; state.z=0; state.yaw=0; state.speed=0; state.steer=0; car.position.set(0,0,0); car.rotation.y=0; }
+
+// Camera follow
+const camTarget = new THREE.Vector3();
+const camPos = new THREE.Vector3();
+
+function updatePhysics(dt){
+  const accel = 18, brake = 22, maxSpeed = 60, reverseMax = 18;
+  const steerSpeed = 2.6;
+  // input
+  let throttle = keys['w']||keys['arrowup'] ? 1 : 0;
+  let brakeInput = keys['s']||keys['arrowdown'] ? 1 : 0;
+  let steerInput = (keys['a']||keys['arrowleft']?1:0) - (keys['d']||keys['arrowright']?1:0);
+
+  // speed-dependent steering
+  const speedFactor = Math.max(0.3, 1 - Math.abs(state.speed)/maxSpeed*0.7);
+  state.steer += (steerInput*steerSpeed*speedFactor - state.steer) * Math.min(1, dt*8);
+
+  // acceleration
+  if (throttle) {
+    if (state.speed >= 0) state.speed += accel*dt*(1 - Math.abs(state.speed)/maxSpeed);
+    else state.speed += brake*dt; // braking from reverse
+  }
+  if (brakeInput) {
+    if (state.speed > 0) state.speed -= brake*dt;
+    else state.speed -= accel*0.6*dt*(1 - Math.abs(state.speed)/reverseMax);
+  }
+  // friction
+  const fric = state.handbrake ? 12 : 4;
+  if (!throttle && !brakeInput) {
+    if (state.speed > 0) state.speed = Math.max(0, state.speed - fric*dt);
+    else if (state.speed < 0) state.speed = Math.min(0, state.speed + fric*dt);
+  }
+  if (state.handbrake && Math.abs(state.speed)>5) {
+    state.speed *= 0.97;
+  }
+  state.speed = Math.max(-reverseMax, Math.min(maxSpeed, state.speed));
+
+  // steering -> yaw
+  const turnRate = state.steer * (Math.abs(state.speed)/maxSpeed*2 + 0.3) * Math.sign(state.speed || 1);
+  state.yaw += turnRate*dt;
+  // drift: handbrake reduces grip
+  car.rotation.y = state.yaw;
+  const fwd = new THREE.Vector3(Math.sin(state.yaw),0,Math.cos(state.yaw));
+  car.position.x += fwd.x*state.speed*dt;
+  car.position.z += fwd.z*state.speed*dt;
+  // body roll
+  car.rotation.z = -state.steer*0.08*Math.min(1,Math.abs(state.speed)/30);
+  // wheels steer
+  wheels[0].rotation.y = state.steer*0.5;
+  wheels[1].rotation.y = state.steer*0.5;
+  for(const w of wheels) w.rotation.x += state.speed*dt*2;
+
+  state.rpm = 0.15 + Math.abs(state.speed)/maxSpeed*0.8 + (throttle?0.1:0);
+  if (state.rpm>1) state.rpm=1;
+  // gear
+  const g = Math.floor(Math.abs(state.speed)/15)+1;
+  state.gear = Math.min(6, g || 1);
+}
+
+let last = performance.now();
+function animate(){
+  requestAnimationFrame(animate);
+  const now = performance.now();
+  let dt = (now-last)/1000;
+  if (dt>0.1) dt=0.1;
+  last=now;
+  if (running) updatePhysics(dt);
+
+  // camera
+  const back = new THREE.Vector3(-Math.sin(state.yaw),0,-Math.cos(state.yaw));
+  const targetPos = car.position.clone().add(back.multiplyScalar(10)).add(new THREE.Vector3(0,4,0));
+  const lookAt = car.position.clone().add(new THREE.Vector3(0,1,0));
+  camera.position.lerp(targetPos, 0.1);
+  camera.lookAt(lookAt);
+
+  renderer.render(scene, camera);
+
+  // HUD
+  if (running) {
+    document.querySelector('.speed').textContent = Math.round(Math.abs(state.speed)*3.6) + ' km/h';
+    document.querySelector('.rpm>div').style.width = (state.rpm*100)+'%';
+    document.querySelector('.gear').textContent = 'Gear: ' + state.gear + (state.handbrake?'  [HB]':'');
+    // minimap
+    const mc = document.getElementById('minimap');
+    const ctx = mc.getContext('2d');
+    ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(0,0,160,160);
+    ctx.strokeStyle='rgba(255,255,255,0.3)';
+    // roads
+    ctx.strokeStyle='#555'; ctx.lineWidth=2;
+    for(let i=-5;i<=5;i++){ const p=i*40/400*160+80; ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,160);ctx.stroke(); ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(160,p);ctx.stroke(); }
+    ctx.fillStyle='#e63946';
+    ctx.beginPath();
+    const mx = 80 + (car.position.x/400*160);
+    const mz = 80 + (car.position.z/400*160);
+    ctx.arc(mx,mz,4,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.beginPath(); ctx.moveTo(mx,mz); ctx.lineTo(mx+Math.sin(state.yaw)*8, mz+Math.cos(state.yaw)*8); ctx.stroke();
+  }
+}
+let running=false;
+document.getElementById('play').addEventListener('click', ()=>{ document.getElementById('menu').style.display='none'; document.getElementById('hud').style.display='block'; running=true; });
+document.getElementById('quit').addEventListener('click', ()=>{ if(window.parent!==window) window.parent.postMessage('close','*'); });
+window.addEventListener('resize', ()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+animate();
+</script>
+</body>
+</html>

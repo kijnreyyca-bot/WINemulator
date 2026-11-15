@@ -12,7 +12,7 @@
       card.classList.add('last-used');
     }
     card.addEventListener('click', function () {
-      const os = card.dataset.os === '9' ? '9' : card.dataset.os === '7' ? '7' : card.dataset.os === 'xp' ? 'xp' : card.dataset.os === '2k' ? '2k' : '98';
+      const os = card.dataset.os === '9' ? '9' : card.dataset.os === '7' ? '7' : card.dataset.os === 'xp' ? 'xp' : card.dataset.os === '2k' ? '2k' : card.dataset.os === 'dos' ? 'dos' : '98';
       try { localStorage.setItem('winemulator.os', os); } catch (e) {}
     });
     card.addEventListener('keydown', function (ev) {

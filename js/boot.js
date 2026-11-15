@@ -157,6 +157,9 @@
     document.body.classList.add('booted');
     document.getElementById('boot-layer').classList.add('fade');
     setTimeout(function () { document.getElementById('boot-layer').hidden = true; }, 380);
+    if (Win.isDOS) {
+      setTimeout(function () { if (Win.boot && Win.boot.dos) Win.boot.dos(); }, 420);
+    }
     if (Win.store.get('sound')) {
       if (Win.sound.context && Win.sound.context.state === 'running') Win.sound.play('startup');
       else Win.sound.armStartup();
@@ -320,11 +323,14 @@
     document.body.classList.add('powered-off', 'dos-mode-on');
     powerLayer.hidden = false;
     powerLayer.className = 'power-layer dos-mode';
-    let cwd = options.cwd ? options.cwd : (Win.isModern ? 'C:\\Users\\User' : 'C:\\WINDOWS');
+    let cwd = options.cwd ? options.cwd : (Win.isDOS ? 'C:\\' : (Win.isModern ? 'C:\\Users\\User' : 'C:\\WINDOWS'));
     let classic = !!options.classic;
-    let output = (Win.isNine
-      ? 'Microsoft Windows 9\n   MS-DOS mode\n\nType HELP for a list of commands. Type WINDOWS.SYS to start Windows.\n\n'
-      : 'Microsoft(R) Windows 98\n   (C)Copyright Microsoft Corp 1981-1998.\n\nType HELP for a list of commands. Type WINDOWS.SYS to start Windows.\n\n');
+    let fmActive = false, fmDir = cwd, fmSel = 0;
+    let output = (Win.isDOS
+      ? 'MS-DOS Version 6.22\n   (C)Copyright Microsoft Corp 1981-1998.\n\nType HELP for a list of commands.\n\n'
+      : Win.isNine
+        ? 'Microsoft Windows 9\n   MS-DOS mode\n\nType HELP for a list of commands. Type WINDOWS.SYS to start Windows.\n\n'
+        : 'Microsoft(R) Windows 98\n   (C)Copyright Microsoft Corp 1981-1998.\n\nType HELP for a list of commands. Type WINDOWS.SYS to start Windows.\n\n');
     powerLayer.innerHTML =
       '<div class="dos-screen"><pre class="dos-out"></pre>' +
       '<div class="dos-line"><span class="dos-prompt"></span><input class="dos-input" spellcheck="false" autocomplete="off" aria-label="MS-DOS prompt"></div></div>';
@@ -334,11 +340,42 @@
     const draw = function () {
       out.textContent = output;
       out.scrollTop = out.scrollHeight;
-      prompt.textContent = cwd + '>';
+      prompt.textContent = fmActive ? 'FM>' : (cwd + '>');
       setTimeout(function () { out.scrollTop = out.scrollHeight; }, 10);
     };
     const print = function (s) { output += s + '\n'; draw(); };
     const focusInput = function () { setTimeout(function () { try { input.focus(); } catch (e) {} }, 0); };
+
+    function fmEntries() {
+      const list = Win.fs.list(fmDir);
+      const dirs = list.filter(function (e) { return e.type === 'dir'; });
+      const files = list.filter(function (e) { return e.type !== 'dir'; });
+      return dirs.concat(files);
+    }
+    function fmRefresh() {
+      const entries = fmEntries();
+      if (fmSel >= entries.length) fmSel = Math.max(0, entries.length - 1);
+      let text = ' WINemulator File Manager - ' + fmDir + '\n';
+      text += ' ' + '-'.repeat(60) + '\n';
+      if (!entries.length) text += '  (empty)\n';
+      entries.forEach(function (e, i) {
+        const mark = i === fmSel ? '>' : ' ';
+        const type = e.type === 'dir' ? '<DIR>' : String(e.size).padStart(8);
+        text += mark + ' ' + e.name.padEnd(24) + ' ' + type + '  ' + (e.modified ? new Date(e.modified).toLocaleDateString() : '') + '\n';
+      });
+      text += ' ' + '-'.repeat(60) + '\n';
+      text += ' Up/Down: select   Enter: open   Backspace: up   Esc: exit   F5: copy   Del: delete';
+      output = text + '\n';
+      draw();
+    }
+    function fmExit() {
+      fmActive = false;
+      input.style.visibility = '';
+      input.style.position = '';
+      input.style.left = '';
+      draw();
+      focusInput();
+    }
 
     /* Headless Command Prompt engine shared with the CMD app. It gives the
        DOS shell the full Windows command set. */
@@ -412,6 +449,8 @@
       print('  MSDOS - DOS      Switch to the main MS-DOS shell');
       print('  MSDOS - CMD      Enable all Command Prompt commands');
       print('  MSDOS - <file>   Run a .bat file or open a file');
+      print('  WIN [os]         Start Windows (98, XP, 7, 9, 2000, DOS)');
+      print('  EXPLORER         Open the file manager');
       print('  WINDOWS.SYS      Start Windows (WIN.SYS also works)');
       print('  EXIT             Leave MS-DOS mode');
       if (!classic) print('This shell also accepts the full Command Prompt command set.');
@@ -457,6 +496,23 @@
       if (cmd === 'exit') { print('Use WINDOWS.SYS (or WIN.SYS) to return to Windows, or close this tab.'); return; }
       if (cmd === 'powershell' || cmd === 'pwsh') { print('Windows PowerShell is not available in MS-DOS mode.'); return; }
       if (cmd === 'msdos' || cmd === 'dos') { handleMsdos(rest); return; }
+      if (cmd === 'win' || cmd === 'windows' || cmd === 'win.exe') {
+        let t = '98';
+        const a = rest.toLowerCase();
+        if (a.indexOf('98') > -1) t = '98';
+        else if (a.indexOf('xp') > -1) t = 'xp';
+        else if (a.indexOf('2000') > -1 || a.indexOf('2k') > -1) t = '2k';
+        else if (a.indexOf('7') > -1) t = '7';
+        else if (a.indexOf('9') > -1) t = '9';
+        else if (a.indexOf('dos') > -1) t = 'dos';
+        print('Starting ' + (t === 'dos' ? 'MS-DOS' : 'Windows ' + (t === '98' ? '98' : t.toUpperCase())) + '...');
+        setTimeout(function () { if (Win.switchOS) Win.switchOS(t); else location.href = 'desktop.html?os=' + t; }, 400);
+        return;
+      }
+      if (cmd === 'explorer' || cmd === 'explorer.exe') {
+        fmActive = true; fmDir = cwd; fmSel = 0; input.style.position='absolute'; input.style.left='-9999px'; input.focus();
+        fmRefresh(); return;
+      }
       if (cmd === 'help' || cmd === '?') { dosHelp(); return; }
 
       // asynchronous delays
@@ -528,6 +584,31 @@
       runInShell(line);
     };
     input.addEventListener('keydown', function (ev) {
+      if (fmActive) {
+        if (ev.key === 'ArrowUp') { const e=fmEntries(); fmSel=(fmSel+e.length-1)%Math.max(1,e.length); fmRefresh(); ev.preventDefault(); return; }
+        if (ev.key === 'ArrowDown') { const e=fmEntries(); fmSel=(fmSel+1)%Math.max(1,e.length); fmRefresh(); ev.preventDefault(); return; }
+        if (ev.key === 'Enter') {
+          const e=fmEntries(); const it=e[fmSel];
+          if (it) {
+            if (it.type === 'dir') { fmDir = Win.fs.join(fmDir, it.name); fmSel=0; fmRefresh(); }
+            else {
+              const p = Win.fs.join(fmDir, it.name);
+              const content = Win.fs.read(p);
+              if (content === null || content === undefined) print('Cannot open file');
+              else { output = '--- ' + p + ' ---\n' + String(content) + '\n'; draw(); }
+            }
+          }
+          ev.preventDefault(); return;
+        }
+        if (ev.key === 'Backspace') { fmDir = Win.fs.parentPath(fmDir) || fmDir; fmSel=0; fmRefresh(); ev.preventDefault(); return; }
+        if (ev.key === 'Escape' || ev.key === 'F10') { fmExit(); ev.preventDefault(); return; }
+        if (ev.key === 'Delete') {
+          const e=fmEntries(); const it=e[fmSel];
+          if (it) { try { Win.fs.del(Win.fs.join(fmDir,it.name)); } catch(err){} fmRefresh(); }
+          ev.preventDefault(); return;
+        }
+        return;
+      }
       if (ev.key === 'Enter') {
         if (input.readOnly) return;
         const v = input.value; input.value = ''; run(v);

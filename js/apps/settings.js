@@ -210,6 +210,7 @@
           '<button class="btn" type="button" data-os-switch="7"' + (Win.isSeven ? ' disabled' : '') + '>' + Win.icon('orb', 15) + ' Windows 7' + (Win.isSeven ? ' (current)' : '') + '</button>' +
           '<button class="btn" type="button" data-os-switch="9"' + (Win.isNine ? ' disabled' : '') + '>' + Win.icon('win10', 15) + ' Windows 9' + (Win.isNine ? ' (current)' : '') + '</button>' +
 '<button class="btn" type="button" data-os-switch="2k"' + (Win.is2000 ? ' disabled' : '') + '>' + Win.icon('flag', 15) + ' Windows 2000' + (Win.is2000 ? ' (current)' : '') + '</button>' +
+'<button class="btn" type="button" data-os-switch="dos"' + (Win.isDOS ? ' disabled' : '') + '>' + Win.icon('terminal', 15) + ' MS-DOS' + (Win.isDOS ? ' (current)' : '') + '</button>' +
           '</div></div>' +
           '<div class="set-group"><h3>' + Win.icon('monitor', 16) + ' Windows theme</h3>' + themeCards(st) + '</div>' +
           '<div class="set-group"><h3>' + Win.icon('image', 16) + ' Desktop preview</h3>' + previewHtml(st) + '</div>' +
@@ -360,7 +361,7 @@
         const uptime = U.fmtDuration(Date.now() - (Win.startedAt || Date.now()));
         const boot = Win.bootMs ? (Win.bootMs / 1000).toFixed(2) + ' seconds' : 'n/a';
         const rows = [
-          ['Operating system', Win.is2000 ? 'Microsoft Windows 2000 Professional (Web)' : Win.isNine ? 'Microsoft Windows 9 Pro (Web)' : Win.isSeven ? 'Microsoft Windows 7 Ultimate (Web)' : Win.isXP ? 'Microsoft Windows XP Professional (Web)' : 'Microsoft Windows 98 Second Edition (Web)'],
+          ['Operating system', Win.isDOS ? 'MS-DOS 6.22 (Web)' : Win.is2000 ? 'Microsoft Windows 2000 Professional (Web)' : Win.isNine ? 'Microsoft Windows 9 Pro (Web)' : Win.isSeven ? 'Microsoft Windows 7 Ultimate (Web)' : Win.isXP ? 'Microsoft Windows XP Professional (Web)' : 'Microsoft Windows 98 Second Edition (Web)'],
           ['Version', (Win.isNine ? '6.4.9841' : Win.isSeven ? '6.1.7601' : Win.isXP ? '5.1.2600' : '4.10.2222') + ' — WINemulator ' + (Win.version || '1.0')],
           ['Build', Win.build || 'web-2026'],
           ['Processor', 'WebCore x86 JIT (' + (si.cores || '?') + ' logical cores)'],

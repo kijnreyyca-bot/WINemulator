@@ -25,10 +25,10 @@
     (function () {
       var q = new URLSearchParams(location.search);
       var os = q.get('os');
-      if (os !== '98' && os !== 'xp' && os !== '7' && os !== '9' && os !== '2k' && os !== '2000') {
+      if (os !== '98' && os !== 'xp' && os !== '7' && os !== '9' && os !== '2k' && os !== '2000' && os !== 'dos') {
         try { os = localStorage.getItem('winemulator.os'); } catch (e) {}
       }
-      if (os !== '98' && os !== 'xp' && os !== '7' && os !== '9' && os !== '2k' && os !== '2000') os = '98';
+      if (os !== '98' && os !== 'xp' && os !== '7' && os !== '9' && os !== '2k' && os !== '2000' && os !== 'dos') os = '98';
       if (os === '2000') os = '2k';
       try { localStorage.setItem('winemulator.os', os); } catch (e) {}
 
@@ -48,6 +48,12 @@
         var meta2k = document.querySelector('meta[name="theme-color"]');
         if (meta2k) meta2k.setAttribute('content', '#000080');
         document.title = 'WINemulator 2000 \u2014 Windows in your browser';
+      } else if (os === 'dos') {
+        document.body.classList.remove('theme-classic', 'wall-teal');
+        document.body.classList.add('theme-classic', 'wall-teal');
+        var metaDos = document.querySelector('meta[name="theme-color"]');
+        if (metaDos) metaDos.setAttribute('content', '#000000');
+        document.title = 'WINemulator DOS \u2014 MS-DOS in your browser';
       } else if (os === '7') {
         try {
           var raw = localStorage.getItem('winemulator.settings');
@@ -66,6 +72,15 @@
           if (!st2k.theme || ['classic','platinum','midnight','xp','olive','silver','aero','frost','dusk','win10'].indexOf(st2k.theme) > -1) { st2k.theme = 'classic'; changed2k = true; }
           if (changed2k) localStorage.setItem('winemulator.settings', JSON.stringify(st2k));
         } catch (e) {}
+      } else if (os === 'dos') {
+        try {
+          var rawDos = localStorage.getItem('winemulator.settings');
+          var stDos = rawDos ? JSON.parse(rawDos) : {};
+          var changedDos = false;
+          if (!stDos.wallpaper) { stDos.wallpaper = 'teal'; changedDos = true; }
+          if (!stDos.theme) { stDos.theme = 'classic'; changedDos = true; }
+          if (changedDos) localStorage.setItem('winemulator.settings', JSON.stringify(stDos));
+        } catch (e) {}
       } else if (os === 'xp') {
         try {
           var rawX = localStorage.getItem('winemulator.settings');
@@ -79,7 +94,7 @@
 
       window.WIN_OS = os;
       document.documentElement.setAttribute('data-os', os);
-      document.body.classList.add(os === '9' ? 'os-9' : os === '7' ? 'os-7' : os === 'xp' ? 'os-xp' : os === '2k' ? 'os-2k' : 'os-98');
+      document.body.classList.add(os === '9' ? 'os-9' : os === '7' ? 'os-7' : os === 'xp' ? 'os-xp' : os === '2k' ? 'os-2k' : os === 'dos' ? 'os-dos' : 'os-98');
       if (os === 'xp') {
         document.body.classList.remove('theme-classic', 'wall-teal');
         document.body.classList.add('theme-xp', 'wall-bliss');
@@ -92,6 +107,12 @@
         var meta2k = document.querySelector('meta[name="theme-color"]');
         if (meta2k) meta2k.setAttribute('content', '#000080');
         document.title = 'WINemulator 2000 \u2014 Windows in your browser';
+      } else if (os === 'dos') {
+        document.body.classList.remove('theme-classic', 'wall-teal');
+        document.body.classList.add('theme-classic', 'wall-teal');
+        var metaDos = document.querySelector('meta[name="theme-color"]');
+        if (metaDos) metaDos.setAttribute('content', '#000000');
+        document.title = 'WINemulator DOS \u2014 MS-DOS in your browser';
       } else if (os === '7') {
         document.body.classList.remove('theme-classic', 'wall-teal');
         document.body.classList.add('theme-aero', 'wall-harmony');

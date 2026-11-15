@@ -111,7 +111,9 @@
           '<label class="set-check"><input type="checkbox" class="' + cls + '"' + (checked ? ' checked' : '') + '></label></div>';
       }
       function themeCards(st) {
-        const list = Win.isNine ? [
+        const list = Win.is2000 ? [
+  { id: 'classic', name: 'Windows Classic', preview: 'classic' }
+] : Win.isNine ? [
             { id: 'win10', name: 'Windows Blue' },
             { id: 'win10mint', name: 'Mint' },
             { id: 'win10violet', name: 'Violet' }
@@ -207,6 +209,7 @@
           '<button class="btn" type="button" data-os-switch="xp"' + (Win.isXP ? ' disabled' : '') + '>' + Win.icon('windows', 15) + ' Windows XP' + (Win.isXP ? ' (current)' : '') + '</button>' +
           '<button class="btn" type="button" data-os-switch="7"' + (Win.isSeven ? ' disabled' : '') + '>' + Win.icon('orb', 15) + ' Windows 7' + (Win.isSeven ? ' (current)' : '') + '</button>' +
           '<button class="btn" type="button" data-os-switch="9"' + (Win.isNine ? ' disabled' : '') + '>' + Win.icon('win10', 15) + ' Windows 9' + (Win.isNine ? ' (current)' : '') + '</button>' +
+'<button class="btn" type="button" data-os-switch="2k"' + (Win.is2000 ? ' disabled' : '') + '>' + Win.icon('flag', 15) + ' Windows 2000' + (Win.is2000 ? ' (current)' : '') + '</button>' +
           '</div></div>' +
           '<div class="set-group"><h3>' + Win.icon('monitor', 16) + ' Windows theme</h3>' + themeCards(st) + '</div>' +
           '<div class="set-group"><h3>' + Win.icon('image', 16) + ' Desktop preview</h3>' + previewHtml(st) + '</div>' +
@@ -357,7 +360,7 @@
         const uptime = U.fmtDuration(Date.now() - (Win.startedAt || Date.now()));
         const boot = Win.bootMs ? (Win.bootMs / 1000).toFixed(2) + ' seconds' : 'n/a';
         const rows = [
-          ['Operating system', Win.isNine ? 'Microsoft Windows 9 Pro (Web)' : Win.isSeven ? 'Microsoft Windows 7 Ultimate (Web)' : Win.isXP ? 'Microsoft Windows XP Professional (Web)' : 'Microsoft Windows 98 Second Edition (Web)'],
+          ['Operating system', Win.is2000 ? 'Microsoft Windows 2000 Professional (Web)' : Win.isNine ? 'Microsoft Windows 9 Pro (Web)' : Win.isSeven ? 'Microsoft Windows 7 Ultimate (Web)' : Win.isXP ? 'Microsoft Windows XP Professional (Web)' : 'Microsoft Windows 98 Second Edition (Web)'],
           ['Version', (Win.isNine ? '6.4.9841' : Win.isSeven ? '6.1.7601' : Win.isXP ? '5.1.2600' : '4.10.2222') + ' — WINemulator ' + (Win.version || '1.0')],
           ['Build', Win.build || 'web-2026'],
           ['Processor', 'WebCore x86 JIT (' + (si.cores || '?') + ' logical cores)'],
@@ -443,7 +446,7 @@
         return '<div class="set-about">' +
           '<div class="set-about-logo">' + Win.icon(Win.isNine ? 'win10' : 'flag', 60) + '</div>' +
           '<div><div class="set-about-name">WINemulator ' + (Win.isNine ? '9' : Win.isSeven ? '7' : Win.isXP ? 'XP' : '98') + '</div>' +
-          '<div class="set-about-tag">' + (Win.isNine ? 'The flat Windows 9 desktop, entirely in your browser' : Win.isSeven ? 'The Windows 7 Aero desktop, entirely in your browser' : Win.isXP ? 'The Windows XP Luna desktop, entirely in your browser' : 'Windows-style desktop, entirely in your browser') + '</div>' +
+          '<div class="set-about-tag">' + (Win.is2000 ? 'The Windows 2000 Professional desktop, entirely in your browser' : Win.isNine ? 'The flat Windows 9 desktop, entirely in your browser' : Win.isSeven ? 'The Windows 7 Aero desktop, entirely in your browser' : Win.isXP ? 'The Windows XP Luna desktop, entirely in your browser' : 'Windows-style desktop, entirely in your browser') + '</div>' +
           '<p>A fast, zero-install desktop environment written in plain HTML, CSS and JavaScript. No framework, no build step, no Microsoft assets — every icon, sound, wallpaper and pixel is generated locally.</p>' +
           '<p>Your files and settings live in this browser. WINemulator does not upload anything anywhere, and it keeps working when you are offline.</p></div>' +
           '</div>' +

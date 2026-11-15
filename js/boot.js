@@ -59,8 +59,19 @@
       '</div>';
   }
 
+  function twentySplashMarkup() {
+    return '<div class="xp-boot-splash">' +
+      '<div class="xp-logo"><span class="xp-ms">Microsoft</span><span class="xp-win">Windows</span><span class="xp-xp">2000</span></div>' +
+      '<div class="xp-boot-sub">Professional &middot; Web Edition</div>' +
+      '<div class="xp-progress"></div>' +
+      '<div class="xp-boot-copy">Copyright &copy; 1985\u20132026 WINemulator Project</div>' +
+      '<div class="bs-hint xp-boot-hint"></div>' +
+      '</div>';
+  }
+
   function bootSplash() {
     if (Win.isNine) return nineSplashMarkup();
+    if (Win.is2000) return twentySplashMarkup();
     if (Win.isSeven) return sevenSplashMarkup();
     return Win.isXP ? xpSplashMarkup() : splashMarkup();
   }
@@ -97,7 +108,7 @@
       '  Secondary Master: CD-ROM 32X',
       '  Secondary Slave : None',
       '',
-      Win.isNine ? 'Starting Windows 9...' : Win.isSeven ? 'Starting Windows 7...' : Win.isXP ? 'Starting Windows XP...' : 'Starting Windows 98...'
+      Win.isNine ? 'Starting Windows 9...' : Win.is2000 ? 'Starting Windows 2000...' : Win.isSeven ? 'Starting Windows 7...' : Win.isXP ? 'Starting Windows XP...' : 'Starting Windows 98...'
     ];
     const step = fast() ? 25 : 72;
     lines.forEach(function (line, i) {
@@ -184,6 +195,17 @@
         '<span class="lu-text"><b>User</b><em>Web Edition</em></span><span class="lu-go">➜</span></button>' +
         '<div class="login-hint">No password is required. Everything stays in your browser.</div>' +
         '<div class="login-foot"><span>WINemulator 7</span><span>Ultimate</span></div>' +
+        '</div>';
+    } else if (Win.is2000) {
+      loginLayer.innerHTML =
+        '<div class="login-box xp-login-box">' +
+        '<div class="login-brand">' + Win.icon('flag', 34) + '<span class="xp-login-word"><b>Microsoft</b> Windows <em>2000</em></span></div>' +
+        '<div class="login-welcome">Welcome</div>' +
+        '<div class="login-sub">To begin, click your user name</div>' +
+        '<button class="login-user" type="button"><span class="lu-pic">' + Win.icon('user', 52) + '</span>' +
+        '<span class="lu-text"><b>User</b><em>Web Edition</em></span><span class="lu-go">&#8250;</span></button>' +
+        '<div class="login-hint">No password is required. Everything stays in your browser.</div>' +
+        '<div class="login-foot"><span>WINemulator 2000</span><span>Professional</span></div>' +
         '</div>';
     } else if (Win.isXP) {
       loginLayer.innerHTML =

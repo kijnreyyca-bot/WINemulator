@@ -1,7 +1,7 @@
 /* WINemulator — offline cache */
 'use strict';
 
-const CACHE = 'winemulator-v23';
+const CACHE = 'winemulator-v24';
 const CORE = [
   './',
   './index.html',
@@ -17,6 +17,7 @@ const CORE = [
   './css/xp.css',
   './css/win7.css',
   './css/win10.css',
+  './css/w2k.css',
   './css/selector.css',
   './js/icons.js',
   './js/icons-xp.js',

@@ -115,8 +115,8 @@
   };
 
   Win.apps.terminal = {
-    name: (Win.isSeven || Win.isNine) ? 'Command Prompt' : 'MS-DOS Prompt',
-    title: (Win.isSeven || Win.isNine) ? 'Command Prompt' : 'MS-DOS Prompt',
+    name: (Win.isSeven || Win.isNine || Win.is2000) ? 'Command Prompt' : 'MS-DOS Prompt',
+    title: (Win.isSeven || Win.isNine || Win.is2000) ? 'Command Prompt' : 'MS-DOS Prompt',
     icon: 'terminal',
     width: 780, height: 480, minWidth: 420, minHeight: 240,
     mount: function (body, ctx) {
@@ -161,7 +161,7 @@
     function setMode(m) {
       mode = m;
       screen.classList.toggle('term-ps', mode === 'ps');
-      ctx.setTitle(mode === 'ps' ? 'Windows PowerShell' : ((Win.isSeven || Win.isNine) ? 'Command Prompt' : 'MS-DOS Prompt'));
+      ctx.setTitle(mode === 'ps' ? 'Windows PowerShell' : ((Win.isSeven || Win.isNine || Win.is2000) ? 'Command Prompt' : 'MS-DOS Prompt'));
       ctx.setIcon(mode === 'ps' ? 'powershell' : 'terminal');
       setPrompt();
     }

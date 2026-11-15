@@ -1,0 +1,22 @@
+/* Windows 2000 accents */
+body.os-2k {
+  --title-a: #0a246a;
+  --title-b: #3a6ea5;
+  --taskbar: #245edb;
+  --desktop-bg: #008080;
+}
+body.os-2k #taskbar {
+  background: linear-gradient(180deg, #245edb 0%, #103786 100%);
+  border-top: 1px solid #5a8ee6;
+}
+body.os-2k .start-button {
+  background: linear-gradient(180deg, #3a7bd5 0%, #1a4fa0 100%);
+  color: #fff;
+  border: 1px solid #0a2f7a;
+  border-radius: 0;
+  font-weight: 700;
+}
+body.os-2k .start-button .start-label { color: #fff; }
+body.os-2k .window { border: 2px solid #0a246a; }
+body.os-2k .titlebar { background: linear-gradient(180deg, #0a246a, #3a6ea5); }
+body.os-2k .titlebar.inactive { background: linear-gradient(180deg, #808080, #b5b5b5); }

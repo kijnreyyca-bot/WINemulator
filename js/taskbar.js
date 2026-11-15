@@ -9,7 +9,7 @@
   let unsub = null;
 
   const APPS = {
-    notepad: 'Notepad', paint: 'Paint', calc: 'Calculator', terminal: 'MS-DOS Prompt',
+    notepad: 'Notepad', paint: 'Paint', calc: 'Calculator', terminal: (Win.isNT ? 'Command Prompt' : 'MS-DOS Prompt'),
     explorer: 'Windows Explorer', browser: 'Internet Explorer', firefox: 'Mozilla Firefox', minesweeper: 'Minesweeper',
     settings: 'Control Panel', taskmgr: 'Task Manager', help: 'Help', recycle: 'Recycle Bin',
     vpc: 'Virtual PC'
@@ -424,7 +424,7 @@
     if (Win.isNine) return buildStartNine();
     if (Win.isSeven) return buildStartSeven();
     if (Win.isXP) return buildStartXP();
-    startEl.appendChild(el('div', { class: 'sm-banner', html: '<div class="sm-banner-inner"><span class="sm-b1">WIN</span><span class="sm-b2">emulator</span><span class="sm-b3">98</span></div>' }));
+    startEl.appendChild(el('div', { class: 'sm-banner', html: '<div class="sm-banner-inner"><span class="sm-b1">WIN</span><span class="sm-b2">emulator</span><span class="sm-b3">' + (Win.is2000 ? '2000' : '98') + '</span></div>' }));
     const list = el('div', { class: 'sm-list' });
     list.appendChild(startItem({ label: 'Programs', icon: 'programs', sub: programsSub }));
     list.appendChild(startItem({ label: 'Documents', icon: 'documents', sub: docsSub }));
@@ -434,11 +434,11 @@
     list.appendChild(startItem({ label: 'Run...', icon: 'run', action: function () { Win.ui.runDialog(); } }));
     list.appendChild(startItem({ label: 'Virtual PC', icon: 'vpc', action: function () { Win.wm.open('vpc'); } }));
     list.appendChild(el('div', { class: 'menu-separator' }));
-    list.appendChild(startItem({ label: 'Switch to Windows XP', icon: 'windows', action: function () { if (Win.showOSChooser) Win.showOSChooser(); } }));
+    list.appendChild(startItem({ label: 'Switch Operating System', icon: 'windows', action: function () { if (Win.showOSChooser) Win.showOSChooser(); } }));
     list.appendChild(startItem({ label: 'Log Off User...', icon: 'logoff', action: logOff }));
     list.appendChild(startItem({ label: 'Shut Down...', icon: 'shutdown', action: shutdownDialog }));
     startEl.appendChild(list);
-    startEl.appendChild(el('div', { class: 'sm-footer', html: '<span></span><span class="sm-version">WINemulator 98</span>' }));
+    startEl.appendChild(el('div', { class: 'sm-footer', html: '<span></span><span class="sm-version">WINemulator ' + (Win.is2000 ? '2000' : '98') + '</span>' }));
     startEl.querySelector('.sm-footer span').textContent = 'Web Edition';
   }
 

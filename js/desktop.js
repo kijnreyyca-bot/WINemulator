@@ -72,9 +72,13 @@
       if (/^[a-z]:\\/i.test(raw)) {
         return Win.fs.exists(raw) ? resolve(openPath(raw)) : reject(new Error('Windows cannot find "' + raw + '". Check the path and try again.'));
       }
+      if (lower === 'msdos' || lower === 'dos') {
+        if (Win.boot) Win.boot.dos();
+        return resolve();
+      }
       const map = {
         notepad: 'notepad', mspaint: 'paint', paint: 'paint', calc: 'calc', calculator: 'calc',
-        explorer: 'explorer', cmd: 'terminal', command: 'terminal', terminal: 'terminal', dos: 'terminal',
+        explorer: 'explorer', cmd: 'terminal', command: 'terminal', terminal: 'terminal',
         winmine: 'minesweeper', minesweeper: 'minesweeper', platformer: 'platformer', game: 'platformer', games: 'platformer', control: 'settings', settings: 'settings',
         taskmgr: 'taskmgr', 'task manager': 'taskmgr', iexplore: 'browser', ie: 'browser', internet: 'browser',
         vpc: 'vpc', 'virtual pc': 'vpc', virtualpc: 'vpc', virtual: 'vpc',

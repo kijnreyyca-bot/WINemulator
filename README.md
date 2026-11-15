@@ -22,7 +22,7 @@ A fast, self-contained Windows 98, Windows XP, Windows 7 **and** Windows 9 deskt
 - **Window manager** — draggable and resizable windows, minimize/maximize/restore, snapping, Alt+Tab, taskbar buttons and focus management.
 - **Start menu and taskbar** — programs, documents, settings, find, help, run, quick launch, clock with calendar, volume and network trays. Windows XP uses the familiar two-column Start menu; Windows 7 and Windows 9 use searchable Start menus, and Windows 9 adds a tile grid.
 - **Virtual file system** — a persistent `C:` drive with seeded folders and files, Recycle Bin, import/export backups and a shared file picker.
-- **Boot experience** — BIOS memory test, Windows 98, XP, 7 or 9 splash, logon, logoff, shutdown, restart and an MS-DOS mode. Fast boot can be enabled in Control Panel.
+- **Boot experience** — BIOS memory test, Windows 98, XP, 7 or 9 splash, logon, logoff, shutdown, restart and an MS-DOS mode. Fast boot can be enabled in Control Panel. Type `msdos` (or `dos`) at the Command Prompt to switch straight into MS-DOS mode; type `windows.sys` (or `win.sys`) there to start Windows again.
 - **Apps** — Notepad, Paint, Calculator, MS-DOS Prompt, Windows Explorer, Internet Explorer, Minesweeper, Control Panel, Task Manager, Help and **Virtual PC**.
 - **Offline ready** — a service worker caches the entire desktop, including the x86 emulator, after the first visit.
 

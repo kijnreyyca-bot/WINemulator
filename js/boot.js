@@ -290,8 +290,10 @@
     document.body.classList.add('powered-off', 'dos-mode-on');
     powerLayer.hidden = false;
     powerLayer.className = 'power-layer dos-mode';
-    let cwd = 'C:\\WINDOWS';
-    let output = 'Microsoft(R) Windows 98\n   (C)Copyright Microsoft Corp 1981-1998.\n\nType HELP for a list of commands. Type WIN to start Windows.\n\n';
+    let cwd = Win.isModern ? 'C:\\Users\\User' : 'C:\\WINDOWS';
+    let output = (Win.isNine
+      ? 'Microsoft Windows 9\n   MS-DOS mode\n\nType HELP for a list of commands. Type WINDOWS.SYS to start Windows.\n\n'
+      : 'Microsoft(R) Windows 98\n   (C)Copyright Microsoft Corp 1981-1998.\n\nType HELP for a list of commands. Type WINDOWS.SYS to start Windows.\n\n');
     powerLayer.innerHTML =
       '<div class="dos-screen"><pre class="dos-out"></pre>' +
       '<div class="dos-line"><span class="dos-prompt"></span><input class="dos-input" spellcheck="false" autocomplete="off" aria-label="MS-DOS prompt"></div></div>';
@@ -313,8 +315,8 @@
       const cmd = parts[0].toLowerCase();
       const rest = line.slice(parts[0].length).trim();
       if (cmd === 'cls') output = '';
-      else if (cmd === 'win') { powerLayer.hidden = true; document.body.classList.remove('powered-off', 'dos-mode-on'); start(); return; }
-      else if (cmd === 'help') print('DIR      List files        CD       Change folder\nTYPE     Show a file       CLS      Clear screen\nVER      DOS version       MEM      Memory info\nDATE     Show date         TIME     Show time\nECHO     Print text        WIN      Start Windows\nEXIT     Leave this mode   HELP     This list');
+      else if (cmd === 'windows.sys' || cmd === 'win.sys') { powerLayer.hidden = true; document.body.classList.remove('powered-off', 'dos-mode-on'); start(); return; }
+      else if (cmd === 'help') print('DIR      List files        CD       Change folder\nTYPE     Show a file       CLS      Clear screen\nVER      DOS version       MEM      Memory info\nDATE     Show date         TIME     Show time\nECHO     Print text        WINDOWS.SYS  Start Windows\nEXIT     Leave this mode   HELP     This list');
       else if (cmd === 'dir') {
         const list = Win.fs.list(cwd);
         print(' Volume in drive C is WINEMULATOR');
@@ -342,12 +344,12 @@
         if (content === null || content === undefined) print('File not found');
         else print(content);
       }
-      else if (cmd === 'ver') print('\nWindows 98 [Version 4.10.2222]  WINemulator Web Edition\n');
+      else if (cmd === 'ver') print(Win.isNine ? '\nWindows 9 [Version 6.4.9841]  MS-DOS mode  WINemulator Web Edition\n' : '\nWindows 98 [Version 4.10.2222]  WINemulator Web Edition\n');
       else if (cmd === 'mem') print('\nMemory Type        Total       Used       Free\n----------------  --------   --------   --------\nConventional         640K       112K       528K\nUpper                155K       155K         0K\nExtended (XMS)    64,512K    12,288K    52,224K\n----------------  --------   --------   --------\nTotal memory      65,307K    12,555K    52,752K\n');
       else if (cmd === 'date') print('Current date is ' + new Date().toDateString());
       else if (cmd === 'time') print('Current time is ' + new Date().toLocaleTimeString());
       else if (cmd === 'echo') print(rest);
-      else if (cmd === 'exit') print('Use WIN to return to Windows, or close this tab.');
+      else if (cmd === 'exit') print('Use WINDOWS.SYS (or WIN.SYS) to return to Windows, or close this tab.');
       else print('Bad command or file name');
       draw();
     };

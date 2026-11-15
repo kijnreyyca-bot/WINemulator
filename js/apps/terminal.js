@@ -84,7 +84,7 @@
     'del','erase','ren','rename','copy','xcopy','move','robocopy','type','more','tree','echo','set','path','prompt',
     'title','color','date','time','whoami','hostname','mem','systeminfo','ipconfig','ping','tracert','nslookup',
     'netstat','arp','route','net','tasklist','taskkill','sc','start','explorer','notepad','calc','mspaint','control',
-    'taskmgr','iexplore','firefox','msinfo32','winver','shutdown','logoff','exit','pause','rem','attrib','assoc',
+    'taskmgr','iexplore','firefox','msinfo32','winver','shutdown','msdos','dos','logoff','exit','pause','rem','attrib','assoc',
     'ftype','where','which','find','findstr','sort','fc','comp','chkdsk','sfc','dism','driverquery','wmic','reg',
     'gpupdate','gpresult','mode','chcp','cipher','compact','convert','diskpart','format','cleanmgr','msconfig',
     'regedit','eventvwr','services','devmgmt','diskmgmt','cmd','powershell','curl','bitsadmin','clip','title'
@@ -489,6 +489,7 @@
         'MD         Creates a directory.',
         'MEM        Displays the amount of used and free memory in your system.',
         'MOVE       Moves one or more files from one directory to another directory.',
+        'MSDOS      Switches the computer into MS-DOS mode.',
         'PATH       Displays or sets a search path for executable files.',
         'PING       Tests the connection to another TCP/IP computer.',
         'PROMPT     Changes the command prompt.',
@@ -1285,6 +1286,10 @@
           break;
         }
         case 'logoff': if (Win.boot) Win.boot.logoff(); result = { lines: [] }; break;
+        case 'msdos': case 'dos':
+          if (Win.boot) setTimeout(function () { Win.boot.dos(); }, 60);
+          result = { lines: ['Switching to MS-DOS mode...'] };
+          break;
         case 'exit': ctx.close(true); result = { lines: [] }; break;
         case 'pause': result = { lines: ['Press any key to continue . . .'] }; break;
         case 'rem': result = { lines: [] }; break;

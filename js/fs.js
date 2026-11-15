@@ -100,6 +100,20 @@
     const ext = extName(path);
     if (IMAGE_EXT.indexOf(ext) > -1) return 'paint';
     if (TEXT_EXT.indexOf(ext) > -1) return 'notepad';
+    if (ext === 'exe' || ext === 'com') {
+      const base = (Win.fs.baseName(path) || '').toLowerCase();
+      if (base === 'cmd.exe' || base === 'command.com' || base === 'cmd.com') return 'terminal';
+      if (base === 'notepad.exe') return 'notepad';
+      if (base === 'calc.exe' || base === 'calculator.exe') return 'calc';
+      if (base === 'mspaint.exe' || base === 'paint.exe') return 'paint';
+      if (base === 'explorer.exe') return 'explorer';
+      if (base === 'taskmgr.exe') return 'taskmgr';
+      if (base === 'iexplore.exe' || base === 'ie.exe') return 'browser';
+      if (base === 'firefox.exe' || base === 'mozilla.exe') return 'firefox';
+      if (base === 'msconfig.exe' || base === 'control.exe') return 'settings';
+      if (base === 'minesweeper.exe' || base === 'winmine.exe') return 'minesweeper';
+      return 'runner';
+    }
     return null;
   }
 

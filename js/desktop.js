@@ -107,9 +107,9 @@
   /* ---------------------------------------------------------------- icons */
   function builtins() {
     const recycleCount = Win.fs.recycleCount();
-    if (Win.isSeven) {
+    if (Win.isSeven || Win.isNine) {
       return [
-        { id: 'computer', label: 'Computer', icon: 'computer', open: function () { openPath('::computer'); }, special: true },
+        { id: 'computer', label: Win.isNine ? 'This PC' : 'Computer', icon: 'computer', open: function () { openPath('::computer'); }, special: true },
         { id: 'user', label: Win.store.get('lastUser') || 'User', icon: 'user', open: function () { openPath('C:\\Users\\User'); }, special: true },
         { id: 'documents', label: 'Documents', icon: 'documents', open: function () { openPath('C:\\Users\\User\\Documents'); }, special: true },
         { id: 'ie', label: 'Internet Explorer', icon: 'ie', open: function () { Win.wm.open('browser'); }, special: true },
@@ -138,7 +138,7 @@
   }
 
   function deskPath() {
-    if (Win.isSeven) return 'C:\\Users\\User\\Desktop';
+    if (Win.isSeven || Win.isNine) return 'C:\\Users\\User\\Desktop';
     return 'C:\\Windows\\Desktop';
   }
 
@@ -370,8 +370,11 @@
   /* ------------------------------------------------------------- settings */
   function applySettings() {
     const s = Win.store.all();
-    ['theme-classic', 'theme-platinum', 'theme-midnight', 'theme-xp', 'theme-olive', 'theme-silver', 'theme-aero', 'theme-frost', 'theme-dusk'].forEach(function (c) { document.body.classList.remove(c); });
-    if (Win.isSeven) {
+    ['theme-classic', 'theme-platinum', 'theme-midnight', 'theme-xp', 'theme-olive', 'theme-silver', 'theme-aero', 'theme-frost', 'theme-dusk', 'theme-win10', 'theme-win10mint', 'theme-win10violet'].forEach(function (c) { document.body.classList.remove(c); });
+    if (Win.isNine) {
+      const t9 = ['win10', 'win10mint', 'win10violet'].indexOf(s.theme) > -1 ? s.theme : 'win10';
+      document.body.classList.add('theme-' + t9);
+    } else if (Win.isSeven) {
       const t = ['aero', 'frost', 'dusk'].indexOf(s.theme) > -1 ? s.theme : 'aero';
       document.body.classList.add('theme-' + t);
     } else if (Win.isXP) {
@@ -383,12 +386,13 @@
     }
     let wall = s.wallpaper || 'teal';
     if (Win.isXP && wall === 'teal') wall = 'bliss';
-    ['wall-teal', 'wall-clouds', 'wall-azure', 'wall-sunset', 'wall-graphite', 'wall-grid', 'wall-solid', 'wall-bliss', 'wall-harmony'].forEach(function (c) {
+    ['wall-teal', 'wall-clouds', 'wall-azure', 'wall-sunset', 'wall-graphite', 'wall-grid', 'wall-solid', 'wall-bliss', 'wall-harmony', 'wall-hero'].forEach(function (c) {
       document.body.classList.remove(c);
     });
     if (Win.isSeven && (wall === 'teal' || wall === 'bliss')) wall = 'harmony';
+    if (Win.isNine && (wall === 'teal' || wall === 'bliss' || wall === 'harmony')) wall = 'hero';
     if (Win.isXP && (wall === 'teal' || wall === 'harmony')) wall = 'bliss';
-    if (!Win.isXP && !Win.isSeven && (wall === 'bliss' || wall === 'harmony')) wall = 'teal';
+    if (!Win.isXP && !Win.isSeven && !Win.isNine && (wall === 'bliss' || wall === 'harmony' || wall === 'hero')) wall = 'teal';
     document.body.classList.add('wall-' + wall);
     document.body.style.setProperty('--solid-wall', s.solid || '#008080');
     document.body.classList.toggle('no-anim', s.animations === false);

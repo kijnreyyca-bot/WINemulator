@@ -2,6 +2,18 @@
 (function () {
   'use strict';
   const U = Win.util, el = U.el;
+  const PREFS_KEY = 'winemulator.notepad';
+
+  function loadPrefs() {
+    try {
+      const raw = localStorage.getItem(PREFS_KEY);
+      if (raw) return JSON.parse(raw) || {};
+    } catch (e) {}
+    return {};
+  }
+  function storePrefs(prefs) {
+    try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch (e) {}
+  }
 
   Win.apps.notepad = {
     name: 'Untitled - Notepad', title: 'Untitled - Notepad', icon: 'notepad',
@@ -9,15 +21,22 @@
     mount: function (body, ctx) {
       body.classList.add('app-notepad');
       const args = ctx.args || {};
+      const modern = !!Win.isNine;          // rich features for the flat desktop
+      const prefs = loadPrefs();
       let path = args.path ? Win.fs.norm(args.path) : null;
       let dirty = false;
-      let wrap = false;
-      let showStatus = true;
+      let wrap = typeof prefs.wrap === 'boolean' ? prefs.wrap : false;
+      let showStatus = typeof prefs.status === 'boolean' ? prefs.status : true;
       let findText = '';
+      let replaceText = '';
       let matchCase = false;
-      let fontFamily = 'Consolas';
-      let fontSize = 12;
-      let fontWeight = '400';
+      let fontFamily = prefs.font || 'Consolas';
+      let fontSize = prefs.size || 12;
+      let fontWeight = prefs.weight || '400';
+      let zoom = prefs.zoom || 100;
+      let dark = modern && !!prefs.dark;
+      let encoding = 'UTF-8';
+      let eol = prefs.eol === 'LF' ? 'LF' : 'CRLF';
 
       body.innerHTML =
         '<div class="menubar np-menu">' +
@@ -28,12 +47,32 @@
         '<div class="mb-item" data-menu="help">Help</div>' +
         '</div>' +
         '<div class="np-editor-wrap"><textarea class="np-text" spellcheck="false" wrap="off" aria-label="Notepad text"></textarea></div>' +
-        '<div class="statusbar np-status"><span class="status-cell fixed np-pos">Ln 1, Col 1</span><span class="status-cell fixed np-len">0 chars</span><span class="status-cell np-file">No file</span></div>';
+        '<div class="statusbar np-status">' +
+        '<span class="status-cell fixed np-pos">Ln 1, Col 1</span>' +
+        '<span class="status-cell fixed np-len">0 chars</span>' +
+        (modern ? '<span class="status-cell fixed np-eol" role="button" tabindex="0" title="Click to switch line endings"></span>' +
+          '<span class="status-cell fixed np-enc" title="Encoding">UTF-8</span>' +
+          '<span class="status-cell fixed np-zoom" role="button" tabindex="0" title="Click to reset zoom"></span>' : '') +
+        '<span class="status-cell np-file">No file</span>' +
+        '</div>';
+
       const area = body.querySelector('.np-text');
       const posEl = body.querySelector('.np-pos');
       const lenEl = body.querySelector('.np-len');
       const fileEl = body.querySelector('.np-file');
       const statusEl = body.querySelector('.np-status');
+      const eolEl = body.querySelector('.np-eol');
+      const encEl = body.querySelector('.np-enc');
+      const zoomEl = body.querySelector('.np-zoom');
+
+      if (dark) body.classList.add('np-dark');
+
+      function savePrefs() {
+        storePrefs({
+          wrap: wrap, status: showStatus, font: fontFamily, size: fontSize,
+          weight: fontWeight, zoom: zoom, dark: dark, eol: eol
+        });
+      }
 
       function baseName() { return path ? Win.fs.baseName(path) : 'Untitled'; }
       function refreshTitle() {
@@ -41,6 +80,11 @@
         fileEl.textContent = path || 'No file';
       }
       function setDirty(v) { dirty = v; refreshTitle(); }
+      function updateStatus() {
+        if (eolEl) eolEl.textContent = eol === 'LF' ? 'Unix (LF)' : 'Windows (CRLF)';
+        if (encEl) encEl.textContent = encoding;
+        if (zoomEl) zoomEl.textContent = zoom + '%';
+      }
       function updatePos() {
         const before = area.value.slice(0, area.selectionStart);
         const lines = before.split('\n');
@@ -48,6 +92,7 @@
         const col = lines[lines.length - 1].length + 1;
         posEl.textContent = 'Ln ' + ln + ', Col ' + col;
         lenEl.textContent = area.value.length.toLocaleString() + ' chars';
+        updateStatus();
       }
       function scrollToCaret() {
         const before = area.value.slice(0, area.selectionStart);
@@ -69,12 +114,16 @@
           const content = Win.fs.read(p);
           if (content === null) throw new Error('File not found.');
           path = Win.fs.norm(p);
-          area.value = content;
+          eol = /\r\n/.test(content) ? 'CRLF' : 'LF';
+          area.value = content.replace(/\r\n/g, '\n');
           setDirty(false);
           ctx.setTitle(baseName() + ' - Notepad');
           updatePos();
           area.focus();
         } catch (e) { Win.ui.error(e.message, 'Notepad'); }
+      }
+      function diskText() {
+        return eol === 'CRLF' ? area.value.replace(/\r?\n/g, '\r\n') : area.value.replace(/\r\n/g, '\n');
       }
       function saveAs() {
         return Win.ui.fileDialog({
@@ -83,7 +132,7 @@
         }).then(function (p) {
           if (!p) return false;
           try {
-            Win.fs.write(p, area.value, { kind: 'text', app: 'notepad' });
+            Win.fs.write(p, diskText(), { kind: 'text', app: 'notepad' });
             path = p;
             setDirty(false);
             Win.recent.add(p);
@@ -96,7 +145,7 @@
       function save() {
         if (!path) return saveAs();
         try {
-          Win.fs.write(path, area.value, { kind: 'text', app: 'notepad' });
+          Win.fs.write(path, diskText(), { kind: 'text', app: 'notepad' });
           setDirty(false);
           Win.recent.add(path);
           Win.sound.play('save');
@@ -104,7 +153,7 @@
           return Promise.resolve(true);
         } catch (e) { Win.ui.error(e.message, 'Save'); return Promise.resolve(false); }
       }
-      function maybeSave(action) {
+      function maybeSave() {
         if (!dirty) return Promise.resolve(true);
         return Win.ui.dialog({
           title: 'Notepad', icon: 'warning', width: 420,
@@ -134,7 +183,7 @@
             .then(function (p) { if (p) load(p); });
         });
       }
-      function toggleWrap() { wrap = !wrap; applyWrap(); }
+      function toggleWrap() { wrap = !wrap; applyWrap(); savePrefs(); }
       function applyWrap() {
         area.wrap = wrap ? 'soft' : 'off';
         area.style.whiteSpace = wrap ? 'pre-wrap' : 'pre';
@@ -142,9 +191,31 @@
       }
       function applyFont() {
         area.style.fontFamily = fontFamily + ', Consolas, monospace';
-        area.style.fontSize = fontSize + 'px';
+        area.style.fontSize = (fontSize * zoom / 100) + 'px';
         area.style.fontWeight = fontWeight;
+        updateStatus();
       }
+      function setZoom(next) {
+        zoom = Math.min(400, Math.max(40, Math.round(next / 10) * 10));
+        applyFont(); savePrefs(); updateStatus();
+      }
+      function zoomBy(delta) { setZoom(zoom + delta); }
+      function resetZoom() { setZoom(100); }
+      function toggleDark() {
+        dark = !dark;
+        body.classList.toggle('np-dark', dark);
+        savePrefs();
+      }
+      function toggleStatus() {
+        showStatus = !showStatus;
+        statusEl.hidden = !showStatus;
+        savePrefs();
+      }
+      function setEol(next) {
+        eol = next === 'LF' ? 'LF' : 'CRLF';
+        setDirty(true); updateStatus(); savePrefs();
+      }
+      function cycleEol() { setEol(eol === 'LF' ? 'CRLF' : 'LF'); }
 
       function findNext(fromStart) {
         const text = area.value;
@@ -162,43 +233,42 @@
         setDirty(true); updatePos();
         Win.ui.toast('Replaced ' + count + ' occurrence(s).', 'check', 2000);
       }
-      let replaceText = '';
       function findDialog() {
+        let q = null, c = null;
         Win.ui.dialog({
-          title: 'Find', icon: 'search', width: 360,
+          title: 'Find', icon: 'search', width: 380,
           html: '<div class="find-box"><div class="find-row"><label>Find what:</label><input class="field find-q" type="text" value="' + U.escapeHtml(findText) + '"></div>' +
-            '<div class="find-row"><label></label><label class="set-check"><input type="checkbox" class="find-case"' + (matchCase ? ' checked' : '') + '> Match case</label></div></div>',
+            '<div class="find-row"><label></label><label class="set-check"><input type="checkbox" class="find-case"' + (matchCase ? ' checked' : '') + '> Match case</label></div>' +
+            (modern ? '<div class="find-row"><label></label><span class="np-hint">Tip: press F3 to find the next match.</span></div>' : '') +
+            '</div>',
           onShow: function (win) {
-            const q = win.querySelector('.find-q');
-            const c = win.querySelector('.find-case');
+            q = win.querySelector('.find-q');
+            c = win.querySelector('.find-case');
             q.focus(); q.select();
-            const go = function () { findText = q.value; matchCase = c.checked; findNext(false); };
-            win.querySelector('.find-go') || 0;
-            const btn = document.createElement('button'); // placeholder not used
+            q.addEventListener('keydown', function (ev) {
+              if (ev.key === 'Enter') { ev.preventDefault(); ev.stopPropagation(); win.querySelector('.btn.default').click(); }
+            });
           },
           buttons: [
             { label: 'Find Next', value: 'next', primary: true },
             { label: 'Cancel', value: false, cancel: true }
           ]
         }).then(function (r) {
-          const win = document.querySelector('.modal-overlay .dialog');
-          if (!win) return;
-          const q = win.querySelector('.find-q');
-          const c = win.querySelector('.find-case');
-          findText = q ? q.value : findText;
-          matchCase = c ? c.checked : matchCase;
+          if (q) findText = q.value;
+          if (c) matchCase = c.checked;
           if (r === 'next') findNext(false);
         });
       }
       function replaceDialog() {
+        let f = null, r = null, c = null;
         Win.ui.dialog({
-          title: 'Replace', icon: 'replace' in (Win.icons||{}) ? 'replace' : 'search', width: 400,
+          title: 'Replace', icon: 'search', width: 420,
           html: '<div class="find-box"><div class="find-row"><label>Find what:</label><input class="field rep-find" type="text" value="' + U.escapeHtml(findText) + '"></div>' +
             '<div class="find-row"><label>Replace with:</label><input class="field rep-repl" type="text" value="' + U.escapeHtml(replaceText) + '"></div>' +
             '<div class="find-row"><label></label><label class="set-check"><input type="checkbox" class="rep-case"' + (matchCase ? ' checked' : '') + '> Match case</label></div>' +
             '<div class="find-actions"><button class="btn rep-findnext" type="button">Find Next</button><button class="btn rep-replace" type="button">Replace</button><button class="btn rep-replaceall" type="button">Replace All</button></div></div>',
           onShow: function (win) {
-            const f = win.querySelector('.rep-find'); const r = win.querySelector('.rep-repl'); const c = win.querySelector('.rep-case');
+            f = win.querySelector('.rep-find'); r = win.querySelector('.rep-repl'); c = win.querySelector('.rep-case');
             f.focus(); f.select();
             win.querySelector('.rep-findnext').addEventListener('click', function () { findText = f.value; matchCase = c.checked; findNext(false); });
             win.querySelector('.rep-replace').addEventListener('click', function () {
@@ -225,30 +295,48 @@
         });
       }
       function fontDialog() {
+        let famEl = null, sizeEl = null, weightEl = null;
         Win.ui.dialog({
-          title: 'Font', icon: 'textfile', width: 360,
-          html: '<div class="find-box"><div class="find-row"><label>Font:</label><select class="field font-family"><option>Consolas</option><option>Courier New</option><option>Segoe UI</option><option>Tahoma</option><option>Arial</option></select></div>' +
-            '<div class="find-row"><label>Size:</label><select class="field font-size"><option>10</option><option>11</option><option>12</option><option>14</option><option>16</option><option>18</option><option>20</option></select></div>' +
-            '<div class="find-row"><label>Weight:</label><select class="field font-weight"><option value="400">Regular</option><option value="700">Bold</option></select></div></div>',
+          title: 'Font', icon: 'textfile', width: 380,
+          html: '<div class="find-box">' +
+            '<div class="find-row"><label>Font:</label><select class="field font-family"><option>Consolas</option><option>Courier New</option><option>Cascadia Mono</option><option>Segoe UI</option><option>Tahoma</option><option>Arial</option></select></div>' +
+            '<div class="find-row"><label>Size:</label><select class="field font-size"><option>9</option><option>10</option><option>11</option><option>12</option><option>14</option><option>16</option><option>18</option><option>20</option><option>24</option><option>28</option></select></div>' +
+            '<div class="find-row"><label>Weight:</label><select class="field font-weight"><option value="400">Regular</option><option value="700">Bold</option></select></div>' +
+            (modern ? '<div class="find-row np-font-preview-row"><label>Preview:</label><span class="np-font-preview">AaBbCc 0123</span></div>' : '') +
+            '</div>',
           onShow: function (win) {
-            win.querySelector('.font-family').value = fontFamily;
-            win.querySelector('.font-size').value = String(fontSize);
-            win.querySelector('.font-weight').value = fontWeight;
+            famEl = win.querySelector('.font-family');
+            sizeEl = win.querySelector('.font-size');
+            weightEl = win.querySelector('.font-weight');
+            famEl.value = fontFamily;
+            sizeEl.value = String(fontSize);
+            weightEl.value = fontWeight;
+            const preview = win.querySelector('.np-font-preview');
+            const paint = function () {
+              if (!preview) return;
+              preview.style.fontFamily = famEl.value + ', Consolas, monospace';
+              preview.style.fontSize = sizeEl.value + 'px';
+              preview.style.fontWeight = weightEl.value;
+            };
+            famEl.addEventListener('change', paint);
+            sizeEl.addEventListener('change', paint);
+            weightEl.addEventListener('change', paint);
+            paint();
           },
           buttons: [
             { label: 'OK', value: true, primary: true },
             { label: 'Cancel', value: false, cancel: true }
           ]
         }).then(function (ok) {
-          const win = document.querySelector('.modal-overlay .dialog');
-          if (!ok || !win) return;
-          fontFamily = win.querySelector('.font-family').value;
-          fontSize = parseInt(win.querySelector('.font-size').value, 10);
-          fontWeight = win.querySelector('.font-weight').value;
+          if (!ok) return;
+          fontFamily = famEl.value;
+          fontSize = parseInt(sizeEl.value, 10) || 12;
+          fontWeight = weightEl.value;
           applyFont();
-          // update format menu label
+          savePrefs();
         });
       }
+
       const menus = {
         file: function () {
           return [
@@ -270,24 +358,43 @@
             { label: 'Delete', icon: 'delete', shortcut: 'Del', action: function () { insertText(''); } },
             { separator: true },
             { label: 'Select All', shortcut: 'Ctrl+A', action: function () { area.focus(); area.select(); } },
-            { label: 'Time/Date', shortcut: 'F5', action: function () { insertText(new Date().toLocaleString()); } }
+            { label: 'Time/Date', shortcut: 'F5', action: function () { insertText(new Date().toLocaleString()); } },
+            { separator: true },
+            { label: 'Find...', icon: 'search', shortcut: 'Ctrl+F', action: findDialog },
+            { label: 'Replace...', shortcut: 'Ctrl+H', action: replaceDialog },
+            { label: 'Go To...', shortcut: 'Ctrl+G', action: gotoDialog }
           ];
         },
         format: function () {
           return [
             { label: 'Word Wrap', checked: wrap, action: toggleWrap },
-            { label: 'Font: Consolas 12', icon: 'textfile', disabled: true }
+            { label: 'Font: ' + fontFamily + ' ' + fontSize + (fontWeight === '700' ? ' Bold' : ''), icon: 'textfile', action: fontDialog },
+            { separator: true },
+            { label: 'Windows (CRLF)', checked: eol === 'CRLF', action: function () { setEol('CRLF'); } },
+            { label: 'Unix (LF)', checked: eol === 'LF', action: function () { setEol('LF'); } }
           ];
         },
         view: function () {
-          return [{ label: 'Status Bar', checked: showStatus, action: function () { showStatus = !showStatus; statusEl.hidden = !showStatus; } }];
+          const items = [
+            { label: 'Status Bar', checked: showStatus, action: toggleStatus }
+          ];
+          if (modern) {
+            items.push({ separator: true });
+            items.push({ label: 'Zoom In', shortcut: 'Ctrl++', action: function () { zoomBy(10); } });
+            items.push({ label: 'Zoom Out', shortcut: 'Ctrl+-', action: function () { zoomBy(-10); } });
+            items.push({ label: 'Restore Default Zoom', shortcut: 'Ctrl+0', action: resetZoom });
+            items.push({ separator: true });
+            items.push({ label: 'Dark Mode', checked: dark, action: toggleDark });
+          }
+          return items;
         },
         help: function () {
           return [
             { label: 'Help Topics', icon: 'help', action: function () { Win.wm.open('help'); } },
             { separator: true },
             { label: 'About Notepad', icon: 'notepad', action: function () {
-              Win.ui.alert('WINemulator Notepad\nVersion 4.10.2222 (Web Edition)\n\nA small text editor with a virtual file system.\nYour words are saved in this browser.', 'About Notepad', 'notepad');
+              Win.ui.alert('WINemulator Notepad\nVersion ' + (modern ? '10.0 (Web Edition)' : '4.10.2222 (Web Edition)') + '\n\nA small text editor with a virtual file system.\nYour words are saved in this browser.' +
+                (modern ? '\n\nNew: zoom, dark mode, line-ending and encoding indicators,\nand preferences that persist between sessions.' : ''), 'About Notepad', 'notepad');
             } }
           ];
         }
@@ -312,11 +419,17 @@
       area.addEventListener('keyup', updatePos);
       area.addEventListener('select', updatePos);
       area.addEventListener('keydown', function (ev) {
-        if (ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+        if (ev.ctrlKey && !ev.altKey) {
           const k = ev.key.toLowerCase();
-          if (k === 's') { ev.preventDefault(); save(); }
-          else if (k === 'o') { ev.preventDefault(); openDoc(); }
-          else if (k === 'n') { ev.preventDefault(); newDoc(); }
+          if (!ev.shiftKey && k === 's') { ev.preventDefault(); save(); }
+          else if (!ev.shiftKey && k === 'o') { ev.preventDefault(); openDoc(); }
+          else if (!ev.shiftKey && k === 'n') { ev.preventDefault(); newDoc(); }
+          else if (!ev.shiftKey && k === 'f') { ev.preventDefault(); findDialog(); }
+          else if (!ev.shiftKey && k === 'h') { ev.preventDefault(); replaceDialog(); }
+          else if (!ev.shiftKey && k === 'g') { ev.preventDefault(); gotoDialog(); }
+          else if (k === '+' || k === '=') { if (modern) { ev.preventDefault(); zoomBy(10); } }
+          else if (k === '-' || k === '_') { if (modern) { ev.preventDefault(); zoomBy(-10); } }
+          else if (k === '0') { if (modern) { ev.preventDefault(); resetZoom(); } }
         }
         if (ev.key === 'F5') { ev.preventDefault(); insertText(new Date().toLocaleString()); }
         if (ev.key === 'F3') { ev.preventDefault(); findNext(false); }
@@ -329,10 +442,21 @@
         if (ev.key === 'Escape') { ctx.focus(); }
       });
 
+      if (eolEl) {
+        eolEl.addEventListener('click', cycleEol);
+        eolEl.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); cycleEol(); } });
+      }
+      if (zoomEl) {
+        zoomEl.addEventListener('click', resetZoom);
+        zoomEl.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); resetZoom(); } });
+      }
+
       if (path) load(path); else { updatePos(); area.focus(); }
       applyWrap();
       applyFont();
+      statusEl.hidden = !showStatus;
       refreshTitle();
+      updateStatus();
 
       return {
         onClose: function () {
@@ -342,6 +466,8 @@
         },
         onReopen: function (a) { if (a && a.path) load(a.path); },
         save: save,
+        zoomIn: function () { zoomBy(10); },
+        zoomOut: function () { zoomBy(-10); },
         get path() { return path; },
         get dirty() { return dirty; }
       };

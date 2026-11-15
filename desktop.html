@@ -16,26 +16,36 @@
   <link rel="stylesheet" href="css/apps.css">
   <link rel="stylesheet" href="css/xp.css">
   <link rel="stylesheet" href="css/win7.css">
+  <link rel="stylesheet" href="css/win10.css">
 </head>
 <body class="booting theme-classic wall-teal">
   <script>
     (function () {
       var q = new URLSearchParams(location.search);
       var os = q.get('os');
-      if (os !== '98' && os !== 'xp' && os !== '7') {
+      if (os !== '98' && os !== 'xp' && os !== '7' && os !== '9') {
         try { os = localStorage.getItem('winemulator.os'); } catch (e) {}
       }
-      if (os !== '98' && os !== 'xp' && os !== '7') os = '98';
+      if (os !== '98' && os !== 'xp' && os !== '7' && os !== '9') os = '98';
       try { localStorage.setItem('winemulator.os', os); } catch (e) {}
 
       /* Give each desktop its own default look the first time it is opened. */
-      if (os === '7') {
+      if (os === '9') {
+        try {
+          var raw9 = localStorage.getItem('winemulator.settings');
+          var st9 = raw9 ? JSON.parse(raw9) : {};
+          var changed9 = false;
+          if (!st9.wallpaper || st9.wallpaper === 'teal' || st9.wallpaper === 'bliss' || st9.wallpaper === 'harmony') { st9.wallpaper = 'hero'; changed9 = true; }
+          if (!st9.theme || ['classic', 'platinum', 'midnight', 'xp', 'olive', 'silver', 'aero', 'frost', 'dusk'].indexOf(st9.theme) > -1) { st9.theme = 'win10'; changed9 = true; }
+          if (changed9) localStorage.setItem('winemulator.settings', JSON.stringify(st9));
+        } catch (e) {}
+      } else if (os === '7') {
         try {
           var raw = localStorage.getItem('winemulator.settings');
           var st = raw ? JSON.parse(raw) : {};
           var changed = false;
-          if (!st.wallpaper || st.wallpaper === 'teal' || st.wallpaper === 'bliss') { st.wallpaper = 'harmony'; changed = true; }
-          if (!st.theme || ['classic', 'platinum', 'midnight', 'xp', 'olive', 'silver'].indexOf(st.theme) > -1) { st.theme = 'aero'; changed = true; }
+          if (!st.wallpaper || st.wallpaper === 'teal' || st.wallpaper === 'bliss' || st.wallpaper === 'hero') { st.wallpaper = 'harmony'; changed = true; }
+          if (!st.theme || ['classic', 'platinum', 'midnight', 'xp', 'olive', 'silver', 'win10'].indexOf(st.theme) > -1) { st.theme = 'aero'; changed = true; }
           if (changed) localStorage.setItem('winemulator.settings', JSON.stringify(st));
         } catch (e) {}
       } else if (os === 'xp') {
@@ -51,7 +61,7 @@
 
       window.WIN_OS = os;
       document.documentElement.setAttribute('data-os', os);
-      document.body.classList.add(os === '7' ? 'os-7' : os === 'xp' ? 'os-xp' : 'os-98');
+      document.body.classList.add(os === '9' ? 'os-9' : os === '7' ? 'os-7' : os === 'xp' ? 'os-xp' : 'os-98');
       if (os === 'xp') {
         document.body.classList.remove('theme-classic', 'wall-teal');
         document.body.classList.add('theme-xp', 'wall-bliss');
@@ -64,6 +74,12 @@
         var meta7 = document.querySelector('meta[name="theme-color"]');
         if (meta7) meta7.setAttribute('content', '#0b6d8f');
         document.title = 'WINemulator 7 — Windows in your browser';
+      } else if (os === '9') {
+        document.body.classList.remove('theme-classic', 'wall-teal');
+        document.body.classList.add('theme-win10', 'wall-hero');
+        var meta9 = document.querySelector('meta[name="theme-color"]');
+        if (meta9) meta9.setAttribute('content', '#0078d7');
+        document.title = 'WINemulator 9 — Windows in your browser';
       }
     })();
   </script>
@@ -109,6 +125,7 @@
   <script src="js/os.js"></script>
   <script src="js/icons-xp.js"></script>
   <script src="js/icons-7.js"></script>
+  <script src="js/icons-10.js"></script>
   <script src="js/util.js"></script>
   <script src="js/sound.js"></script>
   <script src="js/fs.js"></script>

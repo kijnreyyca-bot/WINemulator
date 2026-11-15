@@ -6,7 +6,7 @@
 window.Win = window.Win || {};
 (function () {
   'use strict';
-  if (!Win.isSeven) return;
+  if (!Win.isSeven && !Win.isNine) return;
 
   const GLASS = {
     flag:

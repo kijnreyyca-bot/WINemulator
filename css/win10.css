@@ -1,0 +1,440 @@
+/* WINemulator — Windows 9 (flat, Windows 10-style) shell
+   Original artwork. No Microsoft assets. */
+
+body.os-9 {
+  --font: "Segoe UI", "Segoe UI Variable", Tahoma, Verdana, sans-serif;
+  --face: #f3f3f3;
+  --face-hi: #ffffff;
+  --white: #ffffff;
+  --shadow: #c8c8c8;
+  --dark: #7a7a7a;
+  --text: #1f1f1f;
+  --text-dim: #6b6b6b;
+  --title-a: #ffffff;
+  --title-b: #ffffff;
+  --title-text: #1f1f1f;
+  --title-inactive-a: #f7f7f7;
+  --title-inactive-b: #f7f7f7;
+  --field-bg: #ffffff;
+  --field-text: #1f1f1f;
+  --menu-bg: #ffffff;
+  --menu-text: #1f1f1f;
+  --sel-bg: #0078d7;
+  --sel-text: #ffffff;
+  --desktop-bg: #04203f;
+  --taskbar: #0b0b0b;
+  --status-bg: #f3f3f3;
+  --link: #0078d7;
+  --check: #0078d7;
+  --taskbar-h: 40px;
+  --accent: #0078d7;
+  --accent-hi: #1f8ce8;
+  font-family: var(--font);
+  font-size: 12px;
+  color: var(--text);
+}
+body.os-9.theme-win10mint { --accent: #00a88f; --accent-hi: #17c4a8; --sel-bg: #00a88f; --link: #008a75; }
+body.os-9.theme-win10violet { --accent: #8764b8; --accent-hi: #9d7ccb; --sel-bg: #8764b8; --link: #6f4fa0; }
+
+body.os-9.wall-hero #desktop {
+  background: url("../assets/hero.svg") center center / cover no-repeat;
+}
+
+/* ---------------------------------------------------------- desktop icons */
+body.os-9 .desk-icon { width: 88px; }
+body.os-9 .desk-icon .di-icon { width: 50px; height: 46px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.45)); }
+body.os-9 .desk-icon .di-label {
+  font-size: 12px; max-width: 86px; color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,.8);
+}
+body.os-9 .desk-icon.selected { background: rgba(0, 120, 215, .28); border-color: var(--accent); }
+body.os-9 .desk-icon.selected .di-label { background: var(--accent); text-shadow: none; }
+body.os-9 .desk-icon:focus-visible { border-color: var(--accent); }
+
+/* --------------------------------------------------------------- windows */
+body.os-9 .window {
+  border: 1px solid #cfcfcf;
+  border-radius: 0;
+  background: #ffffff;
+  padding: 0;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .38), 0 2px 6px rgba(0, 0, 0, .18);
+}
+body.os-9 .window.active { box-shadow: 0 14px 40px rgba(0, 0, 0, .46), 0 2px 8px rgba(0, 0, 0, .2); }
+body.os-9 .window.maximized { border: 0; border-radius: 0; }
+body.os-9 .titlebar {
+  height: 32px;
+  padding: 0 0 0 10px;
+  gap: 7px;
+  background: #ffffff;
+  color: #1f1f1f;
+  border-bottom: 1px solid #ececec;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+body.os-9 .window:not(.active) .titlebar { background: #f7f7f7; color: #8a8a8a; border-bottom-color: #f0f0f0; }
+body.os-9 .window:not(.active) .titlebar-icon { opacity: .7; }
+body.os-9 .titlebar-title { font-weight: 400; }
+body.os-9 .titlebar-btns { gap: 0; height: 100%; }
+body.os-9 .tb-btn {
+  width: 44px; height: 100%;
+  border: 0; border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #333;
+}
+body.os-9 .tb-btn:hover { background: #e6e6e6; }
+body.os-9 .tb-btn:active { background: #d8d8d8; box-shadow: none; }
+body.os-9 .tb-btn:focus-visible { outline: 1px solid var(--accent); outline-offset: -2px; }
+body.os-9 .tb-min span { width: 10px; height: 1px; margin-top: 8px; background: #333; }
+body.os-9 .tb-max span { width: 10px; height: 9px; border: 1px solid #333; border-top-width: 1px; }
+body.os-9 .tb-close span { width: 10px; height: 10px; }
+body.os-9 .tb-close span::before, body.os-9 .tb-close span::after {
+  height: 1.2px; width: 12px; left: -1px; top: 4.5px; background: #333;
+}
+body.os-9 .tb-close:hover { background: #e81123; }
+body.os-9 .tb-close:hover span::before, body.os-9 .tb-close:hover span::after { background: #fff; }
+body.os-9 .window.maximized .titlebar { height: 32px; }
+body.os-9 .window.maximized .tb-max span {
+  width: 10px; height: 8px;
+  border: 1px solid #333; border-top-width: 1px;
+  box-shadow: 3px -3px 0 -1px #fff, 3px -3px 0 0 #333;
+}
+
+/* ---------------------------------------------------------------- taskbar */
+body.os-9 #taskbar {
+  background: #0b0b0b;
+  border-top: 0;
+  box-shadow: none;
+  padding: 0;
+  gap: 0;
+  font-size: 12px;
+}
+body.os-9 .start-button {
+  width: 48px;
+  height: 100%;
+  flex: none;
+  padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: #fff;
+}
+body.os-9 .start-button:hover { background: rgba(255, 255, 255, .1); }
+body.os-9 .start-button.pressed { background: rgba(255, 255, 255, .16); border: 0; box-shadow: none; padding-top: 0; }
+body.os-9 .start-button .start-label { display: none; }
+body.os-9 .quicklaunch { display: none; }
+body.os-9 .tasks { gap: 0; padding: 0 2px; }
+body.os-9 .task-btn {
+  flex: 0 1 190px;
+  height: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  box-shadow: none;
+  color: #e6e6e6;
+  font-size: 12px;
+  padding: 0 10px;
+}
+body.os-9 .task-btn:hover { background: rgba(255, 255, 255, .09); }
+body.os-9 .task-btn.active {
+  background: rgba(255, 255, 255, .14);
+  border-bottom-color: var(--accent);
+  box-shadow: none;
+  font-weight: 400;
+  padding-top: 0;
+}
+body.os-9 .tray {
+  border-left: 0; box-shadow: none;
+  padding: 0 4px;
+}
+body.os-9 .tray-btn, body.os-9 .tray-clock {
+  color: #e6e6e6;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  height: 38px;
+}
+body.os-9 .tray-btn:hover, body.os-9 .tray-clock:hover { background: rgba(255, 255, 255, .1); }
+body.os-9 .tray-clock { font-size: 12px; padding: 0 10px; }
+
+/* ------------------------------------------------------------- Start menu */
+body.os-9 .start-menu.w10-start {
+  left: 0;
+  bottom: calc(var(--taskbar-h) + 0px);
+  width: 640px;
+  max-width: calc(100vw - 6px);
+  max-height: calc(100vh - var(--taskbar-h) - 4px);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  background: #202020;
+  color: #f2f2f2;
+  border: 1px solid #000;
+  border-radius: 0;
+  box-shadow: 0 -6px 30px rgba(0, 0, 0, .55);
+  overflow: hidden;
+  animation: w10-sm-in .12s ease-out;
+}
+@keyframes w10-sm-in { from { opacity: .5; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.w10-head {
+  flex: none;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  background: #2b2b2b;
+  border-bottom: 1px solid #3a3a3a;
+}
+.w10-avatar {
+  width: 32px; height: 32px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  background: #3a3a3a; border-radius: 0;
+  overflow: hidden;
+}
+.w10-user { font-size: 12.5px; color: #f5f5f5; white-space: nowrap; }
+.w10-searchwrap { flex: 1; min-width: 0; display: flex; }
+.w10-search {
+  width: 100%; height: 28px;
+  background: #1a1a1a;
+  border: 1px solid #4a4a4a;
+  border-radius: 0;
+  color: #f2f2f2;
+  padding: 0 8px;
+  font-size: 12px;
+}
+.w10-search::placeholder { color: #9a9a9a; }
+.w10-search:focus { outline: 1px solid var(--accent); outline-offset: -1px; }
+
+.w10-body { flex: 1; min-height: 0; display: flex; }
+.w10-left {
+  width: 280px; flex: none;
+  padding: 4px 6px 8px;
+  overflow-y: auto;
+  border-right: 1px solid #3a3a3a;
+}
+.w10-right {
+  flex: 1; min-width: 0;
+  padding: 4px 10px 12px;
+  overflow-y: auto;
+}
+.w10-group-label {
+  padding: 10px 8px 6px;
+  font-size: 11px;
+  color: #a8a8a8;
+  text-transform: none;
+}
+.w10-app {
+  width: 100%;
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 10px;
+  background: transparent;
+  border: 0;
+  color: #f2f2f2;
+  text-align: left;
+  font-size: 12.5px;
+  cursor: default;
+}
+.w10-app:hover, .w10-app:focus-visible { background: rgba(255, 255, 255, .1); outline: none; }
+.w10-app-icon { width: 24px; height: 24px; flex: none; display: flex; align-items: center; justify-content: center; }
+.w10-app-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.w10-empty { padding: 14px 10px; font-size: 12px; color: #a0a0a0; }
+
+.w10-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 6px;
+}
+.w10-tile {
+  height: 96px;
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end;
+  gap: 6px;
+  padding: 8px;
+  background: var(--tile, #0078d7);
+  border: 0;
+  border-radius: 0;
+  color: #fff;
+  text-align: left;
+  cursor: default;
+}
+.w10-tile:hover, .w10-tile:focus-visible { filter: brightness(1.15); outline: 1px solid rgba(255,255,255,.6); outline-offset: -2px; }
+.w10-tile-icon { flex: 1; display: flex; align-items: flex-start; }
+.w10-tile-label { font-size: 11.5px; line-height: 1.2; }
+
+.w10-foot {
+  flex: none; height: 44px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 12px;
+  background: #2b2b2b;
+  border-top: 1px solid #3a3a3a;
+}
+.w10-foot-user { display: flex; align-items: center; gap: 8px; color: #f2f2f2; font-size: 12px; }
+.w10-foot-user b { font-weight: 400; }
+.w10-power {
+  width: 34px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: 0; color: #f2f2f2;
+}
+.w10-power:hover { background: rgba(255, 255, 255, .12); }
+
+/* ------------------------------------------------------------- flat extras */
+body.os-9 .menubar {
+  background: #ffffff;
+  border-bottom: 1px solid #ececec;
+  color: #1f1f1f;
+  box-shadow: none;
+}
+body.os-9 .mb-item { padding: 3px 9px; font-size: 12px; }
+body.os-9 .mb-item:hover, body.os-9 .mb-item.open { background: #e6e6e6; color: #000; }
+body.os-9 .menu {
+  background: #ffffff;
+  color: #1f1f1f;
+  border: 1px solid #c8c8c8;
+  border-radius: 0;
+  box-shadow: 0 6px 18px rgba(0,0,0,.24);
+  padding: 3px;
+}
+body.os-9 .menu-item { padding: 5px 10px; font-size: 12px; }
+body.os-9 .menu-item:hover, body.os-9 .menu-item:focus { background: var(--accent); color: #fff; }
+body.os-9 .menu-separator { border-top: 1px solid #e2e2e2; }
+body.os-9 .btn {
+  background: #e1e1e1;
+  border: 1px solid #adadad;
+  border-radius: 0;
+  box-shadow: none;
+  color: #1f1f1f;
+  padding: 4px 12px;
+  font-size: 12px;
+}
+body.os-9 .btn:hover { background: #e9e9e9; border-color: #7a7a7a; }
+body.os-9 .btn:active { background: #cccccc; }
+body.os-9 .btn.default, body.os-9 .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+body.os-9 .btn.default:hover, body.os-9 .btn.primary:hover { background: var(--accent-hi); border-color: var(--accent-hi); }
+body.os-9 .field, body.os-9 input[type="text"], body.os-9 input[type="search"], body.os-9 input[type="number"], body.os-9 select {
+  border: 1px solid #c8c8c8;
+  border-radius: 0;
+  background: #ffffff;
+  color: #1f1f1f;
+  box-shadow: none;
+}
+body.os-9 .field:focus, body.os-9 input:focus, body.os-9 select:focus { outline: 1px solid var(--accent); outline-offset: -1px; }
+body.os-9 .statusbar { background: #f3f3f3; border-top: 1px solid #e2e2e2; color: #444; box-shadow: none; }
+body.os-9 .status-cell { border-color: #e2e2e2; }
+body.os-9 .dialog { border: 1px solid #c8c8c8; border-radius: 0; box-shadow: 0 12px 40px rgba(0,0,0,.4); }
+body.os-9 .dialog .titlebar { height: 30px; }
+body.os-9 .dialog .tb-btn { width: 40px; height: 100%; }
+body.os-9 .dialog-buttons { background: #f5f5f5; border-top: 1px solid #e6e6e6; }
+body.os-9 .toast { border-radius: 0; background: #2b2b2b; color: #fff; border: 1px solid #444; }
+body.os-9 .calendar-pop, body.os-9 .volume-pop {
+  background: #202020; color: #f2f2f2; border: 1px solid #3a3a3a; border-radius: 0;
+  box-shadow: 0 10px 30px rgba(0,0,0,.5);
+}
+body.os-9 .calendar-head { background: #2b2b2b; color: #fff; }
+body.os-9 .calendar-day:hover { background: rgba(255,255,255,.1); }
+body.os-9 .calendar-day.today { background: var(--accent); color: #fff; }
+
+/* ------------------------------------------------------------ boot & login */
+.w9-boot-splash {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px;
+  background: #000;
+  color: #fff;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+}
+.w9-boot-logo { margin-bottom: 14px; filter: drop-shadow(0 0 18px rgba(76, 194, 255, .35)); }
+.w9-boot-word { font-size: 21px; font-weight: 300; letter-spacing: .4px; color: #fff; }
+.w9-boot-word b { font-weight: 300; color: #4cc2ff; }
+.w9-boot-dots { display: flex; gap: 7px; margin-top: 22px; }
+.w9-boot-dots i {
+  width: 6px; height: 6px;
+  background: #d8d8d8;
+  border-radius: 0;
+  animation: w9-dot 1.4s ease-in-out infinite;
+}
+.w9-boot-dots i:nth-child(2) { animation-delay: .16s; }
+.w9-boot-dots i:nth-child(3) { animation-delay: .32s; }
+.w9-boot-dots i:nth-child(4) { animation-delay: .48s; }
+.w9-boot-dots i:nth-child(5) { animation-delay: .64s; }
+@keyframes w9-dot {
+  0%, 100% { opacity: .25; transform: none; }
+  50% { opacity: 1; transform: translateY(-4px); }
+}
+.w9-boot-sub { margin-top: 8px; font-size: 12.5px; color: #bdbdbd; letter-spacing: .3px; }
+.w9-boot-copy { position: absolute; bottom: 26px; font-size: 10.5px; color: #8a8a8a; }
+.w9-boot-hint { position: absolute; bottom: 50px; }
+
+body.os-9 .login-layer {
+  background:
+    radial-gradient(120% 90% at 20% 90%, rgba(76,194,255,.22), transparent 60%),
+    linear-gradient(160deg, #04203f 0%, #074a86 55%, #0a6bb0 100%);
+}
+.w9-login-box {
+  background: rgba(20, 20, 20, .82);
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 0;
+  color: #f2f2f2;
+  box-shadow: 0 20px 60px rgba(0,0,0,.55);
+}
+.w9-login-brand { color: #e8f4ff; font-weight: 300; }
+.w9-login-word b { font-weight: 600; }
+.w9-login-word em { font-style: normal; color: #4cc2ff; }
+.w9-login-box .login-welcome { color: #fff; font-weight: 300; }
+.w9-login-box .login-sub { color: #b8c6d4; }
+.w9-login-box .login-hint { color: #9fb0c0; }
+.w9-login-box .login-foot { color: #9fb0c0; border-top-color: rgba(255,255,255,.12); }
+.w9-lu-pic { background: #123a5e; border: 1px solid rgba(255,255,255,.25); border-radius: 0; }
+.w9-login-box .login-user { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.16); color: #fff; border-radius: 0; }
+.w9-login-box .login-user:hover { background: rgba(0,120,215,.35); border-color: var(--accent); }
+.w9-login-box .lu-text em { color: #9fb0c0; }
+
+/* narrow screens */
+@media (max-width: 720px) {
+  body.os-9 .start-menu.w10-start { width: calc(100vw - 4px); }
+  .w10-left { width: 190px; }
+  .w10-tile { height: 82px; }
+}
+@media (max-width: 520px) {
+  body.os-9 .start-menu.w10-start { flex-direction: column; }
+  .w10-left { width: auto; max-height: 46vh; border-right: 0; border-bottom: 1px solid #3a3a3a; }
+}
+
+/* ------------------------------------------------ settings (Win9 preview) */
+body.os-9 .set-wall-prev.w-hero { background: url("../assets/hero.svg") center center / cover no-repeat; }
+body.os-9 .set-theme .set-theme-prev { background: #f3f3f3; border-color: #cfcfcf; }
+body.os-9 .set-theme .set-theme-prev i { background: #0078d7; }
+body.os-9 .set-theme[data-theme="win10mint"] .set-theme-prev i { background: #00a88f; }
+body.os-9 .set-theme[data-theme="win10violet"] .set-theme-prev i { background: #8764b8; }
+body.os-9 .set-theme.active { border-color: var(--accent); }
+body.os-9 .set-preview {
+  border: 1px solid #cfcfcf;
+  background-color: #062a4a;
+  box-shadow: 0 2px 8px rgba(0,0,0,.28);
+}
+body.os-9 .set-preview .sp-win {
+  background: #fff; border-color: #cfcfcf; border-radius: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,.4);
+}
+body.os-9 .set-preview .sp-win::before { background: #fff; border-bottom: 1px solid #ececec; }
+body.os-9 .set-preview .sp-win::after { background: #fff; border-color: #e4e4e4; }
+body.os-9 .set-preview .sp-taskbar { background: #0b0b0b; border-top: 0; }
+body.os-9 .set-preview .sp-start { background: var(--accent); border: 0; border-radius: 0; }
+body.os-9 .set-preview .sp-icon { border-color: #b9bfc6; border-radius: 0; box-shadow: none; }
+body.os-9 .set-oslist .btn { margin-top: 0; }
+
+/* --------------------------------------------------- flat app chrome bits */
+body.os-9 .toolbar {
+  background: #ffffff;
+  border-top: 0;
+  border-bottom: 1px solid #e2e2e2;
+}
+body.os-9 .tool-btn { border: 0; border-radius: 0; }
+body.os-9 .tool-btn:hover { background: #e6e6e6; border: 0; }
+body.os-9 .tool-btn:active, body.os-9 .tool-btn.on {
+  background: #dcdcdc; border: 0; border-bottom: 2px solid var(--accent);
+}
+body.os-9 .tool-sep { border-left: 1px solid #e2e2e2; border-right: 0; }
+body.os-9 .tab-strip, body.os-9 .tabs { background: #f3f3f3; border-bottom: 1px solid #e2e2e2; }
+body.os-9 .field, body.os-9 input, body.os-9 select, body.os-9 textarea { border-radius: 0; }
+body.os-9 .set-nav button, body.os-9 .set-tab { border-radius: 0; }

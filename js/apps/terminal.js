@@ -115,15 +115,15 @@
   };
 
   Win.apps.terminal = {
-    name: Win.isSeven ? 'Command Prompt' : 'MS-DOS Prompt',
-    title: Win.isSeven ? 'Command Prompt' : 'MS-DOS Prompt',
+    name: (Win.isSeven || Win.isNine) ? 'Command Prompt' : 'MS-DOS Prompt',
+    title: (Win.isSeven || Win.isNine) ? 'Command Prompt' : 'MS-DOS Prompt',
     icon: 'terminal',
     width: 780, height: 480, minWidth: 420, minHeight: 240,
     mount: function (body, ctx) {
     body.classList.add('app-terminal');
     const args = ctx.args || {};
     let mode = (args.mode === 'ps' || args.mode === 'powershell') ? 'ps' : 'cmd';
-    let cwd = args.cwd ? normPath(args.cwd, 'C:\\') : (Win.isSeven ? 'C:\\Users\\User' : 'C:\\WINDOWS');
+    let cwd = args.cwd ? normPath(args.cwd, 'C:\\') : (Win.isModern ? 'C:\\Users\\User' : 'C:\\WINDOWS');
     let history = [], histIndex = 0;
     let env = {
       USERNAME: Win.store.get('lastUser') || 'User',
@@ -132,13 +132,13 @@
       OS: 'Windows_NT',
       PROCESSOR_ARCHITECTURE: 'x86',
       PROCESSOR_IDENTIFIER: 'x86 Family 6 Model 42 Stepping 1, WebCore',
-      TEMP: Win.isSeven ? 'C:\\Users\\User\\AppData\\Local\\Temp' : 'C:\\WINDOWS\\Temp',
-      TMP: Win.isSeven ? 'C:\\Users\\User\\AppData\\Local\\Temp' : 'C:\\WINDOWS\\Temp',
+      TEMP: Win.isModern ? 'C:\\Users\\User\\AppData\\Local\\Temp' : 'C:\\WINDOWS\\Temp',
+      TMP: Win.isModern ? 'C:\\Users\\User\\AppData\\Local\\Temp' : 'C:\\WINDOWS\\Temp',
       SYSTEMROOT: 'C:\\Windows',
       WINDIR: 'C:\\Windows',
-      USERPROFILE: Win.isSeven ? 'C:\\Users\\User' : 'C:\\',
+      USERPROFILE: Win.isModern ? 'C:\\Users\\User' : 'C:\\',
       HOMEDRIVE: 'C:',
-      HOMEPATH: Win.isSeven ? '\\Users\\User' : '\\',
+      HOMEPATH: Win.isModern ? '\\Users\\User' : '\\',
       PATH: 'C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem',
       PATHEXT: '.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.PS1',
       PROMPT: '$P$G',
@@ -159,7 +159,7 @@
     function setMode(m) {
       mode = m;
       screen.classList.toggle('term-ps', mode === 'ps');
-      ctx.setTitle(mode === 'ps' ? 'Windows PowerShell' : (Win.isSeven ? 'Command Prompt' : 'MS-DOS Prompt'));
+      ctx.setTitle(mode === 'ps' ? 'Windows PowerShell' : ((Win.isSeven || Win.isNine) ? 'Command Prompt' : 'MS-DOS Prompt'));
       ctx.setIcon(mode === 'ps' ? 'powershell' : 'terminal');
       setPrompt();
     }
@@ -214,7 +214,7 @@
       printLine('', '');
       printLine('PS ' + cwd + '>', 'term-dim');
     } else if (!isBatchLaunch) {
-      if (Win.isSeven) {
+      if (Win.isModern) {
         printLine('Microsoft Windows [Version ' + Win.osVersion + ']', 'term-dim');
         printLine('(c) Microsoft Corporation. All rights reserved.', 'term-dim');
       } else {
@@ -397,7 +397,7 @@
     }
 
     function cmdVer() {
-      if (Win.isSeven) return { lines: ['Microsoft Windows [Version ' + Win.osVersion + ']'] };
+      if (Win.isModern) return { lines: ['Microsoft Windows [Version ' + Win.osVersion + ']'] };
       if (Win.isXP) return { lines: ['Microsoft Windows XP [Version 5.1.2600]'] };
       return { lines: ['Windows 98 [Version 4.10.2222]'] };
     }
@@ -1464,7 +1464,7 @@
       if (history.length > 200) history.shift();
       histIndex = history.length;
 
-      if (!silent) printLine((mode === 'ps' ? 'PS ' + cwd + '> ' : (Win.isSeven ? cwd + '>' : cwd + '>')) + t, 'term-dim');
+      if (!silent) printLine((mode === 'ps' ? 'PS ' + cwd + '> ' : (Win.isModern ? cwd + '>' : cwd + '>')) + t, 'term-dim');
 
       // asynchronous pause commands: wait / timeout / pause
       const waitMatch = t.match(/^wait\s+(\d+)\s*$/i);

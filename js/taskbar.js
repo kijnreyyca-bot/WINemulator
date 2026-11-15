@@ -312,9 +312,116 @@
     setTimeout(function () { if (search) search.focus(); }, 60);
   }
 
+  /* ------------------------------------------------------------- Win9 Start */
+  function buildStartNine() {
+    startEl.classList.add('w10-start');
+    startEl.innerHTML = '';
+
+    const user = (Win.store.get('lastUser') || 'User');
+    const head = el('div', { class: 'w10-head' });
+    head.innerHTML = '<span class="w10-avatar">' + Win.icon('user', 30) + '</span>' +
+      '<span class="w10-user"></span>' +
+      '<span class="w10-searchwrap"><input class="field w10-search" type="search" placeholder="Search programs and files" aria-label="Search"></span>';
+    head.querySelector('.w10-user').textContent = user;
+    startEl.appendChild(head);
+
+    const bodyEl = el('div', { class: 'w10-body' });
+    const left = el('div', { class: 'w10-left' });
+    const right = el('div', { class: 'w10-right' });
+    bodyEl.appendChild(left);
+    bodyEl.appendChild(right);
+    startEl.appendChild(bodyEl);
+
+    const apps = [
+      { label: 'File Explorer', icon: 'folder', action: function () { Win.wm.open('explorer', { path: 'C:\\Users\\User' }); } },
+      { label: 'Notepad', icon: 'notepad', action: function () { Win.wm.open('notepad'); } },
+      { label: 'Paint', icon: 'paint', action: function () { Win.wm.open('paint'); } },
+      { label: 'Calculator', icon: 'calc', action: function () { Win.wm.open('calc'); } },
+      { label: 'Command Prompt', icon: 'terminal', action: function () { Win.wm.open('terminal', { mode: 'cmd', cwd: 'C:\\Users\\User' }); } },
+      { label: 'Windows PowerShell', icon: 'powershell', action: function () { Win.wm.open('terminal', { mode: 'ps', cwd: 'C:\\Users\\User' }); } },
+      { label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } },
+      { label: 'Platformer', icon: 'game', action: function () { Win.wm.open('platformer'); } },
+      { label: 'Internet Explorer', icon: 'ie', action: function () { Win.wm.open('browser'); } },
+      { label: 'Mozilla Firefox', icon: 'firefox', action: function () { Win.wm.open('firefox'); } },
+      { label: 'Virtual PC', icon: 'vpc', action: function () { Win.wm.open('vpc'); } },
+      { label: 'Settings', icon: 'settings', action: function () { Win.wm.open('settings'); } },
+      { label: 'Task Manager', icon: 'taskmgr', action: function () { Win.wm.open('taskmgr'); } },
+      { label: 'Help', icon: 'help', action: function () { Win.wm.open('help'); } },
+      { label: 'Switch operating system...', icon: 'windows', action: function () { if (Win.showOSChooser) Win.showOSChooser(); } }
+    ];
+
+    function renderList(filter) {
+      left.innerHTML = '';
+      const q = (filter || '').toLowerCase();
+      const list = q ? apps.filter(function (a) { return a.label.toLowerCase().indexOf(q) > -1; }) : apps;
+      if (!q) left.appendChild(el('div', { class: 'w10-group-label', text: 'Most used' }));
+      list.forEach(function (a) {
+        const b = el('button', { class: 'w10-app', type: 'button' });
+        b.innerHTML = '<span class="w10-app-icon">' + Win.icon(a.icon, 22) + '</span><span class="w10-app-label"></span>';
+        b.querySelector('.w10-app-label').textContent = a.label;
+        b.addEventListener('click', function (ev) { ev.stopPropagation(); closeStart(); a.action(); });
+        left.appendChild(b);
+      });
+      if (!list.length) left.appendChild(el('div', { class: 'w10-empty', text: 'No results' }));
+    }
+    renderList('');
+
+    const search = head.querySelector('.w10-search');
+    search.addEventListener('input', function () { renderList(search.value); });
+    search.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') { const first = left.querySelector('.w10-app'); if (first) first.click(); }
+    });
+
+    const tiles = [
+      { label: 'File Explorer', icon: 'folder', color: '#c98a00', action: function () { Win.wm.open('explorer', { path: 'C:\\Users\\User' }); } },
+      { label: 'Notepad', icon: 'notepad', color: '#0a6bb0', action: function () { Win.wm.open('notepad'); } },
+      { label: 'Paint', icon: 'paint', color: '#b34a86', action: function () { Win.wm.open('paint'); } },
+      { label: 'Calculator', icon: 'calc', color: '#2f6f4e', action: function () { Win.wm.open('calc'); } },
+      { label: 'Command Prompt', icon: 'terminal', color: '#333333', action: function () { Win.wm.open('terminal', { mode: 'cmd', cwd: 'C:\\Users\\User' }); } },
+      { label: 'Minesweeper', icon: 'mine', color: '#8a3a3a', action: function () { Win.wm.open('minesweeper'); } },
+      { label: 'Platformer', icon: 'game', color: '#4a4a9a', action: function () { Win.wm.open('platformer'); } },
+      { label: 'Settings', icon: 'settings', color: '#0078d7', action: function () { Win.wm.open('settings'); } },
+      { label: 'Virtual PC', icon: 'vpc', color: '#2b6a86', action: function () { Win.wm.open('vpc'); } },
+      { label: 'Task Manager', icon: 'taskmgr', color: '#5a5a5a', action: function () { Win.wm.open('taskmgr'); } }
+    ];
+    const tileWrap = el('div', { class: 'w10-tiles' });
+    tiles.forEach(function (t) {
+      const b = el('button', { class: 'w10-tile', type: 'button' });
+      b.style.setProperty('--tile', t.color);
+      b.innerHTML = '<span class="w10-tile-icon">' + Win.icon(t.icon, 30) + '</span><span class="w10-tile-label"></span>';
+      b.querySelector('.w10-tile-label').textContent = t.label;
+      b.addEventListener('click', function (ev) { ev.stopPropagation(); closeStart(); t.action(); });
+      tileWrap.appendChild(b);
+    });
+    right.appendChild(el('div', { class: 'w10-group-label', text: 'Tiles' }));
+    right.appendChild(tileWrap);
+
+    const foot = el('div', { class: 'w10-foot' });
+    const who = el('span', { class: 'w10-foot-user', html: Win.icon('user', 18) + ' <b></b>' });
+    who.querySelector('b').textContent = user;
+    const power = el('button', { class: 'w10-power', type: 'button', title: 'Power', html: Win.icon('shutdown', 18) });
+    power.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      const r = power.getBoundingClientRect();
+      Win.ui.menu([
+        { label: 'Lock', icon: 'lock', action: function () { if (Win.boot) Win.boot.logoff(); } },
+        { label: 'Log off', icon: 'logoff', action: function () { if (Win.boot) Win.boot.logoff(); } },
+        { separator: true },
+        { label: 'Restart', icon: 'restart', action: function () { if (Win.boot) Win.boot.power('restart'); } },
+        { label: 'Shut down', icon: 'shutdown', action: function () { if (Win.boot) Win.boot.power('shutdown'); } }
+      ], r.left - 120, r.top - 170);
+    });
+    foot.appendChild(who);
+    foot.appendChild(power);
+    startEl.appendChild(foot);
+
+    setTimeout(function () { if (search) search.focus(); }, 60);
+  }
+
   function buildStart() {
     startEl.innerHTML = '';
-    startEl.classList.remove('xp-start', 'w7-start');
+    startEl.classList.remove('xp-start', 'w7-start', 'w10-start');
+    if (Win.isNine) return buildStartNine();
     if (Win.isSeven) return buildStartSeven();
     if (Win.isXP) return buildStartXP();
     startEl.appendChild(el('div', { class: 'sm-banner', html: '<div class="sm-banner-inner"><span class="sm-b1">WIN</span><span class="sm-b2">emulator</span><span class="sm-b3">98</span></div>' }));
@@ -593,7 +700,11 @@
     tasksEl = document.getElementById('tasks');
     quickEl = document.getElementById('quicklaunch');
     clockEl = document.getElementById('tray-clock');
-    if (Win.isSeven) {
+    if (Win.isNine) {
+      startBtn.querySelector('#start-icon').innerHTML = Win.icon('win10', 20);
+      const startLabel9 = startBtn.querySelector('.start-label');
+      if (startLabel9) startLabel9.textContent = '';
+    } else if (Win.isSeven) {
       startBtn.querySelector('#start-icon').innerHTML = Win.icon('orb', 26);
       const startLabel = startBtn.querySelector('.start-label');
       if (startLabel) startLabel.textContent = '';

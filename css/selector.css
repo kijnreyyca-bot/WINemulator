@@ -249,3 +249,88 @@ body {
   .os-info { padding: 15px 15px 17px; }
   .os-title h2 { font-size: 18px; }
 }
+
+/* ============================================================ Windows 9 card */
+.os-tag.win10 {
+  color: #9fe6ff;
+  border-color: rgba(76, 194, 255, .45);
+  background: rgba(0, 120, 215, .28);
+  border-radius: 2px;
+}
+.pv-desktop-9 { background: #06192f; overflow: hidden; }
+.pv-hero { position: absolute; inset: 0; overflow: hidden; }
+.pv-bloom {
+  position: absolute; display: block;
+  filter: blur(16px); opacity: .7;
+  transform: rotate(-24deg);
+}
+.pv-bloom.b1 {
+  left: -18%; bottom: -22%; width: 78%; height: 60%;
+  background: linear-gradient(90deg, transparent, rgba(96, 205, 255, .75), transparent);
+}
+.pv-bloom.b2 {
+  left: 4%; bottom: -34%; width: 96%; height: 72%;
+  background: linear-gradient(90deg, transparent, rgba(31, 140, 232, .6), transparent);
+  transform: rotate(-16deg);
+}
+.pv-bloom.b3 {
+  left: 34%; bottom: -40%; width: 90%; height: 74%;
+  background: linear-gradient(90deg, transparent, rgba(14, 90, 160, .8), transparent);
+  transform: rotate(-8deg);
+}
+.pv-window-9 {
+  background: #fff;
+  border-color: #cfcfcf;
+  border-radius: 0;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .5);
+}
+.pv-window-9 .pv-title {
+  height: 17px; background: #fff; border-bottom: 1px solid #ececec;
+  display: flex; align-items: center; gap: 3px; padding: 0 4px;
+}
+.pv-window-9 .pv-title span { flex: 1; font-size: 7px; color: #333; font-weight: 400; }
+.pv-window-9 .pv-title b { width: 9px; height: 7px; background: transparent; border: 0; }
+.pv-window-9 .pv-title b.x { background: transparent; position: relative; }
+.pv-window-9 .pv-title b.x::before,
+.pv-window-9 .pv-title b.x::after {
+  content: ""; position: absolute; left: 0; top: 3px; width: 9px; height: 1px;
+  background: #444; transform: rotate(45deg);
+}
+.pv-window-9 .pv-title b.x::after { transform: rotate(-45deg); }
+.pv-window-9 .pv-body { display: flex; height: 84px; background: #fff; }
+.pv-side.win9 { width: 30%; background: #f2f2f2; border-right: 1px solid #e4e4e4; }
+.pv-window-9 .pv-lines { background: #fff; }
+.pv-window-9 .pv-lines i { background: #dbe7f2; }
+.pv-taskbar-9 {
+  height: 26px; background: #0b0b0b; border-top: 0;
+  padding: 0 4px; gap: 2px;
+}
+.pv-start-9 {
+  width: 22px; height: 18px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+  padding: 3px; margin-right: 4px;
+  background: transparent; border: 0;
+}
+.pv-start-9 i { background: #fff; display: block; }
+.pv-task.win9 {
+  background: rgba(255, 255, 255, .16);
+  border: 0; border-bottom: 2px solid #0078d7;
+  height: 18px;
+}
+.pv-task.win9.alt { background: rgba(255, 255, 255, .1); border-bottom-color: transparent; }
+.pv-tray.win9 { color: #e6e6e6; border: 0; background: transparent; }
+.pv-icon i.pv-monitor.win9 {
+  background: linear-gradient(180deg, #2d2d30 0 62%, #1277c4 62% 100%);
+  border: 1px solid #0d0d0d; border-radius: 0;
+  box-shadow: none;
+}
+.pv-icon i.pv-folder.win9 {
+  background: linear-gradient(180deg, #ffd35c 0 62%, #ffc83d 62% 100%);
+  border: 1px solid #c98a00; border-radius: 0;
+  box-shadow: none;
+}
+.pv-icon i.pv-bin.win9 {
+  background: linear-gradient(180deg, #5ba8e8 0 18%, #4a93cf 18% 100%);
+  border: 1px solid #2f6f9e; border-radius: 0;
+  box-shadow: none;
+}

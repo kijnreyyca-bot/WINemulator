@@ -15,6 +15,7 @@
     { id: 'teal', name: 'Teal' },
     { id: 'bliss', name: 'Bliss' },
     { id: 'harmony', name: 'Harmony' },
+    { id: 'hero', name: 'Hero' },
     { id: 'clouds', name: 'Clouds' },
     { id: 'azure', name: 'Azure' },
     { id: 'sunset', name: 'Sunset' },
@@ -28,6 +29,7 @@
   function wallCss(wall, solid) {
     if (wall === 'bliss') return 'url("assets/bliss.svg") center / cover no-repeat';
     if (wall === 'harmony') return 'url("assets/harmony.svg") center / cover no-repeat';
+    if (wall === 'hero') return 'url("assets/hero.svg") center / cover no-repeat';
     if (wall === 'clouds') {
       return 'radial-gradient(closest-side at 20% 26%, rgba(255,255,255,.95), rgba(255,255,255,.45) 45%, transparent 72%),' +
         'radial-gradient(closest-side at 42% 22%, rgba(255,255,255,.8), transparent 70%),' +
@@ -109,7 +111,11 @@
           '<label class="set-check"><input type="checkbox" class="' + cls + '"' + (checked ? ' checked' : '') + '></label></div>';
       }
       function themeCards(st) {
-        const list = Win.isSeven ? [
+        const list = Win.isNine ? [
+            { id: 'win10', name: 'Windows Blue' },
+            { id: 'win10mint', name: 'Mint' },
+            { id: 'win10violet', name: 'Violet' }
+          ] : Win.isSeven ? [
             { id: 'aero', name: 'Aero Glass' },
             { id: 'frost', name: 'Aero Frost' },
             { id: 'dusk', name: 'Aero Dusk' }
@@ -125,7 +131,9 @@
               { id: 'midnight', name: 'Midnight' }
             ];
         let active = st.theme;
-        if (Win.isXP) active = ['xp', 'olive', 'silver'].indexOf(active) > -1 ? active : 'xp';
+        if (Win.isNine) active = ['win10', 'win10mint', 'win10violet'].indexOf(active) > -1 ? active : 'win10';
+        else if (Win.isSeven) active = ['aero', 'frost', 'dusk'].indexOf(active) > -1 ? active : 'aero';
+        else if (Win.isXP) active = ['xp', 'olive', 'silver'].indexOf(active) > -1 ? active : 'xp';
         else active = ['classic', 'platinum', 'midnight'].indexOf(active) > -1 ? active : 'classic';
         return '<div class="set-themes">' + list.map(function (t) {
           return '<button class="set-theme' + (active === t.id ? ' active' : '') + '" type="button" data-theme="' + t.id + '">' +
@@ -198,6 +206,7 @@
           '<button class="btn" type="button" data-os-switch="98"' + (Win.is98 ? ' disabled' : '') + '>' + Win.icon('flag', 15) + ' Windows 98' + (Win.is98 ? ' (current)' : '') + '</button>' +
           '<button class="btn" type="button" data-os-switch="xp"' + (Win.isXP ? ' disabled' : '') + '>' + Win.icon('windows', 15) + ' Windows XP' + (Win.isXP ? ' (current)' : '') + '</button>' +
           '<button class="btn" type="button" data-os-switch="7"' + (Win.isSeven ? ' disabled' : '') + '>' + Win.icon('orb', 15) + ' Windows 7' + (Win.isSeven ? ' (current)' : '') + '</button>' +
+          '<button class="btn" type="button" data-os-switch="9"' + (Win.isNine ? ' disabled' : '') + '>' + Win.icon('win10', 15) + ' Windows 9' + (Win.isNine ? ' (current)' : '') + '</button>' +
           '</div></div>' +
           '<div class="set-group"><h3>' + Win.icon('monitor', 16) + ' Windows theme</h3>' + themeCards(st) + '</div>' +
           '<div class="set-group"><h3>' + Win.icon('image', 16) + ' Desktop preview</h3>' + previewHtml(st) + '</div>' +
@@ -348,8 +357,8 @@
         const uptime = U.fmtDuration(Date.now() - (Win.startedAt || Date.now()));
         const boot = Win.bootMs ? (Win.bootMs / 1000).toFixed(2) + ' seconds' : 'n/a';
         const rows = [
-          ['Operating system', Win.isSeven ? 'Microsoft Windows 7 Ultimate (Web)' : Win.isXP ? 'Microsoft Windows XP Professional (Web)' : 'Microsoft Windows 98 Second Edition (Web)'],
-          ['Version', (Win.isSeven ? '6.1.7601' : Win.isXP ? '5.1.2600' : '4.10.2222') + ' — WINemulator ' + (Win.version || '1.0')],
+          ['Operating system', Win.isNine ? 'Microsoft Windows 9 Pro (Web)' : Win.isSeven ? 'Microsoft Windows 7 Ultimate (Web)' : Win.isXP ? 'Microsoft Windows XP Professional (Web)' : 'Microsoft Windows 98 Second Edition (Web)'],
+          ['Version', (Win.isNine ? '6.4.9841' : Win.isSeven ? '6.1.7601' : Win.isXP ? '5.1.2600' : '4.10.2222') + ' — WINemulator ' + (Win.version || '1.0')],
           ['Build', Win.build || 'web-2026'],
           ['Processor', 'WebCore x86 JIT (' + (si.cores || '?') + ' logical cores)'],
           ['Memory', (si.memory || 8) + ' GB reported'],
@@ -432,9 +441,9 @@
       function aboutPane() {
         const si = Win.sysinfo ? Win.sysinfo() : {};
         return '<div class="set-about">' +
-          '<div class="set-about-logo">' + Win.icon('flag', 60) + '</div>' +
-          '<div><div class="set-about-name">WINemulator ' + (Win.isSeven ? '7' : Win.isXP ? 'XP' : '98') + '</div>' +
-          '<div class="set-about-tag">' + (Win.isSeven ? 'The Windows 7 Aero desktop, entirely in your browser' : Win.isXP ? 'The Windows XP Luna desktop, entirely in your browser' : 'Windows-style desktop, entirely in your browser') + '</div>' +
+          '<div class="set-about-logo">' + Win.icon(Win.isNine ? 'win10' : 'flag', 60) + '</div>' +
+          '<div><div class="set-about-name">WINemulator ' + (Win.isNine ? '9' : Win.isSeven ? '7' : Win.isXP ? 'XP' : '98') + '</div>' +
+          '<div class="set-about-tag">' + (Win.isNine ? 'The flat Windows 9 desktop, entirely in your browser' : Win.isSeven ? 'The Windows 7 Aero desktop, entirely in your browser' : Win.isXP ? 'The Windows XP Luna desktop, entirely in your browser' : 'Windows-style desktop, entirely in your browser') + '</div>' +
           '<p>A fast, zero-install desktop environment written in plain HTML, CSS and JavaScript. No framework, no build step, no Microsoft assets — every icon, sound, wallpaper and pixel is generated locally.</p>' +
           '<p>Your files and settings live in this browser. WINemulator does not upload anything anywhere, and it keeps working when you are offline.</p></div>' +
           '</div>' +

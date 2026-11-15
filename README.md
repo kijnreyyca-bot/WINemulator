@@ -1,26 +1,28 @@
-# WINemulator — Windows 98, XP & 7 in your browser
+# WINemulator — Windows 98, XP, 7 & 9 in your browser
 
-A fast, self-contained Windows 98, Windows XP **and** Windows 7 desktop that runs entirely in your browser. No installation, no build step, no framework and no server required. Every icon is an original inline SVG, every sound is synthesised with the Web Audio API, and your files live in the browser's local storage.
+A fast, self-contained Windows 98, Windows XP, Windows 7 **and** Windows 9 desktop that runs entirely in your browser. No installation, no build step, no framework and no server required. Every icon is an original inline SVG, every sound is synthesised with the Web Audio API, and your files live in the browser's local storage.
 
-**Open `index.html` or visit the GitHub Pages build.** Pick Windows 98 or Windows XP, and the chosen desktop boots in a second or two and keeps working offline.
+**Open `index.html` or visit the GitHub Pages build.** Pick one of the four desktops, and it boots in a second or two and keeps working offline.
 
 ![WINemulator](assets/favicon.svg)
 
-## Two desktops, one project
+## Four desktops, one project
 
-`index.html` is a small operating-system selector. It remembers your choice in `localStorage` and opens `desktop.html?os=98` or `desktop.html?os=xp`.
+`index.html` is a small operating-system selector. It remembers your choice in `localStorage` and opens `desktop.html?os=98`, `?os=xp`, `?os=7` or `?os=9`.
 
 - **Windows 98 Second Edition** — the classic teal desktop, grey chrome, original 98-style icons, boot screen, logon and shutdown flows.
 - **Windows XP** — a full Luna shell with the Bliss wallpaper, blue gradient title bars, rounded windows, the two-column XP Start menu, XP taskbar, login screen, boot splash and XP icon set. Blue, Olive Green and Silver themes are included.
-- **Switch any time** — use the Start menu, the desktop right-click menu, or Control Panel → Appearance. Your files and settings are shared between both desktops.
+- **Windows 7** — the glassy Aero shell with a Superbar taskbar, orb Start menu, live wallpaper thumbnails, Aero Snap, the Command Prompt and PowerShell, and an Aero glass icon set. Blue, Frost and Dusk themes are included.
+- **Windows 9** — a fictional flat, modern desktop in the Windows 10 style: a dark taskbar, square windows with white title bars, an accent-coloured four-pane Start mark (no glossy orb), a tile Start menu with search, flat icons, and a modern Notepad with zoom, dark mode and line-ending indicators. Blue, Mint and Violet themes are included.
+- **Switch any time** — use the Start menu, the desktop right-click menu, or Control Panel → Appearance. Your files and settings are shared between all desktops.
 
 ## What is inside
 
-- **Desktop shell** — draggable icons, desktop shortcuts, right-click context menus, wallpapers, three Windows 98 themes plus three XP themes, CRT mode and an optional FPS meter.
+- **Desktop shell** — draggable icons, desktop shortcuts, right-click context menus, wallpapers, three Windows 98 themes, three XP themes, three Aero themes and three flat Windows 9 themes, CRT mode and an optional FPS meter.
 - **Window manager** — draggable and resizable windows, minimize/maximize/restore, snapping, Alt+Tab, taskbar buttons and focus management.
-- **Start menu and taskbar** — programs, documents, settings, find, help, run, quick launch, clock with calendar, volume and network trays. Windows XP uses the familiar two-column Start menu with All Programs and Log Off / Turn Off Computer.
+- **Start menu and taskbar** — programs, documents, settings, find, help, run, quick launch, clock with calendar, volume and network trays. Windows XP uses the familiar two-column Start menu; Windows 7 and Windows 9 use searchable Start menus, and Windows 9 adds a tile grid.
 - **Virtual file system** — a persistent `C:` drive with seeded folders and files, Recycle Bin, import/export backups and a shared file picker.
-- **Boot experience** — BIOS memory test, Windows 98 or XP splash, logon, logoff, shutdown, restart and an MS-DOS mode. Fast boot can be enabled in Control Panel.
+- **Boot experience** — BIOS memory test, Windows 98, XP, 7 or 9 splash, logon, logoff, shutdown, restart and an MS-DOS mode. Fast boot can be enabled in Control Panel.
 - **Apps** — Notepad, Paint, Calculator, MS-DOS Prompt, Windows Explorer, Internet Explorer, Minesweeper, Control Panel, Task Manager, Help and **Virtual PC**.
 - **Offline ready** — a service worker caches the entire desktop, including the x86 emulator, after the first visit.
 
@@ -75,7 +77,7 @@ All URLs are relative, so the app works from a repository subpath as well as a d
 | `Win/Cmd+E` | Open My Computer |
 | `Win/Cmd+R` | Open the Run dialog |
 
-Inside Explorer: `Enter` opens, `Backspace` goes up, `Alt+Left`/`Alt+Right` navigate, `F2` renames, `Delete` sends to the Recycle Bin, and the usual `Ctrl+C` / `Ctrl+X` / `Ctrl+V` / `Ctrl+A` work. Notepad supports `Ctrl+S`, `Ctrl+O` and `Ctrl+Z`; Paint supports `Ctrl+Z`, `Ctrl+Y` and `Ctrl+S`.
+Inside Explorer: `Enter` opens, `Backspace` goes up, `Alt+Left`/`Alt+Right` navigate, `F2` renames, `Delete` sends to the Recycle Bin, and the usual `Ctrl+C` / `Ctrl+X` / `Ctrl+V` / `Ctrl+A` work. Notepad supports `Ctrl+S`, `Ctrl+O`, `Ctrl+F`, `Ctrl+H` and `Ctrl+Z`, and on Windows 9 also `Ctrl++`, `Ctrl+-` and `Ctrl+0` for zoom; Paint supports `Ctrl+Z`, `Ctrl+Y` and `Ctrl+S`.
 
 > Your operating system may reserve the Windows key before the browser sees it. The Ctrl and Alt shortcuts always work.
 
@@ -89,10 +91,14 @@ css/
   desktop.css            desktop, windows, taskbar and boot screens
   apps.css               application styles, including Virtual PC
   xp.css                 Windows XP Luna theme and XP boot/login visuals
+  win7.css               Windows 7 Aero theme and boot/login visuals
+  win10.css              Windows 9 flat shell, Start menu and boot visuals
   selector.css           OS selector page
 js/
   icons.js               inline SVG icon sprite for Windows 98
   icons-xp.js            XP-style icon overrides
+  icons-7.js             Windows 7 glass icon overrides
+  icons-10.js            Windows 9 flat icon overrides
   os.js                  OS mode detection and switching
   selector.js            selector page behaviour
   util.js                helpers and the settings store
@@ -114,7 +120,7 @@ App modules register themselves as `Win.apps.<id>` with a `mount(body, ctx)` fun
 
 ## Icons and trademarks
 
-All icons, wallpapers and sounds are original recreations drawn as inline SVG or synthesised in JavaScript. No Microsoft icon files or operating-system images are included. The Bliss-style wallpaper is an original SVG illustration.
+All icons, wallpapers and sounds are original recreations drawn as inline SVG or synthesised in JavaScript. No Microsoft icon files or operating-system images are included. The Bliss-style, Harmony-style and Windows 9-style wallpapers are original SVG illustrations.
 
 ## Privacy
 
@@ -122,7 +128,7 @@ Everything stays in your browser. There is no account, analytics, tracking or se
 
 ## Disclaimer
 
-WINemulator is an independent tribute and a simulation. It is not affiliated with, endorsed by, or connected to Microsoft. Windows, Windows 98 and Windows XP are trademarks of Microsoft Corporation. v86 is an independent open-source project distributed under the BSD 2-Clause licence; see `vendor/v86/LICENSE`.
+WINemulator is an independent tribute and a simulation. It is not affiliated with, endorsed by, or connected to Microsoft. Windows, Windows 98, Windows XP, Windows 7 and Windows 9 are names used descriptively; Windows is a trademark of Microsoft Corporation. Windows 9 is not a Microsoft product. v86 is an independent open-source project distributed under the BSD 2-Clause licence; see `vendor/v86/LICENSE`.
 
 ## License
 

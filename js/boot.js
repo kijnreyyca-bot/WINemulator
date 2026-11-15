@@ -48,7 +48,19 @@
       '</div>';
   }
 
+  function nineSplashMarkup() {
+    return '<div class="w9-boot-splash">' +
+      '<div class="w9-boot-logo">' + Win.icon('win10', 86) + '</div>' +
+      '<div class="w9-boot-word">Windows <b>9</b></div>' +
+      '<div class="w9-boot-dots"><i></i><i></i><i></i><i></i><i></i></div>' +
+      '<div class="w9-boot-sub">Pro &middot; Web Edition</div>' +
+      '<div class="w9-boot-copy">Copyright &copy; 2026 WINemulator Project</div>' +
+      '<div class="bs-hint w9-boot-hint"></div>' +
+      '</div>';
+  }
+
   function bootSplash() {
+    if (Win.isNine) return nineSplashMarkup();
     if (Win.isSeven) return sevenSplashMarkup();
     return Win.isXP ? xpSplashMarkup() : splashMarkup();
   }
@@ -85,7 +97,7 @@
       '  Secondary Master: CD-ROM 32X',
       '  Secondary Slave : None',
       '',
-      Win.isSeven ? 'Starting Windows 7...' : Win.isXP ? 'Starting Windows XP...' : 'Starting Windows 98...'
+      Win.isNine ? 'Starting Windows 9...' : Win.isSeven ? 'Starting Windows 7...' : Win.isXP ? 'Starting Windows XP...' : 'Starting Windows 98...'
     ];
     const step = fast() ? 25 : 72;
     lines.forEach(function (line, i) {
@@ -151,7 +163,18 @@
 
   /* --------------------------------------------------------------- logon */
   function loginUI() {
-    if (Win.isSeven) {
+    if (Win.isNine) {
+      loginLayer.innerHTML =
+        '<div class="login-box w9-login-box">' +
+        '<div class="login-brand w9-login-brand">' + Win.icon('win10', 30) + '<span class="w9-login-word"><b>Microsoft</b> Windows <em>9</em></span></div>' +
+        '<div class="login-welcome">Welcome</div>' +
+        '<div class="login-sub">Sign in to your account</div>' +
+        '<button class="login-user" type="button"><span class="lu-pic w9-lu-pic">' + Win.icon('user', 52) + '</span>' +
+        '<span class="lu-text"><b>User</b><em>Local account</em></span><span class="lu-go">▸</span></button>' +
+        '<div class="login-hint">No password is required. Everything stays in your browser.</div>' +
+        '<div class="login-foot"><span>WINemulator 9</span><span>Pro</span></div>' +
+        '</div>';
+    } else if (Win.isSeven) {
       loginLayer.innerHTML =
         '<div class="login-box w7-login-box">' +
         '<div class="login-brand">' + Win.icon('flag', 34) + '<span class="w7-login-word"><b>Microsoft</b> Windows <em>7</em></span></div>' +
@@ -222,12 +245,12 @@
       powerLayer.hidden = false;
       powerLayer.className = 'power-layer';
       if (mode === 'restart') {
-        powerLayer.innerHTML = bootSplash() + '<div class="shutdown-note">' + (Win.isXP ? 'Restarting Windows...' : 'Restarting Windows...') + '</div>';
+        powerLayer.innerHTML = bootSplash() + '<div class="shutdown-note">' + (Win.isNine ? 'Restarting...' : 'Restarting Windows...') + '</div>';
         powerLayer.querySelector('.bs-hint').textContent = 'Please wait while Windows restarts...';
         Win.sound.play('shutdown');
         setTimeout(function () { powerLayer.hidden = true; start(); }, 1700);
       } else {
-        powerLayer.innerHTML = bootSplash() + '<div class="shutdown-note">' + (Win.isXP ? 'Windows is shutting down...' : 'Shutting down Windows...') + '</div>';
+        powerLayer.innerHTML = bootSplash() + '<div class="shutdown-note">' + (Win.isNine ? 'Shutting down...' : 'Shutting down Windows...') + '</div>';
         powerLayer.querySelector('.bs-hint').textContent = 'Please wait while Windows shuts down...';
         Win.sound.play('shutdown');
         setTimeout(safeOff, 1500);
@@ -240,7 +263,7 @@
     powerLayer.className = 'power-layer safe-off';
     powerLayer.innerHTML =
       '<div class="safe-inner">' +
-      '<div class="safe-text">' + (Win.isSeven ? 'Windows has shut down' : Win.isXP ? 'Windows has shut down' : 'It&rsquo;s now safe to turn off<br>your computer.') + '</div>' +
+      '<div class="safe-text">' + ((Win.isNine || Win.isSeven) ? 'Windows has shut down' : Win.isXP ? 'Windows has shut down' : 'It&rsquo;s now safe to turn off<br>your computer.') + '</div>' +
       '<div class="safe-sub">WINemulator has shut down. You can close this tab.</div>' +
       '<div class="safe-actions"><button class="btn safe-restart" type="button">' + Win.icon('restart', 16) + ' Restart</button></div>' +
       '<div class="safe-hint">Or press any key to start again.</div>' +

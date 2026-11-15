@@ -106,10 +106,10 @@
   function iconFor(entry) {
     if (entry.type === 'dir') return 'folder';
     if (entry.kind === 'image') return 'image';
-    if (entry.kind === 'text') return 'textfile';
     if (entry.ext === 'exe' || entry.ext === 'com') return 'exe';
     if (entry.ext === 'bat' || entry.ext === 'cmd') return 'terminal';
     if (entry.ext === 'ps1') return 'powershell';
+    if (entry.kind === 'text') return 'textfile';
     return 'file';
   }
 
@@ -533,7 +533,7 @@
   }
 
   function ensureSevenFolders() {
-    if (!Win.isSeven) return;
+    if (!Win.isSeven && !Win.isNine) return;
     const dirs = [
       'C:\\Users', 'C:\\Users\\User', 'C:\\Users\\User\\Desktop', 'C:\\Users\\User\\Documents',
       'C:\\Users\\User\\Downloads', 'C:\\Users\\User\\Pictures', 'C:\\Users\\User\\Music',
@@ -569,7 +569,7 @@
     const welcomePath = 'C:\\Users\\User\\Documents\\Welcome.txt';
     if (!Win.fs.exists(welcomePath)) {
       try {
-        Win.fs.write(welcomePath, 'Welcome to Windows 7!\r\n\r\nThis is your personal folder. Save files here and they will be available from any program.\r\n', { kind: 'text', app: 'notepad', silent: true });
+        Win.fs.write(welcomePath, 'Welcome to ' + Win.osName + '!\r\n\r\nThis is your personal folder. Save files here and they will be available from any program.\r\n', { kind: 'text', app: 'notepad', silent: true });
       } catch (e) {}
     }
   }

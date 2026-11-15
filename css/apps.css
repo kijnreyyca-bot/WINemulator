@@ -1103,3 +1103,39 @@ body.theme-midnight .tm-graph canvas { border: 1px solid #2a303a; }
 }
 .pf-canvas:focus { outline: 2px solid #5b9bff; outline-offset: -2px; }
 .pf-help { color: #a9b6cc; font-size: 11px; line-height: 1.4; }
+
+/* -------------------------------------------------- Notepad (modern extras) */
+.app-notepad .np-eol,
+.app-notepad .np-zoom { cursor: pointer; }
+.app-notepad .np-eol:hover,
+.app-notepad .np-zoom:hover { background: var(--face-hi); }
+.app-notepad .np-eol:focus-visible,
+.app-notepad .np-zoom:focus-visible { outline: 1px dotted var(--text); outline-offset: -2px; }
+.np-hint { flex: 1; color: var(--text-dim); font-size: 11px; padding-left: 2px; }
+.np-font-preview-row .np-font-preview {
+  flex: 1; min-width: 0; padding: 5px 9px;
+  border: 1px solid var(--shadow);
+  background: var(--field-bg); color: var(--field-text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.app-notepad.np-dark { background: #1f1f1f; --face: #252526; --text: #e6e6e6; --text-dim: #a8a8a8; }
+.app-notepad.np-dark .menubar { background: #252526; border-bottom-color: #3c3c3c; color: #e6e6e6; }
+.app-notepad.np-dark .mb-item:hover,
+.app-notepad.np-dark .mb-item.open { background: #094771; color: #fff; }
+.app-notepad.np-dark .np-editor-wrap { background: #1f1f1f; }
+.app-notepad.np-dark .np-text {
+  background: #1e1e1e; color: #d4d4d4;
+  border: 1px solid #111; box-shadow: none;
+  caret-color: #aeafad;
+}
+.app-notepad.np-dark .np-text:focus { outline: 1px dotted #6a6a6a; outline-offset: -3px; }
+.app-notepad.np-dark .np-text::selection { background: #264f78; color: #fff; }
+.app-notepad.np-dark .statusbar { background: #252526; border-top-color: #3c3c3c; color: #cccccc; }
+.app-notepad.np-dark .status-cell { border-color: #3c3c3c; }
+.app-notepad.np-dark .status-cell:hover { background: #2d2d2d; }
+
+body.os-9 .app-notepad .np-status { border-top: 1px solid #e2e2e2; padding: 0 2px; }
+body.os-9 .app-notepad .np-status .status-cell { border: 0; border-right: 1px solid #e2e2e2; padding: 3px 8px; }
+body.os-9 .app-notepad .np-status .status-cell:last-child { border-right: 0; }
+body.os-9 .app-notepad.np-dark .np-status { border-top-color: #3c3c3c; }
+body.os-9 .app-notepad.np-dark .np-status .status-cell { border-right-color: #3c3c3c; }

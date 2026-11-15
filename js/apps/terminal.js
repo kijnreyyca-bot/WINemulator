@@ -1234,6 +1234,14 @@
         case 'color': result = { lines: [] }; break;
         case 'date': result = { lines: ['Current date is ' + new Date().toDateString()] }; break;
         case 'time': result = { lines: ['Current time is ' + new Date().toLocaleTimeString()] }; break;
+        case 'wait': {
+          let sec = parseInt(args[1], 10) || 0;
+          sec = Math.max(0, Math.min(300, sec));
+          const end = Date.now() + sec * 1000;
+          while (Date.now() < end) { /* busy wait */ }
+          result = { lines: [] };
+          break;
+        }
         case 'timeout': {
           let sec = 5;
           const tIdx = args.indexOf('/t') > -1 ? args.indexOf('/t') : args.indexOf('/T') > -1 ? args.indexOf('/T') : -1;

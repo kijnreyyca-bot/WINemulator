@@ -13,11 +13,12 @@
       body.innerHTML =
         '<div class="app-dosbox">' +
         '<div class="dosbox-toolbar">' +
-        '<button type="button" class="btn dosbox-default">Boot FreeDOS</button>' +
         '<button type="button" class="btn dosbox-load">Load .jsdos bundle</button>' +
         '<input type="file" class="dosbox-file" accept=".jsdos,.zip" hidden>' +
+        '<input type="text" class="dosbox-url" placeholder="Or paste a .jsdos URL and press Enter">' +
         '<span class="dosbox-status"></span>' +
         '</div>' +
+        '<div class="dosbox-help">DOSBox runs real DOS via js-dos. Load a .jsdos bundle (from dos.zone or your own). Remote bundles must allow CORS.</div>' +
         '<div class="dosbox-screen" id="dosbox-screen"></div>' +
         '</div>';
 
@@ -40,9 +41,6 @@
         }
       }
 
-      body.querySelector('.dosbox-default').addEventListener('click', function () {
-        start('https://br.cdn.dos.zone/js-dos/system/system-dos7.1-v1.jsdos');
-      });
       body.querySelector('.dosbox-load').addEventListener('click', function () { fileInput.click(); });
       fileInput.addEventListener('change', function () {
         const f = fileInput.files && fileInput.files[0];
@@ -50,9 +48,13 @@
         const url = URL.createObjectURL(f);
         start(url);
       });
+      const urlInput = body.querySelector('.dosbox-url');
+      urlInput.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter') { const u = urlInput.value.trim(); if (u) start(u); }
+      });
 
       // no auto-boot; user loads a bundle or uses the file picker
-      status.textContent = 'Load a .jsdos bundle to start (or use the button above).';
+      status.textContent = 'Load a .jsdos bundle to start.';
 
       return {
         destroy: function () { if (instance && typeof instance.stop === 'function') { try { instance.stop(); } catch (e) {} } }

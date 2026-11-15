@@ -98,7 +98,7 @@
       const map = {
         notepad: 'notepad', mspaint: 'paint', paint: 'paint', calc: 'calc', calculator: 'calc',
         explorer: 'explorer', cmd: 'terminal', command: 'terminal', terminal: 'terminal',
-        winmine: 'minesweeper', minesweeper: 'minesweeper', platformer: 'platformer', game: 'platformer', games: 'platformer', control: 'settings', settings: 'settings',
+        winmine: 'minesweeper', minesweeper: 'minesweeper', control: 'settings', settings: 'settings',
         taskmgr: 'taskmgr', 'task manager': 'taskmgr', iexplore: 'browser', ie: 'browser', internet: 'browser',
         vpc: 'vpc', 'virtual pc': 'vpc', virtualpc: 'vpc', virtual: 'vpc',
         firefox: 'firefox', mozilla: 'firefox', moz: 'firefox',
@@ -140,8 +140,7 @@
         { id: 'notepad', label: 'Notepad', icon: 'notepad', open: function () { Win.wm.open('notepad'); }, special: true },
         { id: 'paint', label: 'Paint', icon: 'paint', open: function () { Win.wm.open('paint'); }, special: true },
         { id: 'minesweeper', label: 'Minesweeper', icon: 'mine', open: function () { Win.wm.open('minesweeper'); }, special: true },
-        { id: 'platformer', label: 'Platformer', icon: 'game', open: function () { Win.wm.open('platformer'); }, special: true },
-        { id: 'vpc', label: 'Virtual PC', icon: 'vpc', open: function () { Win.wm.open('vpc'); }, special: true },
+          { id: 'vpc', label: 'Virtual PC', icon: 'vpc', open: function () { Win.wm.open('vpc'); }, special: true },
         { id: 'recycle', label: 'Recycle Bin', icon: recycleCount ? 'recycle-full' : 'recycle', open: function () { openPath('::recycle'); }, special: true }
       ];
     }
@@ -154,7 +153,6 @@
       { id: 'paint', label: 'Paint', icon: 'paint', open: function () { Win.wm.open('paint'); }, special: true },
       { id: 'vpc', label: 'Virtual PC', icon: 'vpc', open: function () { Win.wm.open('vpc'); }, special: true },
       { id: 'minesweeper', label: 'Minesweeper', icon: 'mine', open: function () { Win.wm.open('minesweeper'); }, special: true },
-      { id: 'platformer', label: 'Platformer', icon: 'game', open: function () { Win.wm.open('platformer'); }, special: true },
       { id: 'recycle', label: 'Recycle Bin', icon: recycleCount ? 'recycle-full' : 'recycle', open: function () { openPath('::recycle'); }, special: true },
       { id: 'help', label: 'Help', icon: 'help', open: function () { Win.wm.open('help'); }, special: true }
     ];

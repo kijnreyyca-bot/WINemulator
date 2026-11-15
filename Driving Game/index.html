@@ -100,10 +100,22 @@ let rng = makeRng(seed);
 const scene = new THREE.Scene();
 scene.fog = new THREE.Fog(0x9ecae9, 120, 420);
 const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, 0.1, 600);
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth, innerHeight);
-renderer.shadowMap.enabled = true;
-document.body.appendChild(renderer.domElement);
+let renderer = null;
+try {
+  renderer = new THREE.WebGLRenderer({antialias:false, powerPreference:'default'});
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.shadowMap.enabled = false;
+  document.body.appendChild(renderer.domElement);
+} catch (e) {
+  renderer = null;
+}
+if (!renderer || !renderer.getContext()) {
+  const msg = document.createElement('div');
+  msg.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0b1a2a;color:#fff;font:16px Tahoma;padding:24px;text-align:center;z-index:999;';
+  msg.innerHTML = '<div><h2>WebGL not available</h2><p>Your browser/GPU could not create a WebGL context.<br>Try: enable hardware acceleration, update graphics drivers, or use Chrome/Edge.<br><br><button onclick="location.reload()">Retry</button></div>';
+  document.body.appendChild(msg);
+  throw new Error('WebGL unavailable');
+}
 
 const sun = new THREE.DirectionalLight(0xffffff, 1.0);
 sun.position.set(60,90,40);

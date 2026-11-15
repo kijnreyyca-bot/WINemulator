@@ -162,8 +162,9 @@
       ctx.setTitle(mode === 'ps' ? 'Windows PowerShell' : (Win.isSeven ? 'Command Prompt' : 'MS-DOS Prompt'));
       ctx.setIcon(mode === 'ps' ? 'powershell' : 'terminal');
       setPrompt();
+      const isBatch = !!(args && (args.run || args.file));
       if (mode === 'ps') printLine('Windows PowerShell', 'term-accent');
-      else printLine(Win.isSeven ? 'Microsoft Windows [Version ' + Win.osVersion + ']' : 'Microsoft(R) Windows 98', 'term-dim');
+      else if (!isBatch) printLine(Win.isSeven ? 'Microsoft Windows [Version ' + Win.osVersion + ']' : 'Microsoft(R) Windows 98', 'term-dim');
     }
 
     function setPrompt() {
@@ -209,7 +210,7 @@
     }
 
     // banner
-    const isBatchLaunch = !!(args.run || args.file);
+    const isBatchLaunch = !!(ctx.args && (ctx.args.run || ctx.args.file));
     if (mode === 'ps') {
       printLine('Windows PowerShell', 'term-accent');
       printLine('Copyright (C) Microsoft Corporation. All rights reserved.', 'term-dim');

@@ -33,6 +33,29 @@ const DAY_LENGTH = 240;       // seconds for a full day/night cycle
 
 let seed = 12345;
 
+// ---------- persistent settings ----------
+const DEFAULT_SETTINGS = {
+  units: 'metric',      // 'metric' (km/h, m/km) | 'imperial' (mph, ft/mi)
+  hud: true,
+  minimap: true,
+  fps: false,
+  camera: 0,
+  damage: 100,          // % of normal collision damage (0 = invulnerable)
+  traffic: 10,
+  weatherAuto: true,
+  weather: 'clear',
+  timeFreeze: false,
+  time: 0.32
+};
+let settings = Object.assign({}, DEFAULT_SETTINGS);
+try {
+  const rawSettings = localStorage.getItem('driving.settings');
+  if (rawSettings) settings = Object.assign(settings, JSON.parse(rawSettings));
+} catch (e) { /* ignore corrupt settings */ }
+function saveSettings(){
+  try { localStorage.setItem('driving.settings', JSON.stringify(settings)); } catch (e) {}
+}
+
 // ---------- renderer / scene ----------
 const scene = new THREE.Scene();
 scene.fog = new THREE.Fog(0x9ecae9, 110, 340);
@@ -472,7 +495,7 @@ const state = {
 
 // ---------- traffic ----------
 const traffic = [];
-const TRAFFIC_COUNT = 10;
+const TRAFFIC_MAX = 24;
 const trafficColors = [0x4cc9f0, 0xffb703, 0x2a9d8f, 0x7209b7, 0xf72585, 0x8d99ae, 0xe63946];
 
 function buildTrafficCar(color){
@@ -519,8 +542,9 @@ function spawnTraffic(){
   if (!roadSegments.length) return;
 
   const rng = makeRng(seed + 999);
+  const wanted = clamp(Math.round(settings.traffic), 0, TRAFFIC_MAX);
   let guard = 0;
-  while (traffic.length < TRAFFIC_COUNT && guard++ < 400){
+  while (traffic.length < wanted && guard++ < 400){
     const seg = roadSegments[Math.floor(rng()*roadSegments.length)];
     const t = 0.15 + rng()*0.7;
     const x = seg.x1 + (seg.x2-seg.x1)*t;
@@ -708,17 +732,108 @@ function clearParticles(){
 
 // ---------- input ----------
 const keys = {};
+let paused = false;
+
+const ACTIONS = [
+  { id:'throttle',   label:'Accelerate',      alt:'Arrow up' },
+  { id:'brake',      label:'Brake / Reverse', alt:'Arrow down' },
+  { id:'left',       label:'Steer left',      alt:'Arrow left' },
+  { id:'right',      label:'Steer right',     alt:'Arrow right' },
+  { id:'handbrake',  label:'Handbrake',       alt:'' },
+  { id:'nitro',      label:'Nitro',           alt:'' },
+  { id:'reset',      label:'Reset car',       alt:'' },
+  { id:'camera',     label:'Change camera',   alt:'' },
+  { id:'weather',    label:'Cycle weather',   alt:'' },
+  { id:'headlights', label:'Headlights',      alt:'' },
+  { id:'pause',      label:'Pause',           alt:'Esc always works' }
+];
+
+const DEFAULT_BINDS = {
+  throttle:'w', brake:'s', left:'a', right:'d', handbrake:'space',
+  nitro:'n', reset:'r', camera:'c', weather:'v', headlights:'l', pause:'p'
+};
+
+const KEY_ALTS = { throttle:'arrowup', brake:'arrowdown', left:'arrowleft', right:'arrowright' };
+const KEY_NAMES = {
+  space:'Space', escape:'Esc', arrowup:'↑', arrowdown:'↓', arrowleft:'←', arrowright:'→',
+  control:'Ctrl', shift:'Shift', alt:'Alt', tab:'Tab', enter:'Enter', backspace:'Backspace'
+};
+
+let binds = Object.assign({}, DEFAULT_BINDS);
+try {
+  const rawBinds = localStorage.getItem('driving.binds');
+  if (rawBinds) binds = Object.assign(binds, JSON.parse(rawBinds));
+} catch (e) { /* ignore corrupt binds */ }
+function saveBinds(){
+  try { localStorage.setItem('driving.binds', JSON.stringify(binds)); } catch (e) {}
+}
+
+let rebinding = null;
+
+function normKey(k){
+  if (k === ' ' || k === 'Spacebar') return 'space';
+  return String(k).toLowerCase();
+}
+function keyLabel(k){
+  if (KEY_NAMES[k]) return KEY_NAMES[k];
+  return k.length === 1 ? k.toUpperCase() : k.charAt(0).toUpperCase() + k.slice(1);
+}
+function keyDown(action){
+  if (keys[binds[action]]) return true;
+  const alt = KEY_ALTS[action];
+  return alt ? !!keys[alt] : false;
+}
+function assignBind(action, key){
+  for (const other in binds){
+    if (other !== action && binds[other] === key) binds[other] = binds[action];
+  }
+  binds[action] = key;
+  saveBinds();
+}
 
 window.addEventListener('keydown', function(e){
-  const k = e.key.toLowerCase();
+  const k = normKey(e.key);
+  const tag = e.target && e.target.tagName;
+  const typing = tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA';
+
+  if (rebinding){
+    e.preventDefault();
+    if (k !== 'escape') assignBind(rebinding, k);
+    rebinding = null;
+    refreshPauseUI();
+    return;
+  }
+
+  if (running && !typing && (k === 'escape' || k === binds.pause)){
+    e.preventDefault();
+    togglePause();
+    return;
+  }
+  if (running && k === 'escape' && typing){
+    e.preventDefault();
+    togglePause();
+    return;
+  }
+
+  if (paused || !running || typing) return;
+
   keys[k] = true;
-  if (e.key === ' '){ state.handbrake = true; e.preventDefault(); }
-  if (!running) return;
-  if (k === 'r') resetCar();
-  if (k === 'c') state.cameraMode = (state.cameraMode + 1) % 4;
-  if (k === 'l'){ headlightsOn = !headlightsOn; }
-  if (k === 'v'){ weatherTimer = 9999; setWeather(nextWeather(weather)); }
-  if (k === 'n' && state.nitro >= 12 && state.nitroCooldown <= 0 && !state.destroyed){
+  if (k === binds.handbrake) e.preventDefault();
+
+  if (k === binds.reset) resetCar();
+  if (k === binds.camera){
+    state.cameraMode = (state.cameraMode + 1) % 4;
+    settings.camera = state.cameraMode;
+    saveSettings();
+  }
+  if (k === binds.headlights) headlightsOn = !headlightsOn;
+  if (k === binds.weather){
+    settings.weatherAuto = false;
+    settings.weather = nextWeather(weather);
+    saveSettings();
+    setWeather(settings.weather);
+  }
+  if (k === binds.nitro && state.nitro >= 12 && state.nitroCooldown <= 0 && !state.destroyed){
     state.nitroBoost = 2.0;
     state.nitroCooldown = 3.5;
     state.nitro = Math.max(0, state.nitro - 12);
@@ -726,8 +841,7 @@ window.addEventListener('keydown', function(e){
 });
 
 window.addEventListener('keyup', function(e){
-  keys[e.key.toLowerCase()] = false;
-  if (e.key === ' ') state.handbrake = false;
+  keys[normKey(e.key)] = false;
 });
 
 window.addEventListener('blur', function(){
@@ -767,7 +881,10 @@ function applyDamage(impactSpeed, multiplier){
   else if (impactSpeed < 30) base = 13 + Math.random()*13;    // 13 - 25
   else                       base = 26 + Math.random()*15;    // 26 - 40
 
-  const dmg = Math.max(1, Math.round(base * (multiplier || 1) / v.dmgResist));
+  const scale = (settings.damage / 100) * (multiplier || 1);
+  if (scale <= 0) return;
+
+  const dmg = Math.max(1, Math.round(base * scale / v.dmgResist));
   state.damage = Math.min(100, state.damage + dmg);
   spawnSmoke(enginePosition(), clamp(state.damage/70, 0.6, 2));
 
@@ -796,9 +913,10 @@ function updatePhysics(dt){
   const maxSpeed = Math.max(8, v.maxSpeed * dmgFactor);
   const accel = v.accel * dmgFactor;
 
-  const throttle = (keys['w'] || keys['arrowup']) ? 1 : 0;
-  const brakeInput = (keys['s'] || keys['arrowdown']) ? 1 : 0;
-  const steerInput = ((keys['a'] || keys['arrowleft']) ? 1 : 0) - ((keys['d'] || keys['arrowright']) ? 1 : 0);
+  const throttle = keyDown('throttle') ? 1 : 0;
+  const brakeInput = keyDown('brake') ? 1 : 0;
+  const steerInput = (keyDown('left') ? 1 : 0) - (keyDown('right') ? 1 : 0);
+  state.handbrake = keyDown('handbrake');
 
   state.wetGrip = (weather === 'rain' || weather === 'storm') ? 0.72 : 1.0;
 
@@ -979,13 +1097,17 @@ rain.visible = false;
 scene.add(rain);
 
 function updateWeather(dt){
-  weatherTimer -= dt;
-  if (weatherTimer <= 0){
-    setWeather(nextWeather(weather));
-    weatherTimer = 45 + Math.random()*45;
+  if (settings.weatherAuto){
+    weatherTimer -= dt;
+    if (weatherTimer <= 0){
+      setWeather(nextWeather(weather));
+      weatherTimer = 45 + Math.random()*45;
+    }
+  } else if (weather !== settings.weather){
+    setWeather(settings.weather);
   }
 
-  timeOfDay = (timeOfDay + dt/DAY_LENGTH) % 1;
+  if (!settings.timeFreeze) timeOfDay = (timeOfDay + dt/DAY_LENGTH) % 1;
   const ang = (timeOfDay - 0.25) * Math.PI * 2;
   const elev = Math.sin(ang);
   const dayF = clamp((elev + 0.12)/0.45, 0, 1);
@@ -1097,12 +1219,20 @@ function updateCamera(dt){
 }
 
 // ---------- HUD ----------
+function unitSpeedLabel(){ return settings.units === 'imperial' ? 'mph' : 'km/h'; }
+function formatSpeed(mps){ return settings.units === 'imperial' ? Math.round(mps*2.236936) : Math.round(mps*3.6); }
+function formatDistance(m){
+  if (settings.units === 'imperial'){
+    return m >= 1609.344 ? (m/1609.344).toFixed(2) + ' mi' : Math.round(m*3.28084) + ' ft';
+  }
+  return m >= 1000 ? (m/1000).toFixed(2) + ' km' : Math.round(m) + ' m';
+}
+
 function updateHUD(){
   const v = VEHICLES[selectedVehicle];
-  const speedKmh = Math.round(Math.abs(state.speed) * 3.6);
 
   const elSpeed = document.querySelector('.speed');
-  if (elSpeed) elSpeed.textContent = speedKmh + ' km/h';
+  if (elSpeed) elSpeed.textContent = formatSpeed(Math.abs(state.speed)) + ' ' + unitSpeedLabel();
 
   const fill = document.querySelector('.speedfill');
   if (fill) fill.style.width = clamp(Math.abs(state.speed)/Math.max(1, v.maxSpeed)*100, 0, 100) + '%';
@@ -1132,16 +1262,32 @@ function updateHUD(){
   if (nitroFill) nitroFill.style.width = clamp(state.nitro, 0, 100) + '%';
 
   const dist = document.querySelector('.dist');
-  if (dist) dist.textContent = state.distance >= 1000
-    ? (state.distance/1000).toFixed(2) + ' km'
-    : Math.round(state.distance) + ' m';
+  if (dist) dist.textContent = formatDistance(state.distance);
 
   const weatherEl = document.querySelector('.weather');
   if (weatherEl) weatherEl.textContent = WEATHER_NAMES[weather] || weather;
 
   const info = document.getElementById('seedinfo');
-  if (info) info.textContent = 'Seed: ' + seed + '   |   Chunks: ' + chunks.size +
-    '   |   Traffic: ' + traffic.length + '   |   ' + clockString() + '   ' + (WEATHER_NAMES[weather] || weather);
+  if (info){
+    info.textContent = 'Seed: ' + seed + '   |   Chunks: ' + chunks.size +
+      '   |   Traffic: ' + traffic.length + '   |   ' + clockString() + '   ' +
+      (WEATHER_NAMES[weather] || weather) + (settings.fps ? '   |   ' + fpsValue + ' fps' : '');
+  }
+}
+
+function updateControlsHint(){
+  const ctrl = document.querySelector('.controls');
+  if (!ctrl) return;
+  ctrl.textContent =
+    keyLabel(binds.throttle) + '/' + keyLabel(binds.brake) + ' accel/brake  ' +
+    keyLabel(binds.left) + '/' + keyLabel(binds.right) + ' steer  ' +
+    keyLabel(binds.handbrake) + ' handbrake  ' +
+    keyLabel(binds.nitro) + ' nitro  ' +
+    keyLabel(binds.reset) + ' reset  ' +
+    keyLabel(binds.camera) + ' camera  ' +
+    keyLabel(binds.weather) + ' weather  ' +
+    keyLabel(binds.headlights) + ' lights  ' +
+    keyLabel(binds.pause) + '/Esc pause';
 }
 
 // ---------- minimap ----------
@@ -1229,7 +1375,7 @@ function buildGarage(){
     card.innerHTML =
       '<h3>' + v.name + '</h3>' +
       '<div class="cls">' + v.cls + '</div>' +
-      '<div class="stat"><span>Top speed</span><span>' + Math.round(v.maxSpeed*3.6) + ' km/h</span></div>' +
+      '<div class="stat"><span>Top speed</span><span>' + formatSpeed(v.maxSpeed) + ' ' + unitSpeedLabel() + '</span></div>' +
       '<div class="statbar"><div style="width:' + barPct(v.maxSpeed, 95) + '%"></div></div>' +
       '<div class="stat"><span>Acceleration</span><span>' + v.accel + '</span></div>' +
       '<div class="statbar"><div style="width:' + barPct(v.accel, 34) + '%"></div></div>' +
@@ -1272,16 +1418,23 @@ function startGame(){
 
   clearParticles();
   applyCarColor();
+  timeOfDay = clamp(settings.time, 0, 0.999);
+  state.cameraMode = clamp(settings.camera | 0, 0, 3);
   resetCar();
   spawnTraffic();
   updateChunks(0, 0, true);
-  setWeather('clear');
+  setWeather(settings.weatherAuto ? 'clear' : settings.weather);
   weatherTimer = 45 + Math.random()*30;
 
   const menu = document.getElementById('menu');
   if (menu) menu.style.display = 'none';
-  const hud = document.getElementById('hud');
-  if (hud) hud.style.display = 'block';
+  applyHudVisibility();
+
+  paused = false;
+  rebinding = null;
+  const pauseEl = document.getElementById('pause');
+  if (pauseEl) pauseEl.style.display = 'none';
+  updateControlsHint();
 
   running = true;
   lastTime = performance.now();
@@ -1306,6 +1459,7 @@ window.addEventListener('resize', function(){
 let running = false;
 let lastTime = performance.now();
 let hudAcc = 0, mapAcc = 0;
+let fpsValue = 0, fpsFrames = 0, fpsAcc = 0;
 
 function animate(){
   requestAnimationFrame(animate);
@@ -1316,7 +1470,15 @@ function animate(){
   if (!Number.isFinite(dt) || dt <= 0) dt = 0.016;
   if (dt > 0.1) dt = 0.1;
 
-  if (running){
+  fpsFrames++;
+  fpsAcc += dt;
+  if (fpsAcc >= 0.5){
+    fpsValue = Math.round(fpsFrames/fpsAcc);
+    fpsFrames = 0;
+    fpsAcc = 0;
+  }
+
+  if (running && !paused){
     if (state.destroying){
       state.destroyTimer -= dt;
       updateSmoke(dt);
@@ -1345,7 +1507,500 @@ function animate(){
   renderer.render(scene, camera);
 }
 
+// ---------- pause menu ----------
+const PAUSE_CSS = `
+#pause{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(4,10,18,.72);z-index:30;font-family:Tahoma,Verdana,sans-serif;color:#fff;}
+.pause-panel{width:min(920px,94vw);max-height:90vh;display:flex;flex-direction:column;background:linear-gradient(180deg,rgba(17,30,47,.98),rgba(9,17,29,.98));border:1px solid rgba(255,255,255,.14);border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,.65);overflow:hidden;}
+.pause-head{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.1);}
+.pause-head h2{margin:0;font-size:21px;letter-spacing:3px;}
+.pause-head .sub{opacity:.6;font-size:12px;margin-left:auto;margin-right:4px;text-align:right;}
+.pause-tabs{display:flex;gap:6px;padding:9px 16px;border-bottom:1px solid rgba(255,255,255,.08);flex-wrap:wrap;}
+.pause-tabs button{background:rgba(255,255,255,.06);border:1px solid transparent;color:#cfd8e3;padding:7px 14px;border-radius:7px;cursor:pointer;font-size:13px;font-family:inherit;}
+.pause-tabs button:hover{background:rgba(255,255,255,.12);}
+.pause-tabs button.on{background:rgba(230,57,70,.24);border-color:rgba(230,57,70,.65);color:#fff;}
+.pause-body{padding:12px 20px 18px;overflow:auto;}
+.pause-body section[hidden]{display:none !important;}
+.p-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;}
+.p-row:last-child{border-bottom:0;}
+.p-row .lbl{display:flex;flex-direction:column;gap:2px;}
+.p-row .lbl small{opacity:.5;font-size:11px;}
+.p-hint{font-size:12px;opacity:.6;padding:6px 0 10px;line-height:1.5;}
+.seg{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;align-items:center;}
+.seg button{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#dbe4ee;border-radius:6px;padding:5px 11px;font-size:12px;cursor:pointer;font-family:inherit;}
+.seg button:hover{background:rgba(255,255,255,.16);}
+.seg button.on{background:#e63946;border-color:#e63946;color:#fff;}
+.p-btn{background:#e63946;border:0;color:#fff;border-radius:7px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:inherit;}
+.p-btn:hover{background:#ff4d5a;}
+.p-btn.ghost{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);}
+.p-btn.ghost:hover{background:rgba(255,255,255,.16);}
+.p-key{min-width:124px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);color:#fff;border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;font-family:inherit;}
+.p-key:hover{background:rgba(255,255,255,.14);}
+.p-key.waiting{border-color:#ffd166;color:#ffd166;}
+.p-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:8px;padding:4px 0 12px;}
+.p-car{background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.12);border-radius:8px;padding:9px;cursor:pointer;font-size:11px;line-height:1.55;color:#dfe7ef;}
+.p-car:hover{background:rgba(255,255,255,.11);}
+.p-car.on{border-color:#e63946;background:rgba(230,57,70,.16);}
+.p-car b{display:block;font-size:13px;color:#fff;margin-bottom:1px;}
+.p-car em{display:block;font-style:normal;opacity:.6;text-transform:uppercase;letter-spacing:1px;font-size:10px;margin:-1px 0 4px;}
+input[type=range]{width:190px;accent-color:#e63946;}
+.p-sw{width:44px;height:23px;border-radius:12px;background:rgba(255,255,255,.18);position:relative;cursor:pointer;border:0;flex:none;}
+.p-sw::after{content:'';position:absolute;top:2.5px;left:2.5px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s;}
+.p-sw.on{background:#2a9d4a;}
+.p-sw.on::after{left:23px;}
+select.p-sel{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.16);border-radius:6px;padding:6px 10px;font-family:inherit;font-size:12px;}
+select.p-sel option{background:#12202f;}
+.p-foot{display:flex;gap:8px;justify-content:space-between;align-items:center;padding:11px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;opacity:.8;}
+.p-num{min-width:46px;text-align:right;opacity:.85;}
+`;
+
+function mkEl(tag, cls, text){
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+function pauseRow(label, hint){
+  const row = mkEl('div', 'p-row');
+  const lbl = mkEl('div', 'lbl');
+  lbl.appendChild(mkEl('span', null, label));
+  if (hint) lbl.appendChild(mkEl('small', null, hint));
+  row.appendChild(lbl);
+  return row;
+}
+
+function segControl(options, current, onPick){
+  const wrap = mkEl('div', 'seg');
+  options.forEach(function(opt){
+    const b = mkEl('button', opt.id === current ? 'on' : '', opt.label);
+    b.type = 'button';
+    b.addEventListener('click', function(){ onPick(opt.id); });
+    wrap.appendChild(b);
+  });
+  return wrap;
+}
+
+function switchRow(label, hint, checked, onChange){
+  const row = pauseRow(label, hint);
+  const sw = mkEl('button', 'p-sw' + (checked ? ' on' : ''));
+  sw.type = 'button';
+  sw.setAttribute('aria-label', label);
+  sw.addEventListener('click', function(){ onChange(!checked); });
+  row.appendChild(sw);
+  return row;
+}
+
+function initPauseMenu(){
+  if (document.getElementById('pause')) return;
+
+  const style = document.createElement('style');
+  style.textContent = PAUSE_CSS;
+  document.head.appendChild(style);
+
+  const root = mkEl('div');
+  root.id = 'pause';
+  root.innerHTML =
+    '<div class="pause-panel">' +
+      '<div class="pause-head">' +
+        '<h2>PAUSED</h2>' +
+        '<span class="sub" id="p-sub"></span>' +
+        '<button class="p-btn" type="button" data-resume="1">Resume</button>' +
+      '</div>' +
+      '<div class="pause-tabs">' +
+        '<button type="button" data-tab="car" class="on">Vehicle</button>' +
+        '<button type="button" data-tab="controls">Controls</button>' +
+        '<button type="button" data-tab="display">Display</button>' +
+        '<button type="button" data-tab="gameplay">Gameplay</button>' +
+      '</div>' +
+      '<div class="pause-body">' +
+        '<section data-panel="car"></section>' +
+        '<section data-panel="controls" hidden></section>' +
+        '<section data-panel="display" hidden></section>' +
+        '<section data-panel="gameplay" hidden></section>' +
+      '</div>' +
+      '<div class="p-foot"><span id="p-foot">Esc to resume</span><span>Settings save automatically</span></div>' +
+    '</div>';
+  document.body.appendChild(root);
+
+  root.addEventListener('click', function(ev){
+    const tabBtn = ev.target.closest ? ev.target.closest('[data-tab]') : null;
+    if (tabBtn){ selectPauseTab(tabBtn.getAttribute('data-tab')); return; }
+    if (ev.target.closest && ev.target.closest('[data-resume]')){ setPaused(false); return; }
+  });
+
+  selectPauseTab('car');
+}
+
+let pauseTab = 'car';
+
+function pauseRoot(){ return document.getElementById('pause'); }
+
+function applyHudVisibility(){
+  const hud = document.getElementById('hud');
+  if (hud) hud.style.display = settings.hud ? 'block' : 'none';
+  const map = document.getElementById('minimap');
+  if (map) map.style.display = settings.minimap ? 'block' : 'none';
+}
+
+function setPaused(on){
+  if (!running) return;
+  paused = !!on;
+  const root = pauseRoot();
+  if (root) root.style.display = paused ? 'flex' : 'none';
+  if (paused){
+    for (const k in keys) keys[k] = false;
+    state.handbrake = false;
+    applyHudVisibility();
+    refreshPauseUI();
+  } else {
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    lastTime = performance.now();
+  }
+}
+
+function togglePause(){ setPaused(!paused); }
+
+function quitToMenu(){
+  paused = false;
+  running = false;
+  rebinding = null;
+  const root = pauseRoot();
+  if (root) root.style.display = 'none';
+  const hud = document.getElementById('hud');
+  if (hud) hud.style.display = 'none';
+  const destroyed = document.getElementById('destroyed');
+  if (destroyed) destroyed.style.display = 'none';
+  const menu = document.getElementById('menu');
+  if (menu) menu.style.display = '';
+  showGarage(false);
+  clearParticles();
+  resetCar();
+  updateHUD();
+  lastTime = performance.now();
+}
+
+function selectPauseTab(tab){
+  pauseTab = tab;
+  const root = pauseRoot();
+  if (!root) return;
+  root.querySelectorAll('[data-tab]').forEach(function(b){
+    b.classList.toggle('on', b.getAttribute('data-tab') === tab);
+  });
+  root.querySelectorAll('[data-panel]').forEach(function(sec){
+    sec.hidden = sec.getAttribute('data-panel') !== tab;
+  });
+  refreshPauseUI();
+}
+
+function refreshPauseUI(){
+  const root = pauseRoot();
+  if (!root) return;
+
+  const v = VEHICLES[selectedVehicle];
+  const sub = document.getElementById('p-sub');
+  if (sub){
+    sub.textContent = v.name + '  ·  ' + formatSpeed(v.maxSpeed) + ' ' + unitSpeedLabel() +
+      '  ·  ' + Math.round(state.damage) + '% damage';
+  }
+  const foot = document.getElementById('p-foot');
+  if (foot){
+    foot.textContent = keyLabel(binds.pause) + ' or Esc to resume   ·   ' +
+      keyLabel(binds.reset) + ' resets the car';
+  }
+
+  const panel = root.querySelector('[data-panel="' + pauseTab + '"]');
+  if (!panel) return;
+  panel.innerHTML = '';
+  if (pauseTab === 'car') renderCarPanel(panel);
+  else if (pauseTab === 'controls') renderControlsPanel(panel);
+  else if (pauseTab === 'display') renderDisplayPanel(panel);
+  else renderGameplayPanel(panel);
+}
+
+function renderCarPanel(panel){
+  panel.appendChild(mkEl('div', 'p-hint',
+    'Pick a vehicle — it swaps in instantly, even mid-drive. Top speed, acceleration, grip and armour all change.'));
+
+  const grid = mkEl('div', 'p-grid');
+  VEHICLES.forEach(function(v, i){
+    const card = mkEl('button', 'p-car' + (i === selectedVehicle ? ' on' : ''));
+    card.type = 'button';
+    card.innerHTML =
+      '<b>' + v.name + '</b><em>' + v.cls + '</em>' +
+      'Top ' + formatSpeed(v.maxSpeed) + ' ' + unitSpeedLabel() + '<br>' +
+      'Accel ' + v.accel + '  ·  Grip ' + v.handling.toFixed(2) + '<br>' +
+      'Armour ×' + v.dmgResist.toFixed(2);
+    card.addEventListener('click', function(){
+      selectVehicle(i);
+      updateHUD();
+      refreshPauseUI();
+    });
+    grid.appendChild(card);
+  });
+  panel.appendChild(grid);
+
+  const paintRow = pauseRow('Paint', 'Choosing another car resets this to its factory colour.');
+  const paintWrap = mkEl('div', 'seg');
+  const colours = [0xe63946, 0x4cc9f0, 0xffb703, 0xff6b35, 0x2a9d8f, 0xf72585, 0x7209b7,
+                   0x8d99ae, 0xf1f1f1, 0x495057, 0x1b2430];
+  colours.forEach(function(hex){
+    const sw = mkEl('button');
+    sw.type = 'button';
+    const hexText = '#' + ('00000' + hex.toString(16)).slice(-6);
+    sw.title = hexText;
+    sw.style.cssText =
+      'width:24px;height:24px;border-radius:50%;padding:0;cursor:pointer;' +
+      'background:' + hexText + ';border:2px solid ' +
+      (hex === customCarColor ? '#ffffff' : 'rgba(255,255,255,.25)') + ';';
+    sw.addEventListener('click', function(){
+      customCarColor = hex;
+      try { localStorage.setItem('driving.color', String(hex)); } catch (e) {}
+      applyCarColor();
+      refreshPauseUI();
+    });
+    paintWrap.appendChild(sw);
+  });
+  paintRow.appendChild(paintWrap);
+  panel.appendChild(paintRow);
+}
+
+function renderControlsPanel(panel){
+  panel.appendChild(mkEl('div', 'p-hint',
+    'Click a key, then press the new one. Esc cancels. Arrow keys always stay available for driving as a second binding, and binding a key that is already used swaps the two actions.'));
+
+  ACTIONS.forEach(function(a){
+    const hint = KEY_ALTS[a.id] ? 'Also ' + keyLabel(KEY_ALTS[a.id]) : a.alt;
+    const row = pauseRow(a.label, hint);
+    const waiting = rebinding === a.id;
+    const btn = mkEl('button', 'p-key' + (waiting ? ' waiting' : ''),
+      waiting ? 'Press a key…' : keyLabel(binds[a.id]));
+    btn.type = 'button';
+    btn.addEventListener('click', function(){
+      rebinding = a.id;
+      refreshPauseUI();
+    });
+    row.appendChild(btn);
+    panel.appendChild(row);
+  });
+
+  const wrap = mkEl('div', 'seg');
+  wrap.style.cssText = 'padding-top:14px;justify-content:flex-start;';
+  const defaults = mkEl('button', 'p-btn ghost', 'Restore default keys');
+  defaults.type = 'button';
+  defaults.addEventListener('click', function(){
+    binds = Object.assign({}, DEFAULT_BINDS);
+    saveBinds();
+    rebinding = null;
+    updateControlsHint();
+    refreshPauseUI();
+  });
+  wrap.appendChild(defaults);
+  panel.appendChild(wrap);
+}
+
+function renderDisplayPanel(panel){
+  panel.appendChild(mkEl('div', 'p-hint',
+    'Units change the speedometer, distance readout and garage stats instantly.'));
+
+  const unitRow = pauseRow('Measurement system',
+    settings.units === 'imperial' ? 'mph  ·  feet / miles' : 'km/h  ·  metres / kilometres');
+  unitRow.appendChild(segControl([
+    { id: 'metric',   label: 'km/h · m/km' },
+    { id: 'imperial', label: 'mph · ft/mi' }
+  ], settings.units, function(id){
+    settings.units = id;
+    saveSettings();
+    updateHUD();
+    buildGarage();
+    refreshPauseUI();
+  }));
+  panel.appendChild(unitRow);
+
+  panel.appendChild(switchRow('Show HUD', 'Speed, damage, nitro, gear and distance overlays.',
+    settings.hud, function(v){
+      settings.hud = v;
+      saveSettings();
+      applyHudVisibility();
+      refreshPauseUI();
+    }));
+
+  panel.appendChild(switchRow('Show minimap', 'Road network, traffic dots and your heading.',
+    settings.minimap, function(v){
+      settings.minimap = v;
+      saveSettings();
+      applyHudVisibility();
+      drawMinimap();
+      refreshPauseUI();
+    }));
+
+  panel.appendChild(switchRow('Show FPS', 'Adds a frame-rate counter to the top-left readout.',
+    settings.fps, function(v){
+      settings.fps = v;
+      saveSettings();
+      updateHUD();
+      refreshPauseUI();
+    }));
+
+  const camRow = pauseRow('Camera', keyLabel(binds.camera) + ' cycles through these while driving.');
+  camRow.appendChild(segControl([
+    { id: 0, label: 'Chase' },
+    { id: 1, label: 'Near' },
+    { id: 2, label: 'Hood' },
+    { id: 3, label: 'Orbit' }
+  ], state.cameraMode, function(id){
+    state.cameraMode = Number(id);
+    settings.camera = state.cameraMode;
+    saveSettings();
+    snapCamera();
+    refreshPauseUI();
+  }));
+  panel.appendChild(camRow);
+}
+
+function sliderRow(label, hint, min, max, step, value, fmt, onInput, onChange){
+  const row = pauseRow(label, hint);
+  const wrap = mkEl('div', 'seg');
+  const range = mkEl('input');
+  range.type = 'range';
+  range.min = String(min);
+  range.max = String(max);
+  range.step = String(step);
+  range.value = String(value);
+  const out = mkEl('span', 'p-num', fmt(value));
+  range.addEventListener('input', function(){
+    const v = Number(range.value);
+    out.textContent = fmt(v);
+    if (onInput) onInput(v);
+  });
+  if (onChange) range.addEventListener('change', function(){ onChange(Number(range.value)); });
+  wrap.appendChild(range);
+  wrap.appendChild(out);
+  row.appendChild(wrap);
+  return row;
+}
+
+function minutesLabel(v){
+  const h = Math.floor(v / 60) % 24;
+  const m = Math.floor(v % 60);
+  return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+}
+
+function renderGameplayPanel(panel){
+  panel.appendChild(mkEl('div', 'p-hint',
+    'Difficulty and world settings. Every change applies immediately and is saved for next time.'));
+
+  panel.appendChild(sliderRow('Collision damage',
+    '0% = indestructible, 100% = normal, 200% = double damage from trees, buildings and traffic.',
+    0, 200, 5, settings.damage,
+    function(v){ return v + '%'; },
+    function(v){ settings.damage = v; saveSettings(); },
+    null));
+
+  panel.appendChild(sliderRow('Traffic density',
+    'Traffic is rebuilt across the road network when you release the slider.',
+    0, TRAFFIC_MAX, 1, settings.traffic,
+    function(v){ return v + (v === 1 ? ' car' : ' cars'); },
+    null,
+    function(v){
+      settings.traffic = v;
+      saveSettings();
+      if (running) spawnTraffic();
+      updateHUD();
+      refreshPauseUI();
+    }));
+
+  const weatherRow = pauseRow('Weather',
+    settings.weatherAuto ? 'Changes on its own every 45–90 s.' : 'Locked to your choice.');
+  const sel = mkEl('select', 'p-sel');
+  [['auto', 'Auto'], ['clear', 'Clear'], ['rain', 'Rain'], ['fog', 'Fog'], ['storm', 'Storm']]
+    .forEach(function(o){
+      const op = document.createElement('option');
+      op.value = o[0];
+      op.textContent = o[1];
+      sel.appendChild(op);
+    });
+  sel.value = settings.weatherAuto ? 'auto' : settings.weather;
+  sel.addEventListener('change', function(){
+    if (sel.value === 'auto'){
+      settings.weatherAuto = true;
+      weatherTimer = 45 + Math.random() * 30;
+    } else {
+      settings.weatherAuto = false;
+      settings.weather = sel.value;
+      setWeather(sel.value);
+    }
+    saveSettings();
+    updateWeather(0);
+    updateHUD();
+    refreshPauseUI();
+  });
+  weatherRow.appendChild(sel);
+  panel.appendChild(weatherRow);
+
+  panel.appendChild(switchRow('Freeze time of day',
+    'Keeps the sun and sky where they are instead of running the day/night cycle.',
+    settings.timeFreeze, function(v){
+      settings.timeFreeze = v;
+      settings.time = timeOfDay;
+      saveSettings();
+      refreshPauseUI();
+    }));
+
+  panel.appendChild(sliderRow('Time of day', 'Drag to set the clock; the sky updates immediately.',
+    0, 1439, 15, Math.round(timeOfDay * 1440),
+    function(v){ return minutesLabel(v); },
+    function(v){
+      timeOfDay = v / 1440;
+      settings.time = timeOfDay;
+      saveSettings();
+      updateWeather(0);
+      updateHUD();
+    },
+    null));
+
+  const actions = mkEl('div', 'seg');
+  actions.style.cssText = 'padding-top:16px;justify-content:flex-start;';
+  const restart = mkEl('button', 'p-btn', 'Restart run');
+  restart.type = 'button';
+  restart.addEventListener('click', function(){
+    setPaused(false);
+    resetCar();
+    spawnTraffic();
+    updateHUD();
+    drawMinimap();
+  });
+  const quit = mkEl('button', 'p-btn ghost', 'Quit to menu');
+  quit.type = 'button';
+  quit.addEventListener('click', quitToMenu);
+  const resetAll = mkEl('button', 'p-btn ghost', 'Reset all settings');
+  resetAll.type = 'button';
+  resetAll.addEventListener('click', function(){
+    settings = Object.assign({}, DEFAULT_SETTINGS);
+    saveSettings();
+    binds = Object.assign({}, DEFAULT_BINDS);
+    saveBinds();
+    rebinding = null;
+    state.cameraMode = settings.camera;
+    snapCamera();
+    timeOfDay = settings.time;
+    weatherTimer = 45 + Math.random() * 30;
+    setWeather(settings.weather);
+    if (running) spawnTraffic();
+    applyHudVisibility();
+    updateControlsHint();
+    updateWeather(0);
+    updateHUD();
+    drawMinimap();
+    refreshPauseUI();
+  });
+  actions.appendChild(restart);
+  actions.appendChild(quit);
+  actions.appendChild(resetAll);
+  panel.appendChild(actions);
+}
+
 // ---------- boot ----------
+initPauseMenu();
 buildGarage();
 setWeather('clear');
 snapCamera();

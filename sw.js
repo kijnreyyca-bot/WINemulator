@@ -1,7 +1,7 @@
 /* WINemulator — offline cache */
 'use strict';
 
-const CACHE = 'winemulator-v42';
+const CACHE = 'winemulator-v43';
 const CORE = [
   './',
   './index.html',

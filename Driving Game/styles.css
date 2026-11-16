@@ -1,0 +1,280 @@
+/* 3D Driving Simulator - UI Theme & Responsive HUD styling */
+
+:root {
+  --primary-color: #e63946;
+  --secondary-color: #2a9d4a;
+  --bg-dark: #0b1a2a;
+  --panel-bg: rgba(0, 0, 0, 0.6);
+  --text-color: #ffffff;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--bg-dark);
+  font-family: Tahoma, Verdana, sans-serif;
+  color: var(--text-color);
+  user-select: none;
+}
+
+/* Main Menu Styling */
+#menu {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #0b1a2a, #1a3a5a);
+  z-index: 10;
+  overflow: auto;
+  padding: 20px;
+}
+
+#menu h1 {
+  font-size: 42px;
+  margin: 0 0 8px;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 8px #000;
+  text-align: center;
+}
+
+#menu p {
+  opacity: 0.8;
+  margin: 0 0 20px;
+  text-align: center;
+}
+
+#menu button {
+  padding: 12px 32px;
+  font-size: 16px;
+  font-weight: bold;
+  border: 0;
+  border-radius: 6px;
+  background: var(--primary-color);
+  color: var(--text-color);
+  cursor: pointer;
+  margin: 6px;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+#menu button:hover {
+  background: #ff4d5a;
+  transform: translateY(-2px);
+}
+
+#menu button:active {
+  transform: translateY(0);
+}
+
+#menu .row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 8px;
+}
+
+#menu input {
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 0;
+  width: 120px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #000;
+  text-align: center;
+}
+
+/* Garage UI Styling */
+#garage {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  max-width: 900px;
+  width: 90%;
+  background: rgba(11, 26, 42, 0.95);
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+#garage h2 {
+  margin: 0 0 16px;
+  font-size: 24px;
+}
+
+.veh-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 8px;
+  width: 100%;
+}
+
+.veh-card {
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.veh-card:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.veh-card.sel {
+  border-color: var(--primary-color);
+  background: rgba(230, 57, 70, 0.2);
+}
+
+.veh-card h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.veh-card .cls {
+  opacity: 0.7;
+  font-size: 12px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stat {
+  font-size: 11px;
+  opacity: 0.85;
+  display: flex;
+  justify-content: space-between;
+}
+
+.statbar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 2px 0 8px;
+}
+
+.statbar > div {
+  height: 100%;
+  background: var(--secondary-color);
+  transition: width 0.3s ease;
+}
+
+/* In-Game HUD Styling */
+#hud {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  color: var(--text-color);
+  font-size: 14px;
+  text-shadow: 0 1px 3px #000;
+  pointer-events: none;
+  max-width: 340px;
+  background: var(--panel-bg);
+  padding: 16px;
+  border-radius: 10px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#hud .speed {
+  font-size: 38px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+#hud .rpm,
+#hud .bar,
+#hud .nitrobar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 6px;
+  margin-bottom: 8px;
+}
+
+#hud .rpm > div {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #2a9d4a, #e6b800, #e04a3a);
+  transition: width 0.05s linear;
+}
+
+#hud .bar > div.dmgbar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #2a9d4a, #e6b800, #e04a3a, #b00);
+  transition: width 0.1s ease;
+}
+
+#hud .nitrobar > div.nitrofill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #00b4d8, #48cae4);
+  transition: width 0.1s ease;
+}
+
+#hud .controls {
+  font-size: 11px;
+  opacity: 0.75;
+  margin-top: 10px;
+  line-height: 1.4;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: 6px;
+}
+
+/* Minimap and Overlay Elements */
+#minimap {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: 180px;
+  height: 180px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+  background: var(--panel-bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+#seedinfo {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  color: var(--text-color);
+  font-size: 12px;
+  text-shadow: 0 1px 3px #000;
+  opacity: 0.7;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+
+#destroyed {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 20;
+  font-size: 48px;
+  font-weight: bold;
+  color: #ff4444;
+  text-shadow: 0 2px 12px rgba(255, 0, 0, 0.5);
+  letter-spacing: 2px;
+}
+
+canvas {
+  display: block;
+}

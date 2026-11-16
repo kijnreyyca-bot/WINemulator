@@ -37,6 +37,7 @@ let seed = 12345;
 const DEFAULT_SETTINGS = {
   units: 'metric',      // 'metric' (km/h, m/km) | 'imperial' (mph, ft/mi)
   hud: true,
+  hudScale: 'auto',     // 'auto' (follows the window) | 75 | 100 | 125 | 150
   minimap: true,
   fps: false,
   camera: 0,
@@ -1429,6 +1430,7 @@ function startGame(){
   const menu = document.getElementById('menu');
   if (menu) menu.style.display = 'none';
   applyHudVisibility();
+  applyHudScale();
 
   paused = false;
   rebinding = null;
@@ -1453,6 +1455,7 @@ window.addEventListener('resize', function(){
   camera.aspect = innerWidth/innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
+  applyHudScale();
 });
 
 // ---------- main loop ----------
@@ -1642,6 +1645,27 @@ function applyHudVisibility(){
   if (map) map.style.display = settings.minimap ? 'block' : 'none';
 }
 
+let hudScaleFactor = 1;
+
+function autoHudScale(){
+  // 1366x768 scores 100%; small windows shrink, large monitors grow a little.
+  return clamp(Math.min(innerWidth / 1366, innerHeight / 768), 0.72, 1.25);
+}
+
+function applyHudScale(){
+  const manual = Number(settings.hudScale);
+  hudScaleFactor = (settings.hudScale === 'auto' || !Number.isFinite(manual))
+    ? autoHudScale()
+    : clamp(manual / 100, 0.5, 2);
+
+  const hud = document.getElementById('hud');
+  if (hud){
+    hud.style.transformOrigin = 'left bottom';
+    hud.style.transform = Math.abs(hudScaleFactor - 1) < 0.001
+      ? '' : 'scale(' + hudScaleFactor.toFixed(3) + ')';
+  }
+}
+
 function setPaused(on){
   if (!running) return;
   paused = !!on;
@@ -1800,7 +1824,7 @@ function renderControlsPanel(panel){
 
 function renderDisplayPanel(panel){
   panel.appendChild(mkEl('div', 'p-hint',
-    'Units change the speedometer, distance readout and garage stats instantly.'));
+    'Units and HUD sizing apply instantly. Auto sizing follows the window as you resize it.'));
 
   const unitRow = pauseRow('Measurement system',
     settings.units === 'imperial' ? 'mph  ·  feet / miles' : 'km/h  ·  metres / kilometres');
@@ -1823,6 +1847,24 @@ function renderDisplayPanel(panel){
       applyHudVisibility();
       refreshPauseUI();
     }));
+
+  const scaleHint = settings.hudScale === 'auto'
+    ? 'Auto — currently ' + Math.round(autoHudScale() * 100) + '% for this window.'
+    : 'Fixed size. Pick Auto to follow the window as it resizes.';
+  const scaleRow = pauseRow('HUD size', scaleHint);
+  scaleRow.appendChild(segControl([
+    { id: 'auto', label: 'Auto' },
+    { id: 75, label: '75%' },
+    { id: 100, label: '100%' },
+    { id: 125, label: '125%' },
+    { id: 150, label: '150%' }
+  ], settings.hudScale, function(id){
+    settings.hudScale = id;
+    saveSettings();
+    applyHudScale();
+    refreshPauseUI();
+  }));
+  panel.appendChild(scaleRow);
 
   panel.appendChild(switchRow('Show minimap', 'Road network, traffic dots and your heading.',
     settings.minimap, function(v){
@@ -1987,6 +2029,7 @@ function renderGameplayPanel(panel){
     setWeather(settings.weather);
     if (running) spawnTraffic();
     applyHudVisibility();
+    applyHudScale();
     updateControlsHint();
     updateWeather(0);
     updateHUD();
@@ -2001,6 +2044,7 @@ function renderGameplayPanel(panel){
 
 // ---------- boot ----------
 initPauseMenu();
+applyHudScale();
 buildGarage();
 setWeather('clear');
 snapCamera();

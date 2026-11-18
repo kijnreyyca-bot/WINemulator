@@ -6,10 +6,22 @@
   const WELCOME_DOC = 'C:\\My Documents\\Welcome.txt';
   const README_DOC = 'C:\\Windows\\Desktop\\Read Me.txt';
 
-  /* Console app is called "Command Prompt" on NT systems, "MS-DOS Prompt" on 9x. */
-  function termName() { return (Win.is98 || Win.isDOS) ? 'MS-DOS Prompt' : 'Command Prompt'; }
+  /* App labels change with the desktop. VI OS gives everything a mac-style name. */
+  function termName() { return Win.isMac ? 'Terminal' : ((Win.is98 || Win.isDOS) ? 'MS-DOS Prompt' : 'Command Prompt'); }
+  function explorerName() { return Win.isMac ? 'Files' : 'Windows Explorer'; }
+  function browserName() { return Win.isMac ? 'Surf' : 'Internet Explorer'; }
+  function settingsName() { return Win.isMac ? 'System Settings' : 'Control Panel'; }
+  function taskName() { return Win.isMac ? 'Activity Monitor' : 'Task Manager'; }
+  function trashName() { return Win.isMac ? 'Trash' : 'Recycle Bin'; }
+  function homeIcon() { return Win.isMac ? 'vi' : 'windows'; }
+  function ieIcon() { return Win.isMac ? 'surf' : 'ie'; }
+  function explorerApp() { return Win.isMac ? 'files' : 'explorer'; }
+  function browserApp() { return Win.isMac ? 'surf' : 'browser'; }
+  function homeUrl() { return Win.isMac ? 'vi://home' : 'winemulator://home'; }
+  function helpUrl() { return Win.isMac ? 'vi://help' : 'winemulator://help'; }
 
   const OS_LIST = [
+    { id: 'mac', name: 'VI OS Golden Gate', icon: 'vi' },
     { id: '98', name: 'Windows 98', icon: 'flag' },
     { id: '2k', name: 'Windows 2000', icon: 'flag' },
     { id: 'xp', name: 'Windows XP', icon: 'windows' },
@@ -49,34 +61,35 @@
   /* ----------------------------------------------------------------- pages */
   function pageWelcome() {
     return '<div class="hlp-hero">' +
-      '<span class="hlp-flag">' + Win.icon('flag', 72) + '</span>' +
-      '<div><h1>Welcome to WINemulator ' + Win.osShort + '</h1>' +
-      '<p>You are running <b>' + Win.osNameFull + '</b> — a complete Windows-style desktop that boots in your browser. No installs, no setup, no waiting.</p></div>' +
+      '<span class="hlp-flag">' + Win.icon(Win.isMac ? 'vi' : 'flag', 72) + '</span>' +
+      '<div><h1>Welcome to ' + (Win.isMac ? 'VI OS Golden Gate' : 'WINemulator ' + Win.osShort) + '</h1>' +
+      '<p>You are running <b>' + Win.osNameFull + '</b> — ' + (Win.isMac ? 'an original, Golden-Gate-inspired desktop' : 'a complete Windows-style desktop') + ' that boots in your browser. No installs, no setup, no waiting.</p></div>' +
       '</div>' +
-      '<p class="hlp-lead">This copy is yours. Files, drawings, settings and even the wallpaper are saved locally in this browser, so everything is right where you left it next time. You can switch between the Windows 98, Windows 2000, Windows XP, Windows 7 and Windows 9 desktops whenever you like.</p>' +
+      '<p class="hlp-lead">This copy is yours. Files, drawings, settings and even the wallpaper are saved locally in this browser, so everything is right where you left it next time. ' +
+      (Win.isMac ? 'Press ⌘ Space for Spotlight, click the Dock to launch apps, and switch to any Windows desktop from the VI menu whenever you like.' : 'You can switch between the VI OS, Windows 98, Windows 2000, Windows XP, Windows 7 and Windows 9 desktops whenever you like.') + '</p>' +
       '<div class="hlp-cards">' +
       topicCard('tour', 'computer', 'Quick Tour', 'A two-minute walk through the desktop.') +
-      topicCard('programs', 'programs', 'Programs', 'Notepad, Paint, Minesweeper and friends.') +
+      topicCard('programs', 'programs', 'Programs', (Win.isMac ? 'Files, Notes, Surf, Terminal and more.' : 'Notepad, Paint, Minesweeper and friends.')) +
       topicCard('files', 'folder', 'Files & Storage', 'Where things are saved and how to find them.') +
       topicCard('virtualpc', 'vpc', 'Virtual PC', 'Boot a real x86 disk image in the browser.') +
-      topicCard('oses', 'windows', 'Windows Editions', 'Switch desktops and compare every version.') +
+      topicCard('oses', 'windows', (Win.isMac ? 'All Desktops' : 'Windows Editions'), 'Switch desktops and compare every version.') +
       topicCard('offline', 'network', 'Offline & Privacy', 'How everything keeps working without the web.') +
       '</div>' +
       '<div class="hlp-note"><b>First time here?</b> Start with the Quick Tour, or just double-click an icon on the desktop. Nothing you do here can break the real computer.</div>' +
       '<div class="hlp-actions">' +
       actionBtn('tour', 'forward', 'Take the tour') +
-      actionBtn('computer', 'computer', 'Open My Computer') +
+      actionBtn('computer', 'computer', Win.isMac ? 'Open Macintosh HD' : 'Open My Computer') +
       actionBtn('welcome-doc', 'textfile', 'Read Welcome.txt') +
       '</div>' +
       '<h2>What you can do today</h2>' +
       '<ul>' +
-      '<li>Write a note in ' + appLink('notepad', 'Notepad') + ' and save it to <code>C:\\My Documents</code>.</li>' +
-      '<li>Draw something in ' + appLink('paint', 'Paint') + ', then set it as a file on the virtual drive.</li>' +
-      '<li>Play ' + appLink('minesweeper', 'Minesweeper') + ' on Beginner, Intermediate or Expert.</li>' +
+      '<li>Write a note in ' + appLink('notepad', Win.isMac ? 'Notes' : 'Notepad') + ' and save it to <code>C:\\My Documents</code>.</li>' +
+      '<li>Draw something in ' + appLink('paint', Win.isMac ? 'Canvas' : 'Paint') + ', then set it as a file on the virtual drive.</li>' +
+      '<li>Play ' + appLink('minesweeper', Win.isMac ? 'Mines' : 'Minesweeper') + ' on Beginner, Intermediate or Expert.</li>' +
       '<li>Boot a genuine x86 boot sector in ' + appLink('vpc', 'Virtual PC') + ' — no disk image needed for the demo.</li>' +
-      '<li>Browse the local web with ' + appLink('browser', 'Internet Explorer') + ' — try <code>winemulator://home</code>.</li>' +
+      '<li>Browse the local web with ' + appLink(browserApp(), browserName()) + ' — try <code>' + homeUrl() + '</code>.</li>' +
       '<li>Type <code>HELP</code> in the ' + appLink('terminal', termName()) + ' for a full command list.</li>' +
-      '<li>Change the theme, wallpaper, sounds or operating system in the ' + appLink('settings', 'Control Panel') + '.</li>' +
+      '<li>Change the theme, wallpaper, sounds or operating system in the ' + appLink('settings', settingsName()) + '.</li>' +
       '</ul>' +
       '<div class="hlp-footnote">WINemulator ' + (Win.version || '1.0.0') + ' &middot; Build ' + (Win.build || 'web-2026') +
       ' &middot; A simulation, not a real operating system. Nothing leaves this browser.</div>';
@@ -85,29 +98,32 @@
   function pageTour() {
     return '<h1>Quick Tour</h1><p class="hlp-lead">Everything here should feel familiar. Here is the short version.</p>' +
       '<h2>1. The desktop</h2>' +
-      '<p>The icons on the left open programs and folders. Double-click one to start it. You can drag icons anywhere you like — their positions are remembered. Right-click an empty part of the desktop for wallpaper, refresh and new-document options.</p>' +
-      '<h2>2. The Start menu</h2>' +
-      '<p>Click <b>' + (Win.isXP ? 'start' : 'Start') + '</b> in the bottom-left corner, or press <code>Ctrl+Esc</code>. ' +
-      (Win.isXP
-        ? 'The XP Start menu is split into two columns: programs on the left, and My Documents, My Computer, Help and Run on the right. All Programs opens the full list, while Log Off and Turn Off Computer sit at the bottom.'
-        : (Win.isSeven || Win.isNine)
-          ? 'The Start menu opens with a searchable program list, plus quick links to Documents, Computer, Control Panel and the shutdown options.'
-          : 'Programs, Documents, Settings, Find, Help and Run all live there.') +
-      ' The bottom bar is the taskbar: every open window gets a button, and the tray on the right holds the clock, volume and network icons.</p>' +
+      '<p>The icons on the ' + (Win.isMac ? 'right' : 'left') + ' open programs and folders. Double-click one to start it. You can drag icons anywhere you like — their positions are remembered. Right-click an empty part of the desktop for wallpaper, refresh and new-document options.</p>' +
+      (Win.isMac
+        ? '<h2>2. The menu bar and Dock</h2>' +
+          '<p>Across the top, the <b>VI menu</b> (the rounded VI monogram) holds system commands like System Settings, Sleep, Restart and Shut Down. Next to it are the File, Edit, View, Window and Help menus for the active app. On the right, status icons open Wi-Fi, Bluetooth, Control Center, Spotlight, Battery and the calendar clock. The <b>Dock</b> at the bottom launches apps: click once to open, click again to hide, and hover to magnify. The Launchpad icon shows every app.</p>'
+        : '<h2>2. The Start menu</h2>' +
+          '<p>Click <b>' + (Win.isXP ? 'start' : 'Start') + '</b> in the bottom-left corner, or press <code>Ctrl+Esc</code>. ' +
+          (Win.isXP
+            ? 'The XP Start menu is split into two columns: programs on the left, and My Documents, My Computer, Help and Run on the right. All Programs opens the full list, while Log Off and Turn Off Computer sit at the bottom.'
+            : (Win.isSeven || Win.isNine)
+              ? 'The Start menu opens with a searchable program list, plus quick links to Documents, Computer, Control Panel and the shutdown options.'
+              : 'Programs, Documents, Settings, Find, Help and Run all live there.') +
+          ' The bottom bar is the taskbar: every open window gets a button, and the tray on the right holds the clock, volume and network icons.</p>') +
       '<h2>3. Windows behave like windows</h2>' +
       '<ul>' +
       '<li>Drag the title bar to move a window.</li>' +
       '<li>Drag any edge or corner to resize it.</li>' +
       '<li>Double-click the title bar to maximize or restore it.</li>' +
-      '<li>Use the buttons to minimize, maximize or close it.</li>' +
-      '<li>Press <code>Alt+Tab</code> to switch between open programs.</li>' +
+      '<li>Use the buttons to minimize, maximize or close it.' + (Win.isMac ? ' The three round buttons sit on the left: red closes, yellow minimizes, green zooms.' : '') + '</li>' +
+      '<li>Press <code>' + (Win.isMac ? '⌘ Tab' : 'Alt+Tab') + '</code> to switch between open programs.</li>' +
       '</ul>' +
       '<h2>4. Right-click almost everything</h2>' +
-      '<p>Context menus are everywhere: desktop, files, folders, taskbar buttons, the Recycle Bin. If you are not sure what an item can do, right-click it.</p>' +
+      '<p>Context menus are everywhere: desktop, files, folders, ' + (Win.isMac ? 'Dock icons' : 'taskbar buttons') + ', the ' + trashName() + '. If you are not sure what an item can do, right-click it.</p>' +
       '<h2>5. Your files are real (sort of)</h2>' +
-      '<p>Open ' + appLink('explorer', 'Windows Explorer') + ' or double-click <b>My Computer</b> to browse the virtual <code>C:</code> drive. Files you save from Notepad and Paint appear there. Deleted items go to the Recycle Bin and can be restored.</p>' +
+      '<p>Open ' + appLink(explorerApp(), explorerName()) + ' or double-click <b>' + (Win.isMac ? 'Macintosh HD' : 'My Computer') + '</b> to browse the virtual <code>C:</code> drive. Files you save from ' + (Win.isMac ? 'Notes and Canvas' : 'Notepad and Paint') + ' appear there. Deleted items go to the ' + trashName() + ' and can be restored.</p>' +
       '<h2>6. Make it yours</h2>' +
-      '<p>The ' + appLink('settings', 'Control Panel') + ' changes the theme, wallpaper, sounds, animations and boot behaviour. Changes apply immediately, and they are saved for your next visit.</p>' +
+      '<p>The ' + appLink('settings', settingsName()) + ' changes the theme, wallpaper, sounds, animations and boot behaviour. Changes apply immediately, and they are saved for your next visit.</p>' +
       '<div class="hlp-actions">' +
       actionBtn('programs', 'programs', 'See all programs') +
       actionBtn('files', 'folder', 'Learn about files') +
@@ -118,18 +134,18 @@
   function pagePrograms() {
     return '<h1>Programs</h1><p class="hlp-lead">Small, fast and deliberately familiar. Click any card to open the program.</p>' +
       '<div class="hlp-cards">' +
-      appCard('notepad', 'notepad', 'Notepad', 'Plain-text editing. Opens .txt files from the virtual drive.') +
-      appCard('paint', 'paint', 'Paint', 'Draw with pencils, brushes and shapes, then save as an image.') +
+      appCard('notepad', Win.isMac ? 'notes' : 'notepad', Win.isMac ? 'Notes' : 'Notepad', 'Plain-text editing. Opens .txt files from the virtual drive.') +
+      appCard('paint', Win.isMac ? 'canvas' : 'paint', Win.isMac ? 'Canvas' : 'Paint', 'Draw with pencils, brushes and shapes, then save as an image.') +
       appCard('calc', 'calc', 'Calculator', 'A standard four-function calculator with memory keys.') +
-      appCard('terminal', 'terminal', termName(), 'A working command line for the virtual C: drive.') +
-      appCard('explorer', 'folder', 'Windows Explorer', 'Browse, organize, copy and delete files and folders.') +
-      appCard('browser', 'ie', 'Internet Explorer', 'A retro browser with a small local web.') +
+      appCard('terminal', Win.isMac ? 'terminal-mac' : 'terminal', termName(), 'A working command line for the virtual C: drive.') +
+      (Win.isMac ? appCard('files', 'files', 'Files', 'Browse, organize, copy and delete files and folders.') : appCard('explorer', 'folder', 'Windows Explorer', 'Browse, organize, copy and delete files and folders.')) +
+      (Win.isMac ? appCard('surf', 'surf', 'Surf', 'A browser with local vi:// pages and web frames.') : appCard('browser', 'ie', 'Internet Explorer', 'A retro browser with a small local web.')) +
       appCard('firefox', 'firefox', 'Mozilla Firefox', 'A second browser shell that opens real web pages.') +
-      appCard('minesweeper', 'mine', 'Minesweeper', 'The classic puzzle. Right-click plants a flag.') +
-      appCard('settings', 'settings', 'Control Panel', 'Appearance, wallpaper, sounds, performance and system tools.') +
-      appCard('taskmgr', 'taskmgr', 'Task Manager', 'See running programs and end unresponsive tasks.') +
+      appCard('minesweeper', 'mine', Win.isMac ? 'Mines' : 'Minesweeper', 'The classic puzzle. Right-click plants a flag.') +
+      appCard('settings', Win.isMac ? 'settings-mac' : 'settings', settingsName(), 'Appearance, wallpaper, sounds, performance and system tools.') +
+      appCard('taskmgr', Win.isMac ? 'activity' : 'taskmgr', taskName(), 'See running programs and end unresponsive tasks.') +
       appCard('vpc', 'vpc', 'Virtual PC', 'Boot real x86 code in WebAssembly with v86.') +
-      appCard('help', 'help', 'Help', 'This guide. Press F1 from almost anywhere.') +
+      appCard('help', Win.isMac ? 'help-mac' : 'help', 'Help', 'This guide. Press F1 from almost anywhere.') +
       '</div>' +
       '<h2>Handy commands</h2>' +
       '<p>Open the ' + appLink('terminal', termName()) + ' and try:</p>' +
@@ -142,41 +158,42 @@
       '<li><code>START notepad</code> — launch another program.</li>' +
       '<li><code>CLS</code> — clear the screen; <code>EXIT</code> closes the prompt.</li>' +
       '</ul>' +
-      '<h2>Minesweeper in ten seconds</h2>' +
+      '<h2>' + (Win.isMac ? 'Mines' : 'Minesweeper') + ' in ten seconds</h2>' +
       '<p>Left-click a square to open it. A number tells you how many mines touch that square. Right-click (or long-press on a touch screen) to plant a flag. Double-click a number surrounded by the right number of flags to open its neighbours. Your first click is always safe.</p>' +
       '<div class="hlp-actions">' +
-      appBtn('minesweeper', 'mine', 'Play Minesweeper') +
-      appBtn('browser', 'ie', 'Open Internet Explorer') +
-      appBtn('terminal', 'terminal', 'Open ' + termName()) +
+      appBtn('minesweeper', 'mine', Win.isMac ? 'Play Mines' : 'Play Minesweeper') +
+      appBtn(browserApp(), ieIcon(), 'Open ' + browserName()) +
+      appBtn('terminal', Win.isMac ? 'terminal-mac' : 'terminal', 'Open ' + termName()) +
       '</div>';
   }
 
   function pageFiles() {
     return '<h1>Files &amp; Storage</h1><p class="hlp-lead">There is one virtual drive, <code>C:</code>, and it lives in your browser.</p>' +
       '<h2>Finding your way around</h2>' +
-      '<p>Double-click <b>My Computer</b> on the desktop, then <b>Local Disk (C:)</b>. Windows Explorer has an address bar, Back and Forward buttons, and several view modes. Press <code>Backspace</code> to go up one folder, or <code>Alt+Left</code> to go back.</p>' +
+      '<p>Double-click <b>' + (Win.isMac ? 'Macintosh HD' : 'My Computer') + '</b> on the desktop, then <b>Local Disk (C:)</b>. ' + explorerName() + ' has an address bar, Back and Forward buttons, and several view modes. Press <code>Backspace</code> to go up one folder, or <code>' + (Win.isMac ? '⌘ Left' : 'Alt+Left') + '</code> to go back.</p>' +
       '<p>A few useful places are already there:</p>' +
       '<ul>' +
+      (Win.isMac ? '<li><code>C:\\Users\\User</code> — your Home folder, with Documents, Downloads, Pictures and more.</li>' : '') +
       '<li><code>C:\\My Documents</code> — Welcome.txt, To Do.txt, the Art folder and Letters.</li>' +
-      '<li><code>C:\\Windows\\Desktop</code> — files that appear as desktop icons.</li>' +
+      '<li><code>' + (Win.isMac ? 'C:\\Users\\User\\Desktop' : 'C:\\Windows\\Desktop') + '</code> — files that appear as desktop icons.</li>' +
       '<li><code>C:\\Program Files</code> — read-me files for the installed programs.</li>' +
       '<li><code>C:\\</code> — AUTOEXEC.BAT, CONFIG.SYS and the Windows folder.</li>' +
       '</ul>' +
       '<h2>Saving and opening</h2>' +
-      '<p>Notepad and Paint use the standard file dialog. Choose <b>File &gt; Save</b> (or <code>Ctrl+S</code>) to write to the drive, and <b>File &gt; Open</b> (<code>Ctrl+O</code>) to load a file. Text files are saved as plain text; Paint saves PNG images. The file system is shared, so a note saved in Notepad can be opened from Explorer.</p>' +
+      '<p>' + (Win.isMac ? 'Notes and Canvas' : 'Notepad and Paint') + ' use the standard file dialog. Choose <b>File &gt; Save</b> (or <code>Ctrl+S</code>) to write to the drive, and <b>File &gt; Open</b> (<code>Ctrl+O</code>) to load a file. Text files are saved as plain text; ' + (Win.isMac ? 'Canvas' : 'Paint') + ' saves PNG images. The file system is shared, so a note saved in ' + (Win.isMac ? 'Notes' : 'Notepad') + ' can be opened from ' + explorerName() + '.</p>' +
       '<h2>Organizing</h2>' +
       '<ul>' +
-      '<li>Right-click a folder and choose <b>New &gt; Folder</b> in Explorer.</li>' +
-      '<li>Use <code>Ctrl+C</code>, <code>Ctrl+X</code> and <code>Ctrl+V</code> to copy, cut and paste.</li>' +
-      '<li>Press <code>F2</code> to rename, <code>Delete</code> to send to the Recycle Bin, and <code>F5</code> to refresh.</li>' +
+      '<li>Right-click a folder and choose <b>New Folder</b> in ' + explorerName() + '.</li>' +
+      '<li>Use <code>' + (Win.isMac ? '⌘C' : 'Ctrl+C') + '</code>, <code>' + (Win.isMac ? '⌘X' : 'Ctrl+X') + '</code> and <code>' + (Win.isMac ? '⌘V' : 'Ctrl+V') + '</code> to copy, cut and paste.</li>' +
+      '<li>Press <code>F2</code> to rename, <code>Delete</code> to send to the ' + trashName() + ', and <code>F5</code> to refresh.</li>' +
       '<li>Double-click a file to open it with its associated program.</li>' +
       '</ul>' +
-      '<h2>The Recycle Bin</h2>' +
-      '<p>Deleted files wait in the Recycle Bin on the desktop. Open it, select an item and use <b>Restore</b> to put it back, or <b>Empty</b> to remove everything permanently. Deleting from inside the Recycle Bin is also permanent.</p>' +
+      '<h2>The ' + trashName() + '</h2>' +
+      '<p>Deleted files wait in the ' + trashName() + ' on the desktop. Open it, select an item and use <b>' + (Win.isMac ? 'Put Back' : 'Restore') + '</b> to put it back, or <b>Empty</b> to remove everything permanently. Deleting from inside the ' + trashName() + ' is also permanent.</p>' +
       '<h2>Backups and moving to another browser</h2>' +
-      '<p>All data is stored under this browser profile. Clearing site data will erase it. To move your files, open ' + appLink('settings', 'Control Panel') + ' &gt; <b>System</b> and choose <b>Export backup</b>. The JSON file can be imported on another computer or browser. The same tab can reset the whole desktop.</p>' +
+      '<p>All data is stored under this browser profile. Clearing site data will erase it. To move your files, open ' + appLink('settings', settingsName()) + ' &gt; <b>System</b> and choose <b>Export backup</b>. The JSON file can be imported on another computer or browser. The same tab can reset the whole desktop.</p>' +
       '<div class="hlp-actions">' +
-      appBtn('explorer', 'folder', 'Open Explorer') +
+      appBtn(explorerApp(), Win.isMac ? 'files' : 'folder', 'Open ' + explorerName()) +
       appBtn('settings', 'save', 'Back up my files', 'system') +
       actionBtn('welcome-doc', 'textfile', 'Open Welcome.txt') +
       '</div>';
@@ -184,21 +201,22 @@
 
   function pageAppearance() {
     let themes;
-    if (Win.isNine) themes = '<b>Windows Blue</b>, <b>Mint</b> and <b>Violet</b>';
+    if (Win.isMac) themes = '<b>VI Light</b>, <b>VI Dark</b> and <b>VI Graphite</b>';
+    else if (Win.isNine) themes = '<b>Windows Blue</b>, <b>Mint</b> and <b>Violet</b>';
     else if (Win.isSeven) themes = '<b>Aero Glass</b>, <b>Aero Frost</b> and <b>Aero Dusk</b>';
     else if (Win.isXP) themes = '<b>Windows XP Blue</b>, <b>Olive Green</b> and <b>Silver</b>';
     else if (Win.is2000) themes = '<b>Windows Classic</b>';
     else themes = 'the classic Windows look, a softer <b>Platinum</b> theme and a dark <b>Midnight</b> theme';
-    return '<h1>Make It Yours</h1><p class="hlp-lead">The Control Panel changes the desktop in real time. Everything is remembered for next time.</p>' +
+    return '<h1>Make It Yours</h1><p class="hlp-lead">The ' + settingsName() + ' changes the desktop in real time. Everything is remembered for next time.</p>' +
       '<h2>Operating system</h2>' +
-      '<p>WINemulator can run five Windows desktops — Windows 98 Second Edition, Windows 2000 Professional, Windows XP Professional, Windows 7 Ultimate and Windows 9 Pro — plus a standalone MS-DOS 6.22 shell. Open the OS selector from the Start menu, the desktop right-click menu, or the Appearance tab. Switching reloads the page but keeps your files and settings.</p>' +
+      '<p>WINemulator can run VI OS Golden Gate alongside five Windows desktops — Windows 98 Second Edition, Windows 2000 Professional, Windows XP Professional, Windows 7 Ultimate and Windows 9 Pro — plus a standalone MS-DOS 6.22 shell. Open the OS selector from the ' + (Win.isMac ? 'VI menu (Switch Operating System)' : 'Start menu') + ', the desktop right-click menu, or the Appearance tab. Switching reloads the page but keeps your files and settings.</p>' +
       '<p>This session is running <b>' + Win.osNameFull + '</b>.</p>' +
       '<div class="hlp-actions">' + osSwitchButtons() + '</div>' +
       '<h2>Appearance</h2>' +
       '<p>Available themes: ' + themes + '. You can also turn window animations on or off, enable CRT scanlines, switch to a 24-hour clock and show a frame-rate meter. Each desktop has its own window chrome, icon set, boot sequence and logon screen.</p>' +
       '<div class="hlp-actions">' + appBtn('settings', 'monitor', 'Open Appearance', 'appearance') + '</div>' +
       '<h2>Background</h2>' +
-      '<p>Pick Teal, Bliss, Clouds, Azure, Sunset, Graphite or Grid — all drawn with CSS gradients or local SVG, so there are no images to download. Choose <b>Solid Color</b> to pick any desktop color.</p>' +
+      '<p>' + (Win.isMac ? 'VI OS offers <b>Golden Gate</b>, <b>Dune</b> and <b>Aurora</b> wallpapers, plus Graphite and a custom solid color. Golden Gate is an original SVG landscape inspired by a famous bridge — no Apple artwork is used.' : 'Pick Teal, Bliss, Clouds, Azure, Sunset, Graphite or Grid — all drawn with CSS gradients or local SVG, so there are no images to download. Choose <b>Solid Color</b> to pick any desktop color.') + '</p>' +
       '<div class="hlp-actions">' + appBtn('settings', 'image', 'Change wallpaper', 'background') + '</div>' +
       '<h2>Sounds</h2>' +
       '<p>WINemulator synthesises its sounds with the Web Audio API. There are no audio files. You can mute everything, adjust the master volume and preview each sound.</p>' +
@@ -210,52 +228,65 @@
       '<h2>Handy extras</h2>' +
       '<ul>' +
       '<li>Right-click the desktop to change the wallpaper or refresh icons.</li>' +
-      '<li>The taskbar clock opens a calendar when clicked.</li>' +
-      '<li>Click the speaker icon for a volume slider, or the network icon for connection details.</li>' +
+      '<li>The ' + (Win.isMac ? 'menu bar clock' : 'taskbar clock') + ' opens a calendar when clicked.</li>' +
+      (Win.isMac
+        ? '<li>Click Control Center (the two toggles icon) for Wi-Fi, Bluetooth, brightness, volume and wallpaper shortcuts.</li>' +
+          '<li>Press <code>⌘ Space</code> for Spotlight, or click the Dock magnifier icons to launch apps.</li>'
+        : '<li>Click the speaker icon for a volume slider, or the network icon for connection details.</li>') +
       '<li>Desktop icon positions are saved automatically.</li>' +
       '</ul>';
   }
 
   function pageShortcuts() {
+    const globalRows = Win.isMac
+      ? '<tr><td>⌘ Space</td><td>Open Spotlight search.</td></tr>' +
+        '<tr><td>⌘ Tab</td><td>App switcher. Hold ⌘ and press Tab again to cycle.</td></tr>' +
+        '<tr><td>⌘ W</td><td>Close the active window.</td></tr>' +
+        '<tr><td>⌘ M</td><td>Minimize the active window.</td></tr>' +
+        '<tr><td>⌘ H</td><td>Hide the active app.</td></tr>' +
+        '<tr><td>⌘ ,</td><td>Open System Settings.</td></tr>' +
+        '<tr><td>⌘ L</td><td>Open Surf and focus the address bar.</td></tr>' +
+        '<tr><td>F1</td><td>Open Help.</td></tr>' +
+        '<tr><td>Esc</td><td>Close menus and overlays.</td></tr>'
+      : '<tr><td>Ctrl+Esc</td><td>Open or close the Start menu.</td></tr>' +
+        '<tr><td>Ctrl+Shift+Esc</td><td>Open Task Manager.</td></tr>' +
+        '<tr><td>Alt+Tab</td><td>Switch between open windows. Hold Alt and press Tab again to cycle.</td></tr>' +
+        '<tr><td>Alt+F4</td><td>Close the active window.</td></tr>' +
+        '<tr><td>F1</td><td>Open Help.</td></tr>' +
+        '<tr><td>F5</td><td>Refresh the desktop (or the current folder in Explorer).</td></tr>' +
+        '<tr><td>Win/Cmd+D</td><td>Show the desktop and minimize all windows.</td></tr>' +
+        '<tr><td>Win/Cmd+E</td><td>Open My Computer.</td></tr>' +
+        '<tr><td>Win/Cmd+R</td><td>Open the Run dialog.</td></tr>' +
+        '<tr><td>Esc</td><td>Close menus and pop-ups, or cancel a dialog.</td></tr>';
+    const mod = Win.isMac ? '⌘' : 'Ctrl+';
     return '<h1>Keyboard &amp; Mouse</h1><p class="hlp-lead">A few keys are worth memorizing. The mouse works the way you expect, too.</p>' +
       '<h2>Global shortcuts</h2>' +
-      '<table class="hlp-kbd"><tr><th>Shortcut</th><th>What it does</th></tr>' +
-      '<tr><td>Ctrl+Esc</td><td>Open or close the Start menu.</td></tr>' +
-      '<tr><td>Ctrl+Shift+Esc</td><td>Open Task Manager.</td></tr>' +
-      '<tr><td>Alt+Tab</td><td>Switch between open windows. Hold Alt and press Tab again to cycle.</td></tr>' +
-      '<tr><td>Alt+F4</td><td>Close the active window.</td></tr>' +
-      '<tr><td>F1</td><td>Open Help.</td></tr>' +
-      '<tr><td>F5</td><td>Refresh the desktop (or the current folder in Explorer).</td></tr>' +
-      '<tr><td>Win/Cmd+D</td><td>Show the desktop and minimize all windows.</td></tr>' +
-      '<tr><td>Win/Cmd+E</td><td>Open My Computer.</td></tr>' +
-      '<tr><td>Win/Cmd+R</td><td>Open the Run dialog.</td></tr>' +
-      '<tr><td>Esc</td><td>Close menus and pop-ups, or cancel a dialog.</td></tr>' +
-      '</table>' +
-      '<p class="hlp-note">Your real operating system may reserve the Windows key before the browser sees it. The Ctrl and Alt shortcuts always work.</p>' +
+      '<table class="hlp-kbd"><tr><th>Shortcut</th><th>What it does</th></tr>' + globalRows + '</table>' +
+      '<p class="hlp-note">Your real operating system may reserve the Command or Windows key before the browser sees it. On Windows keyboards, Ctrl works in place of ⌘ for these shortcuts.</p>' +
       '<h2>Windows and the desktop</h2>' +
       '<ul>' +
       '<li><b>Double-click</b> a desktop icon to open it.</li>' +
       '<li><b>Drag</b> a title bar to move a window; drag an edge or corner to resize.</li>' +
       '<li><b>Double-click</b> a title bar to maximize or restore.</li>' +
-      '<li><b>Right-click</b> the desktop, a file, a folder or a taskbar button for its menu.</li>' +
-      '<li><b>Click</b> a taskbar button to minimize or restore its window.</li>' +
+      '<li><b>Right-click</b> the desktop, a file, a folder or a ' + (Win.isMac ? 'Dock icon' : 'taskbar button') + ' for its menu.</li>' +
+      (Win.isMac ? '<li><b>Hover</b> over the Dock to magnify icons; running apps show a small dot.</li>' : '<li><b>Click</b> a taskbar button to minimize or restore its window.</li>') +
       '</ul>' +
-      '<h2>Explorer</h2>' +
+      '<h2>' + explorerName() + '</h2>' +
       '<table class="hlp-kbd"><tr><th>Shortcut</th><th>What it does</th></tr>' +
       '<tr><td>Enter</td><td>Open the selected item.</td></tr>' +
       '<tr><td>Backspace</td><td>Go up one folder.</td></tr>' +
-      '<tr><td>Alt+Left / Alt+Right</td><td>Back and Forward.</td></tr>' +
+      '<tr><td>' + (Win.isMac ? '⌘ Left / ⌘ Right' : 'Alt+Left / Alt+Right') + '</td><td>Back and Forward.</td></tr>' +
       '<tr><td>F2</td><td>Rename the selection.</td></tr>' +
-      '<tr><td>Delete</td><td>Send the selection to the Recycle Bin.</td></tr>' +
-      '<tr><td>Ctrl+C / Ctrl+X / Ctrl+V</td><td>Copy, cut and paste.</td></tr>' +
-      '<tr><td>Ctrl+A</td><td>Select everything in the folder.</td></tr>' +
+      '<tr><td>Delete</td><td>Send the selection to the ' + trashName() + '.</td></tr>' +
+      '<tr><td>' + mod + 'C / ' + mod + 'X / ' + mod + 'V</td><td>Copy, cut and paste.</td></tr>' +
+      '<tr><td>' + mod + 'A</td><td>Select everything in the folder.</td></tr>' +
       '</table>' +
       '<h2>Inside programs</h2>' +
       '<ul>' +
-      '<li><b>Notepad:</b> <code>Ctrl+S</code> save, <code>Ctrl+O</code> open, <code>Ctrl+Z</code> undo, <code>F5</code> insert the time and date.</li>' +
-      '<li><b>Paint:</b> <code>Ctrl+Z</code> undo, <code>Ctrl+Y</code> redo, <code>Ctrl+S</code> save. Press a tool\'s letter to select it.</li>' +
-      '<li><b>Minesweeper:</b> <code>F2</code> starts a new game.</li>' +
-      '<li><b>Terminal:</b> use the up and down arrows to recall previous commands.</li>' +
+      '<li><b>' + (Win.isMac ? 'Notes' : 'Notepad') + ':</b> <code>' + mod + 'S</code> save, <code>' + mod + 'O</code> open, <code>' + mod + 'Z</code> undo, <code>F5</code> insert the time and date.</li>' +
+      '<li><b>' + (Win.isMac ? 'Canvas' : 'Paint') + ':</b> <code>' + mod + 'Z</code> undo, <code>' + mod + 'Y</code> redo, <code>' + mod + 'S</code> save. Press a tool\'s letter to select it.</li>' +
+      '<li><b>' + (Win.isMac ? 'Mines' : 'Minesweeper') + ':</b> <code>F2</code> starts a new game.</li>' +
+      '<li><b>' + termName() + ':</b> use the up and down arrows to recall previous commands.</li>' +
       '</ul>';
   }
 
@@ -264,7 +295,7 @@
       '<h2>Nothing is uploaded</h2>' +
       '<p>There is no account, no analytics and no server-side storage. Every program, icon, sound and wallpaper is generated locally by the page. Your files and settings are kept in this browser\'s local storage.</p>' +
       '<h2>Working offline</h2>' +
-      '<p>After the first visit, a service worker caches the desktop so it can start without an internet connection. If you opened this copy from a local file, it already works offline. When you are offline, external websites in Internet Explorer will not load — the local <code>winemulator://</code> pages still do.</p>' +
+      '<p>After the first visit, a service worker caches the desktop so it can start without an internet connection. If you opened this copy from a local file, it already works offline. When you are offline, external websites in ' + browserName() + ' will not load — the local <code>' + (Win.isMac ? 'vi://' : 'winemulator://') + '</code> pages still do.</p>' +
       '<h2>What is stored where</h2>' +
       '<ul>' +
       '<li><b>Files</b> — in a virtual file system inside local storage.</li>' +
@@ -274,15 +305,15 @@
       '<li><b>Minesweeper records</b> — your best times.</li>' +
       '</ul>' +
       '<h2>Keeping your data safe</h2>' +
-      '<p>Clearing your browser\'s site data, using private browsing, or resetting the desktop will erase these files. Export a backup from ' + appLink('settings', 'Control Panel') + ' &gt; <b>System</b> before clearing anything. Private windows usually discard storage as soon as they close.</p>' +
+      '<p>Clearing your browser\'s site data, using private browsing, or resetting the desktop will erase these files. Export a backup from ' + appLink('settings', settingsName()) + ' &gt; <b>System</b> before clearing anything. Private windows usually discard storage as soon as they close.</p>' +
       '<div class="hlp-actions">' +
       appBtn('settings', 'save', 'Back up now', 'system') +
-      actionBtn('ie-home', 'ie', 'Visit the local home page') +
+      actionBtn('browser-home', ieIcon(), 'Visit the local home page') +
       '</div>' +
       '<h2>Good to know</h2>' +
       '<ul>' +
-      '<li>External sites in Internet Explorer may refuse to appear inside a frame. Use the <b>Open in new tab</b> button when that happens.</li>' +
-      '<li>Downloads from Notepad or Paint use your browser\'s normal download folder.</li>' +
+      '<li>External sites in ' + browserName() + ' may refuse to appear inside a frame. Use the <b>Open in new tab</b> button when that happens.</li>' +
+      '<li>Downloads from ' + (Win.isMac ? 'Notes or Canvas' : 'Notepad or Paint') + ' use your browser\'s normal download folder.</li>' +
       '<li>Your browser may limit local storage to a few megabytes. The System tab shows how much is in use.</li>' +
       '</ul>';
   }
@@ -290,26 +321,26 @@
   function pageTroubleshooting() {
     return '<h1>Troubleshooting</h1><p class="hlp-lead">Most problems have a simple answer. Try these first.</p>' +
       '<h2>A program will not start</h2>' +
-      '<p>Open ' + appLink('taskmgr', 'Task Manager') + ' with <code>Ctrl+Shift+Esc</code>, select the stuck task and choose <b>End Task</b>. Then launch the program again from the Start menu. If the desktop itself is misbehaving, press <code>F5</code> to refresh it.</p>' +
+      '<p>Open ' + appLink('taskmgr', taskName()) + ' with <code>' + (Win.isMac ? '⌘ Tab' : 'Ctrl+Shift+Esc') + '</code>, select the stuck task and choose <b>End Task</b>. Then launch the program again from the ' + (Win.isMac ? 'Dock or Launchpad' : 'Start menu') + '. If the desktop itself is misbehaving, press <code>F5</code> to refresh it.</p>' +
       '<h2>A file will not save</h2>' +
       '<ul>' +
-      '<li>Check that the folder still exists in Explorer.</li>' +
+      '<li>Check that the folder still exists in ' + explorerName() + '.</li>' +
       '<li>Make sure the file name is not already used by a folder.</li>' +
-      '<li>Local storage may be full. Open Control Panel &gt; System to see usage, then empty the Recycle Bin or delete unneeded files.</li>' +
+      '<li>Local storage may be full. Open ' + settingsName() + ' &gt; System to see usage, then empty the ' + trashName() + ' or delete unneeded files.</li>' +
       '<li>If storage is blocked entirely, the desktop still runs, but changes will not survive a reload.</li>' +
       '</ul>' +
       '<h2>There is no sound</h2>' +
-      '<p>Browsers require a click before audio can play. Click the desktop, then test a sound in Control Panel &gt; Sounds. Check that sounds are enabled and the volume is above zero. The taskbar speaker icon also opens a quick volume slider.</p>' +
+      '<p>Browsers require a click before audio can play. Click the desktop, then test a sound in ' + settingsName() + ' &gt; Sounds. Check that sounds are enabled and the volume is above zero. ' + (Win.isMac ? 'The Control Center slider also adjusts volume.' : 'The taskbar speaker icon also opens a quick volume slider.') + '</p>' +
       '<h2>An external web page is blank</h2>' +
-      '<p>Many sites forbid being embedded in a frame. Use the <b>Open in new tab</b> button in the Internet Explorer toolbar. If you are offline, external pages cannot load at all; the local pages under <code>winemulator://</code> still work.</p>' +
+      '<p>Many sites forbid being embedded in a frame. Use the <b>Open in new tab</b> button in the ' + browserName() + ' toolbar. If you are offline, external pages cannot load at all; the local pages under <code>' + (Win.isMac ? 'vi://' : 'winemulator://') + '</code> still work.</p>' +
       '<h2>The screen is too small</h2>' +
-      '<p>Windows resize and maximize. On a phone or a narrow window, the taskbar, Start menu and most apps switch to a compact layout. Rotate the device or maximize the browser for more room.</p>' +
+      '<p>Windows resize and maximize. On a phone or a narrow window, the ' + (Win.isMac ? 'menu bar, Dock' : 'taskbar, Start menu') + ' and most apps switch to a compact layout. Rotate the device or maximize the browser for more room.</p>' +
       '<h2>Start over</h2>' +
-      '<p>Control Panel &gt; System &gt; <b>Reset everything</b> erases all files and settings, restores the original desktop and reboots. Export a backup first if you want to keep anything.</p>' +
+      '<p>' + settingsName() + ' &gt; System &gt; <b>Reset everything</b> erases all files and settings, restores the original desktop and reboots. Export a backup first if you want to keep anything.</p>' +
       '<div class="hlp-actions">' +
-      appBtn('taskmgr', 'taskmgr', 'Open Task Manager') +
+      appBtn('taskmgr', Win.isMac ? 'activity' : 'taskmgr', 'Open ' + taskName()) +
       appBtn('settings', 'warning', 'Reset options', 'system') +
-      actionBtn('restart', 'restart', 'Restart Windows') +
+      actionBtn('restart', 'restart', Win.isMac ? 'Restart VI OS' : 'Restart Windows') +
       '</div>' +
       '<h2>Still stuck?</h2>' +
       '<p>Reload the browser tab. WINemulator saves its state as it goes, so a reload usually brings everything back. If a single program misbehaves, closing its window and reopening it clears that program without touching your files.</p>';
@@ -351,7 +382,7 @@
       '</ul>' +
       '<div class="hlp-actions">' +
       appBtn('vpc', 'vpc', 'Open Virtual PC') +
-      actionBtn('oses', 'windows', 'Compare Windows desktops') +
+      actionBtn('oses', Win.isMac ? 'vi' : 'windows', Win.isMac ? 'Compare all desktops' : 'Compare Windows desktops') +
       '</div>' +
       '<div class="hlp-footnote">v86 is an independent open-source project by Fabian Hemmer and contributors, distributed under the BSD 2-Clause licence. See <code>vendor/v86/LICENSE</code>.</div>';
   }
@@ -360,9 +391,17 @@
     function osSection(title, items) {
       return '<h2>' + title + '</h2><ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>';
     }
-    return '<h1>Windows Editions</h1><p class="hlp-lead">One project, five complete Windows desktops. Pick the one that matches your mood.</p>' +
+    return '<h1>' + (Win.isMac ? 'All Desktops' : 'Windows Editions') + '</h1><p class="hlp-lead">One project, one original mac-style desktop and five complete Windows desktops. Pick the one that matches your mood.</p>' +
       '<h2>Choosing a desktop</h2>' +
-      '<p><code>index.html</code> is the operating-system selector. It remembers your choice in local storage and opens the matching shell. In the desktop itself you can switch at any time from the Start menu, the desktop right-click menu, or ' + appLink('settings', 'Control Panel') + ' → <b>Appearance</b>. The page reloads, but files and settings are shared between every desktop.</p>' +
+      '<p><code>index.html</code> is the operating-system selector. It remembers your choice in local storage and opens the matching shell. In the desktop itself you can switch at any time from the ' + (Win.isMac ? 'VI menu (Switch Operating System)' : 'Start menu') + ', the desktop right-click menu, or ' + appLink('settings', settingsName()) + ' → <b>Appearance</b>. The page reloads, but files and settings are shared between every desktop.</p>' +
+      osSection('VI OS 26 Golden Gate', [
+        'An original, Golden-Gate-inspired mac-style shell — no Apple logos, assets or branding.',
+        'Menu bar with app menus, status icons, Spotlight, Control Center and a calendar clock.',
+        'Magnifying Dock with running indicators, Launchpad and Trash.',
+        'Rounded windows with left-side traffic lights, centered titles and soft shadows.',
+        'Native Files and Surf apps, plus mac-style renames for every classic program.',
+        'Themes: VI Light, VI Dark and VI Graphite. Wallpapers: Golden Gate, Dune and Aurora.'
+      ]) +
       osSection('Windows 98 Second Edition', [
         'Teal desktop, grey window chrome and the classic single-column Start menu.',
         'Original 98-style icon set, BIOS text, boot splash, logon and "safe to turn off" screen.',
@@ -409,14 +448,14 @@
   function pageAbout() {
     const si = Win.sysinfo ? Win.sysinfo() : {};
     return '<div class="hlp-hero">' +
-      '<span class="hlp-flag">' + Win.icon('flag', 64) + '</span>' +
-      '<div><h1>About WINemulator</h1><p>A tribute to the desktop that made computers feel friendly.</p></div>' +
+      '<span class="hlp-flag">' + Win.icon(Win.isMac ? 'vi' : 'flag', 64) + '</span>' +
+      '<div><h1>About ' + (Win.isMac ? 'VI OS Golden Gate' : 'WINemulator') + '</h1><p>' + (Win.isMac ? 'An original, Golden-Gate-inspired desktop for your browser.' : 'A tribute to the desktop that made computers feel friendly.') + '</p></div>' +
       '</div>' +
-      '<p class="hlp-lead">WINemulator is a self-contained Windows 98, Windows 2000, Windows XP, Windows 7 and Windows 9 desktop environment written in plain HTML, CSS and JavaScript. It is a simulation, not a real operating system, and it is not affiliated with Microsoft.</p>' +
+      '<p class="hlp-lead">' + (Win.isMac ? 'VI OS Golden Gate is an original mac-style desktop built for WINemulator, alongside Windows 98, Windows 2000, Windows XP, Windows 7, Windows 9 and MS-DOS shells. It uses its own monogram, wallpapers, icons and theme — no Apple logos, artwork or trademarks. ' : '') + 'WINemulator is a self-contained desktop environment written in plain HTML, CSS and JavaScript. It is a simulation, not a real operating system, and it is not affiliated with Microsoft or Apple.</p>' +
       '<h2>Version</h2>' +
       '<table class="hlp-kbd"><tr><th>Item</th><th>Value</th></tr>' +
       '<tr><td>Edition</td><td>' + U.escapeHtml(Win.osNameFull) + ' (Web)</td></tr>' +
-      '<tr><td>Windows version</td><td>' + U.escapeHtml(Win.osVersion) + '</td></tr>' +
+      '<tr><td>' + (Win.isMac ? 'OS version' : 'Windows version') + '</td><td>' + U.escapeHtml(Win.osVersion) + '</td></tr>' +
       '<tr><td>WINemulator</td><td>' + U.escapeHtml(Win.version || '1.0.0') + '</td></tr>' +
       '<tr><td>Build</td><td>' + U.escapeHtml(Win.build || 'web-2026') + '</td></tr>' +
       '<tr><td>Engine</td><td>JavaScript, HTML and CSS — no frameworks</td></tr>' +
@@ -428,25 +467,25 @@
       '<h2>Credits</h2>' +
       '<p>Every icon is an inline SVG drawn for this project. Every sound is synthesised with the Web Audio API. Wallpapers are CSS gradients or original SVG. No external libraries, fonts, trackers or CDNs are used.</p>' +
       '<p><b>Virtual PC</b> is powered by <b>v86</b>, an open-source x86 PC emulator written in WebAssembly. Its runtime, BIOS files and licence are vendored under <code>vendor/v86</code> so the machine can run offline. WINemulator bundles no operating-system images.</p>' +
-      '<p>Thanks to the classic Windows interfaces for the inspiration, and to everyone who ever lost an afternoon to Minesweeper.</p>' +
+      '<p>Thanks to the classic Windows interfaces for the inspiration, and to everyone who ever lost an afternoon to Minesweeper.' + (Win.isMac ? ' VI OS takes inspiration from modern rounded desktops, but every icon, wallpaper and sound here is drawn from scratch for this project.' : '') + '</p>' +
       '<h2>Learn more</h2>' +
       '<div class="hlp-actions">' +
-      actionBtn('open-ie', 'ie', 'Open local home page') +
+      actionBtn('browser-home', ieIcon(), 'Open local home page') +
       appBtn('settings', 'info', 'System information', 'about') +
-      appBtn('taskmgr', 'taskmgr', 'Task Manager') +
+      appBtn('taskmgr', Win.isMac ? 'activity' : 'taskmgr', taskName()) +
       '</div>' +
-      '<div class="hlp-footnote">Microsoft, Windows, Windows 98, Windows 2000, Windows XP, Windows 7 and Windows 9 are trademarks of Microsoft Corporation. This project is an independent, non-commercial homage.</div>';
+      '<div class="hlp-footnote">Microsoft, Windows, Windows 98, Windows 2000, Windows XP, Windows 7 and Windows 9 are trademarks of Microsoft Corporation. Apple and macOS are trademarks of Apple Inc. VI OS is an original creation and is not affiliated with either company. This project is an independent, non-commercial homage.</div>';
   }
 
   /* ---------------------------------------------------------------- topics */
   const TOPICS = [
-    { id: 'welcome', title: 'Welcome', group: 'Getting started', icon: 'flag', keywords: 'home start first run introduction help', page: pageWelcome },
-    { id: 'tour', title: 'Quick Tour', group: 'Getting started', icon: 'computer', keywords: 'guide basics desktop start taskbar windows', page: pageTour },
-    { id: 'programs', title: 'Programs', group: 'Using Windows', icon: 'programs', keywords: 'apps notepad paint calculator dos explorer browser minesweeper task manager', page: pagePrograms },
+    { id: 'welcome', title: 'Welcome', group: 'Getting started', icon: Win.isMac ? 'vi' : 'flag', keywords: 'home start first run introduction help vi os', page: pageWelcome },
+    { id: 'tour', title: 'Quick Tour', group: 'Getting started', icon: 'computer', keywords: 'guide basics desktop start taskbar dock menu windows', page: pageTour },
+    { id: 'programs', title: 'Programs', group: 'Using Windows', icon: 'programs', keywords: 'apps notepad paint calculator dos explorer browser minesweeper task manager files surf notes', page: pagePrograms },
     { id: 'virtualpc', title: 'Virtual PC', group: 'Using Windows', icon: 'vpc', keywords: 'v86 x86 emulator disk image iso floppy boot dos linux windows xp', page: pageVirtualPC },
-    { id: 'oses', title: 'Windows Editions', group: 'Using Windows', icon: 'windows', keywords: 'switch operating system luna aero bliss xp 98 2000 7 9 selector theme os', page: pageOS },
-    { id: 'files', title: 'Files & Storage', group: 'Using Windows', icon: 'folder', keywords: 'drive folders save open recycle bin backup explorer', page: pageFiles },
-    { id: 'appearance', title: 'Make It Yours', group: 'Using Windows', icon: 'monitor', keywords: 'theme wallpaper background sound volume settings control panel', page: pageAppearance },
+    { id: 'oses', title: Win.isMac ? 'All Desktops' : 'Windows Editions', group: 'Using Windows', icon: Win.isMac ? 'vi' : 'windows', keywords: 'switch operating system luna aero bliss xp 98 2000 7 9 selector theme os vi golden gate', page: pageOS },
+    { id: 'files', title: 'Files & Storage', group: 'Using Windows', icon: 'folder', keywords: 'drive folders save open recycle bin trash backup explorer files', page: pageFiles },
+    { id: 'appearance', title: 'Make It Yours', group: 'Using Windows', icon: 'monitor', keywords: 'theme wallpaper background sound volume settings control panel system settings', page: pageAppearance },
     { id: 'shortcuts', title: 'Keyboard & Mouse', group: 'Reference', icon: 'keyboard', keywords: 'hotkeys keys mouse clicking drag double click', page: pageShortcuts },
     { id: 'offline', title: 'Offline & Privacy', group: 'Reference', icon: 'network', keywords: 'offline privacy storage local data service worker', page: pageOffline },
     { id: 'troubleshooting', title: 'Troubleshooting', group: 'Reference', icon: 'warning', keywords: 'problem error sound blank reset stuck save', page: pageTroubleshooting },
@@ -507,7 +546,7 @@
 
   /* --------------------------------------------------------------- the app */
   Win.apps.help = {
-    name: 'Help', title: 'Help', icon: 'help',
+    name: 'Help', title: 'Help', icon: Win.isMac ? 'help-mac' : 'help',
     width: 820, height: 590, minWidth: 430, minHeight: 340,
     singleton: true,
     mount: function (body, ctx) {
@@ -711,13 +750,11 @@
         else if (action === 'welcome-doc') openDoc(WELCOME_DOC);
         else if (action === 'readme') openDoc(README_DOC);
         else if (action === 'restart') {
-          Win.ui.confirm('Restart Windows now? All open programs will close.', 'Restart', 'question').then(function (yes) {
+          Win.ui.confirm((Win.isMac ? 'Restart VI OS' : 'Restart Windows') + ' now? All open programs will close.', 'Restart', 'question').then(function (yes) {
             if (yes && Win.boot) Win.boot.power('restart');
           });
-        } else if (action === 'ie-home') {
-          Win.wm.open('browser', { url: 'winemulator://home' });
-        } else if (action === 'open-ie') {
-          Win.wm.open('browser', { url: 'winemulator://help' });
+        } else if (action === 'browser-home') {
+          Win.wm.open(browserApp(), { url: homeUrl() });
         } else if (action === 'clear-search') {
           inputEl.value = '';
           cancelSearch();
@@ -726,7 +763,7 @@
           printTopic();
         } else if (action === 'export') {
           exportTopic();
-        } else if (action === 'os-98' || action === 'os-2k' || action === 'os-xp' || action === 'os-7' || action === 'os-9' || action === 'os-dos') {
+        } else if (action === 'os-mac' || action === 'os-98' || action === 'os-2k' || action === 'os-xp' || action === 'os-7' || action === 'os-9' || action === 'os-dos') {
           if (Win.switchOS) Win.switchOS(action.slice(3));
         }
       }
@@ -810,16 +847,16 @@
             { label: 'Back', icon: 'back', disabled: hidx <= 0, action: goBack },
             { label: 'Forward', icon: 'forward', disabled: hidx >= history.length - 1, action: goForward },
             { separator: true },
-            { label: 'Open in Internet Explorer', icon: 'ie', action: function () { Win.wm.open('browser', { url: 'winemulator://help' }); } }
+            { label: 'Open in ' + browserName(), icon: ieIcon(), action: function () { Win.wm.open(browserApp(), { url: helpUrl() }); } }
           ],
           help: [
             { label: 'Help Topics', icon: 'help', action: function () { navigate('welcome'); } },
             { label: 'Keyboard & Mouse', icon: 'keyboard', action: function () { navigate('shortcuts'); } },
             { separator: true },
-            { label: 'About WINemulator Help', icon: 'info', action: function () {
-              Win.ui.alert('WINemulator Help\n' + Win.osNameFull + ' · Help version ' + (Win.version || '1.0.0') + '\n\nA local guide to the desktop, its programs, files, shortcuts and settings.\n\nTip: press F1 at any time to open Help.', 'About Help', 'help');
+            { label: 'About ' + (Win.isMac ? 'VI OS Help' : 'WINemulator Help'), icon: 'info', action: function () {
+              Win.ui.alert((Win.isMac ? 'VI OS Help' : 'WINemulator Help') + '\n' + Win.osNameFull + ' · Help version ' + (Win.version || '1.0.0') + '\n\nA local guide to the desktop, its programs, files, shortcuts and settings.\n\nTip: press F1 at any time to open Help.', 'About Help', 'help');
             } },
-            { label: 'About WINemulator', icon: 'flag', action: function () { navigate('about'); } }
+            { label: 'About ' + (Win.isMac ? 'VI OS' : 'WINemulator'), icon: Win.isMac ? 'vi' : 'flag', action: function () { navigate('about'); } }
           ]
         };
       }

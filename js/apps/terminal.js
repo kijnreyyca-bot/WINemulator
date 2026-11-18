@@ -115,9 +115,9 @@
   };
 
   Win.apps.terminal = {
-    name: (Win.is98 || Win.isDOS) ? 'MS-DOS Prompt' : 'Command Prompt',
-    title: (Win.is98 || Win.isDOS) ? 'MS-DOS Prompt' : 'Command Prompt',
-    icon: 'terminal',
+    name: Win.isMac ? 'Terminal' : ((Win.is98 || Win.isDOS) ? 'MS-DOS Prompt' : 'Command Prompt'),
+    title: Win.isMac ? 'Terminal' : ((Win.is98 || Win.isDOS) ? 'MS-DOS Prompt' : 'Command Prompt'),
+    icon: Win.isMac ? 'terminal-mac' : 'terminal',
     width: 780, height: 480, minWidth: 420, minHeight: 240,
     mount: function (body, ctx) {
     body.classList.add('app-terminal');
@@ -131,7 +131,7 @@
       USERNAME: Win.store.get('lastUser') || 'User',
       COMPUTERNAME: 'WINEMULATOR',
       USERDOMAIN: 'WINEMULATOR',
-      OS: 'Windows_NT',
+      OS: Win.isMac ? 'Darwin' : 'Windows_NT',
       PROCESSOR_ARCHITECTURE: 'x86',
       PROCESSOR_IDENTIFIER: 'x86 Family 6 Model 42 Stepping 1, WebCore',
       TEMP: Win.isModern ? 'C:\\Users\\User\\AppData\\Local\\Temp' : 'C:\\WINDOWS\\Temp',
@@ -161,15 +161,18 @@
     function setMode(m) {
       mode = m;
       screen.classList.toggle('term-ps', mode === 'ps');
-      ctx.setTitle(mode === 'ps' ? 'Windows PowerShell' : ((Win.is98 || Win.isDOS) ? 'MS-DOS Prompt' : 'Command Prompt'));
-      ctx.setIcon(mode === 'ps' ? 'powershell' : 'terminal');
+      ctx.setTitle(Win.isMac ? 'Terminal' : (mode === 'ps' ? 'Windows PowerShell' : ((Win.is98 || Win.isDOS) ? 'MS-DOS Prompt' : 'Command Prompt')));
+      ctx.setIcon(Win.isMac ? 'terminal-mac' : (mode === 'ps' ? 'powershell' : 'terminal'));
       setPrompt();
     }
 
     function setPrompt() {
       env.CD = cwd;
       let p;
-      if (mode === 'ps') p = 'PS ' + cwd + '> ';
+      if (Win.isMac) {
+        const short = cwd.replace(/^C:\\Users\\User/i, '~');
+        p = 'user@vi ' + short + ' % ';
+      } else if (mode === 'ps') p = 'PS ' + cwd + '> ';
       else {
         // honor PROMPT $P$G
         p = cwd + '>';
@@ -221,7 +224,10 @@
       printLine('', '');
       printLine('PS ' + cwd + '>', 'term-dim');
     } else if (!isBatchLaunch && !headless) {
-      if (Win.isModern) {
+      if (Win.isMac) {
+        printLine('VI OS ' + Win.osVersion + ' Golden Gate (Build ' + Win.osBuild + ')', 'term-accent');
+        printLine('VI Systems. All rights reserved.', 'term-dim');
+      } else if (Win.isModern) {
         printLine('Microsoft Windows [Version ' + Win.osVersion + ']', 'term-dim');
         printLine('(c) Microsoft Corporation. All rights reserved.', 'term-dim');
       } else if (Win.isXP) {
@@ -410,6 +416,7 @@
     }
 
     function cmdVer() {
+      if (Win.isMac) return { lines: ['VI OS ' + Win.osVersion + ' Golden Gate [Build ' + Win.osBuild + ']', 'VI Systems · WINemulator Project'] };
       if (Win.isDOS) return { lines: ['MS-DOS Version 6.22'] };
       if (Win.isXP) return { lines: ['Microsoft Windows XP [Version ' + Win.osVersion + ']'] };
       if (Win.isModern) return { lines: ['Microsoft Windows [Version ' + Win.osVersion + ']'] };
@@ -423,7 +430,7 @@
         'Host Name:                 WINEMULATOR',
         'OS Name:                   ' + Win.osNameFull,
         'OS Version:                ' + Win.osVersion + ' ' + Win.osBuild,
-        'System Manufacturer:       WINemulator Project',
+        'System Manufacturer:       ' + (Win.isMac ? 'VI Systems' : 'WINemulator Project'),
         'System Model:              Virtual PC 2007',
         'System Type:               X86-based PC',
         'Processor(s):              1 Processor(s) Installed. WebCore x86 JIT (' + (si.cores || '?') + ' cores)',

@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b1220">
-  <title>WINemulator — Choose Windows 98, 2000, XP, 7 or 9</title>
-  <meta name="description" content="Choose a Windows 98, Windows 2000, Windows XP, Windows 7 or Windows 9 desktop that runs entirely in your browser. No installs, no virtual machine, works offline. Virtual PC can boot your own x86 disk images.">
+  <title>WINemulator — Choose VI OS Golden Gate, Windows 98, 2000, XP, 7 or 9</title>
+  <meta name="description" content="Choose VI OS Golden Gate, an original mac-style desktop, or a Windows 98, Windows 2000, Windows XP, Windows 7 or Windows 9 desktop that runs entirely in your browser. No installs, no virtual machine, works offline.">
   <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
   <link rel="icon" href="assets/favicon.png" type="image/png">
   <link rel="manifest" href="manifest.webmanifest">
   <meta property="og:title" content="WINemulator — Choose your desktop">
-  <meta property="og:description" content="Windows 98, Windows 2000, Windows XP, Windows 7 and Windows 9 desktops in your browser. Fast, offline, and no installs.">
+  <meta property="og:description" content="VI OS Golden Gate and Windows 98, 2000, XP, 7 and 9 desktops in your browser. Fast, offline, and no installs.">
   <meta property="og:type" content="website">
   <link rel="stylesheet" href="css/selector.css">
 </head>
@@ -35,6 +35,48 @@
     </header>
 
     <section class="os-grid" aria-label="Choose an operating system">
+      <a class="os-card os-vi" href="desktop.html?os=mac" data-os="mac">
+        <span class="os-badge" data-last hidden>Last used</span>
+        <div class="os-preview">
+          <div class="pv-desktop pv-desktop-vi">
+            <div class="pv-gate" aria-hidden="true"></div>
+            <div class="pv-menubar">
+              <span class="pv-mb-vi">VI</span><span class="pv-mb-app">VI OS</span>
+              <span class="pv-mb-item">File</span><span class="pv-mb-item">Edit</span><span class="pv-mb-item">View</span>
+              <span class="pv-mb-spacer"></span><span class="pv-mb-time">Mon 10:09</span>
+            </div>
+            <div class="pv-icons">
+              <span class="pv-icon"><i class="pv-monitor vi"></i><em>Macintosh HD</em></span>
+              <span class="pv-icon"><i class="pv-folder vi"></i><em>Documents</em></span>
+              <span class="pv-icon"><i class="pv-bin vi"></i><em>Trash</em></span>
+            </div>
+            <div class="pv-window pv-window-vi">
+              <div class="pv-title"><b class="pv-light close"></b><b class="pv-light min"></b><b class="pv-light max"></b><span>Files</span></div>
+              <div class="pv-body">
+                <div class="pv-side vi"></div>
+                <div class="pv-lines"><i></i><i></i><i></i><i class="short"></i></div>
+              </div>
+            </div>
+            <div class="pv-dock">
+              <i class="vi"></i><i class="vi a"></i><i class="vi b"></i><i class="vi c"></i><i class="vi d"></i>
+            </div>
+          </div>
+        </div>
+        <div class="os-info">
+          <div class="os-title">
+            <h2>VI OS 26</h2>
+            <span class="os-tag vi">Golden Gate</span>
+          </div>
+          <p>An original, Golden-Gate-inspired mac-style desktop: menu bar, Dock, Spotlight, Launchpad and rounded windows — with every WINemulator app.</p>
+          <ul class="os-list">
+            <li>Menu bar, Dock, Spotlight and Launchpad</li>
+            <li>Native Files and Surf apps</li>
+            <li>VI Light, Dark and Graphite themes</li>
+          </ul>
+          <span class="os-cta">Start VI OS <i aria-hidden="true">→</i></span>
+        </div>
+      </a>
+
       <a class="os-card os-2k" href="desktop.html?os=2k" data-os="2k">
         <span class="os-badge" data-last hidden>Last used</span>
         <div class="os-preview">
@@ -280,7 +322,7 @@
 
     <footer class="sel-foot">
       <span>WINemulator · original icons and artwork · MIT licensed</span>
-      <span><a href="desktop.html?os=98">Windows 98</a> · <a href="desktop.html?os=2k">Windows 2000</a> · <a href="desktop.html?os=xp">Windows XP</a> · <a href="desktop.html?os=7">Windows 7</a> · <a href="desktop.html?os=9">Windows 9</a> · <a href="README.md">Read me</a></span>
+      <span><a href="desktop.html?os=mac">VI OS</a> · <a href="desktop.html?os=98">Windows 98</a> · <a href="desktop.html?os=2k">Windows 2000</a> · <a href="desktop.html?os=xp">Windows XP</a> · <a href="desktop.html?os=7">Windows 7</a> · <a href="desktop.html?os=9">Windows 9</a> · <a href="README.md">Read me</a></span>
     </footer>
   </main>
 

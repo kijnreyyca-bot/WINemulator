@@ -547,7 +547,7 @@
   }
 
   function ensureSevenFolders() {
-    if (!Win.isSeven && !Win.isNine && !Win.is2000) return;
+    if (!Win.isMac && !Win.isSeven && !Win.isNine && !Win.is2000) return;
     const dirs = [
       'C:\\Users', 'C:\\Users\\User', 'C:\\Users\\User\\Desktop', 'C:\\Users\\User\\Documents',
       'C:\\Users\\User\\Downloads', 'C:\\Users\\User\\Pictures', 'C:\\Users\\User\\Music',

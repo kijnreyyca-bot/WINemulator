@@ -85,6 +85,7 @@
   }
 
   function bootSplash() {
+    if (Win.isMac && Win.vi && Win.vi.bootMarkup) return Win.vi.bootMarkup();
     if (Win.isNine) return nineSplashMarkup();
     if (Win.is2000) return twentySplashMarkup();
     if (Win.isSeven) return sevenSplashMarkup();
@@ -123,7 +124,7 @@
       '  Secondary Master: CD-ROM 32X',
       '  Secondary Slave : None',
       '',
-      Win.isDOS ? 'Starting MS-DOS...' : Win.isNine ? 'Starting Windows 9...' : Win.is2000 ? 'Starting Windows 2000...' : Win.isSeven ? 'Starting Windows 7...' : Win.isXP ? 'Starting Windows XP...' : 'Starting Windows 98...'
+      Win.isMac ? 'Starting VI OS Golden Gate...' : Win.isDOS ? 'Starting MS-DOS...' : Win.isNine ? 'Starting Windows 9...' : Win.is2000 ? 'Starting Windows 2000...' : Win.isSeven ? 'Starting Windows 7...' : Win.isXP ? 'Starting Windows XP...' : 'Starting Windows 98...'
     ];
     const step = fast() ? 25 : 72;
     lines.forEach(function (line, i) {
@@ -164,7 +165,7 @@
       bootLayer.classList.add('splash');
       bootLayer.style.background = '#000';
       const hint = bootLayer.querySelector('.bs-hint');
-      if (hint) hint.textContent = 'Starting Windows...';
+      if (hint) hint.textContent = Win.isMac ? 'Starting VI OS Golden Gate...' : 'Starting Windows...';
     }, splashAt);
 
     later(finish, splashAt + (fast() ? 550 : 1500));
@@ -197,7 +198,9 @@
       }
     } else {
       setTimeout(function () {
-        if (Win.ui) Win.ui.toast('WINemulator booted in ' + (Win.bootMs / 1000).toFixed(1) + 's. Press Ctrl+Esc for Start.', 'flag', 4200);
+        if (Win.ui) Win.ui.toast(Win.isMac
+          ? 'VI OS booted in ' + (Win.bootMs / 1000).toFixed(1) + 's. Press ⌘ Space for Spotlight.'
+          : 'WINemulator booted in ' + (Win.bootMs / 1000).toFixed(1) + 's. Press Ctrl+Esc for Start.', Win.isMac ? 'vi' : 'flag', 4200);
       }, 700);
     }
   }
@@ -357,6 +360,8 @@
       output = 'MS-DOS Version 6.22\n   (C)Copyright Microsoft Corp 1981-1998.\n\nType HELP for a list of commands.\n\n';
     } else if (Win.is98) {
       output = 'Microsoft(R) Windows 98\n   (C)Copyright Microsoft Corp 1981-1998.\n\nType HELP for a list of commands. Type WINDOWS.SYS to start Windows.\n\n';
+    } else if (Win.isMac) {
+      output = 'VI OS ' + Win.osVersion + ' Golden Gate\n   MS-DOS mode\n\nType HELP for a list of commands. Type WINDOWS.SYS to return to VI OS.\n\n';
     } else {
       output = 'Microsoft ' + Win.osName + ' [Version ' + Win.osVersion + ']\n   MS-DOS mode\n\nType HELP for a list of commands. Type WINDOWS.SYS to start Windows.\n\n';
     }
@@ -478,9 +483,9 @@
       print('  MSDOS - DOS      Switch to the main MS-DOS shell');
       print('  MSDOS - CMD      Enable all Command Prompt commands');
       print('  MSDOS - <file>   Run a .bat file or open a file');
-      print('  WIN [os]         Start Windows (98, XP, 7, 9, 2000, DOS)');
+      print('  WIN [os]         Start a desktop (VI, 98, XP, 7, 9, 2000, DOS)');
       print('  EXPLORER         Open the file manager');
-      print('  WINDOWS.SYS      Start Windows (WIN.SYS also works)');
+      print('  WINDOWS.SYS      Start ' + (Win.isMac ? 'VI OS' : 'Windows') + ' (WIN.SYS also works)');
       print('  EXIT             Leave MS-DOS mode');
       if (!classic) print('This shell also accepts the full Command Prompt command set.');
       else print('Type MSDOS - CMD to enable the full Command Prompt command set.');
@@ -522,7 +527,7 @@
         start();
         return;
       }
-      if (cmd === 'exit') { print('Use WINDOWS.SYS (or WIN.SYS) to return to Windows, or close this tab.'); return; }
+      if (cmd === 'exit') { print('Use WINDOWS.SYS (or WIN.SYS) to return to ' + (Win.isMac ? 'VI OS' : 'Windows') + ', or close this tab.'); return; }
       if (cmd === 'powershell' || cmd === 'pwsh') { print('Windows PowerShell is not available in MS-DOS mode.'); return; }
       if (cmd === 'msdos' || cmd === 'dos') { handleMsdos(rest); return; }
       if (cmd === 'win' || cmd === 'windows' || cmd === 'win.exe') {
@@ -531,10 +536,11 @@
         if (a.indexOf('98') > -1) t = '98';
         else if (a.indexOf('xp') > -1) t = 'xp';
         else if (a.indexOf('2000') > -1 || a.indexOf('2k') > -1) t = '2k';
+        else if (a.indexOf('mac') > -1 || a.indexOf('vi') > -1 || a.indexOf('golden') > -1) t = 'mac';
         else if (a.indexOf('7') > -1) t = '7';
         else if (a.indexOf('9') > -1) t = '9';
         else if (a.indexOf('dos') > -1) t = 'dos';
-        const osTitle = { '98': 'Windows 98', xp: 'Windows XP', '2k': 'Windows 2000', '7': 'Windows 7', '9': 'Windows 9', dos: 'MS-DOS' };
+        const osTitle = { mac: 'VI OS Golden Gate', '98': 'Windows 98', xp: 'Windows XP', '2k': 'Windows 2000', '7': 'Windows 7', '9': 'Windows 9', dos: 'MS-DOS' };
         print('Starting ' + (osTitle[t] || 'Windows') + '...');
         setTimeout(function () { if (Win.switchOS) Win.switchOS(t); else location.href = 'desktop.html?os=' + t; }, 400);
         return;
@@ -788,7 +794,7 @@
     bootLayer.classList.add('splash');
     bootLayer.style.background = '#000';
     const hint = bootLayer.querySelector('.bs-hint, .xp-boot-hint, .w7-boot-hint, .w9-boot-hint');
-    if (hint) hint.textContent = 'Starting Windows...';
+    if (hint) hint.textContent = Win.isMac ? 'Starting VI OS Golden Gate...' : 'Starting Windows...';
     later(finish, fast() ? 550 : 1500);
   }
 

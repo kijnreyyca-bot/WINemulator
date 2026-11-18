@@ -1,7 +1,7 @@
 /* WINemulator — offline cache */
 'use strict';
 
-const CACHE = 'winemulator-v45';
+const CACHE = 'winemulator-v46';
 const CORE = [
   './',
   './index.html',
@@ -13,6 +13,7 @@ const CORE = [
   './assets/bliss.svg',
   './assets/harmony.svg',
   './assets/hero.svg',
+  './assets/vi-gate.svg',
   './css/base.css',
   './css/desktop.css',
   './css/apps.css',
@@ -21,7 +22,9 @@ const CORE = [
   './css/win10.css',
   './css/w2k.css',
   './css/selector.css',
+  './css/vi.css',
   './js/icons.js',
+  './js/icons-vi.js',
   './js/icons-xp.js',
   './js/icons-7.js',
   './js/icons-10.js',
@@ -34,8 +37,11 @@ const CORE = [
   './js/wm.js',
   './js/taskbar.js',
   './js/desktop.js',
+  './js/vi.js',
   './js/boot.js',
   './js/apps/explorer.js',
+  './js/apps/files.js',
+  './js/apps/surf.js',
   './js/apps/notepad.js',
   './js/apps/paint.js',
   './js/apps/calc.js',

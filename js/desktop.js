@@ -29,13 +29,15 @@
   };
 
   /* ---------------------------------------------------------------- shell */
+  function folderApp() { return Win.isMac ? 'files' : 'explorer'; }
+
   function openPath(path) {
     if (!path) return;
-    if (path === '::computer') return Win.wm.open('explorer', { path: '::computer' });
-    if (path === '::recycle') return Win.wm.open('explorer', { path: '::recycle' });
+    if (path === '::computer') return Win.wm.open(folderApp(), { path: '::computer' });
+    if (path === '::recycle') return Win.wm.open(folderApp(), { path: '::recycle' });
     const node = Win.fs.resolve(path);
     if (!node) throw new Error('The path "' + path + '" does not exist.');
-    if (node.type === 'dir') return Win.wm.open('explorer', { path: Win.fs.norm(path) });
+    if (node.type === 'dir') return Win.wm.open(folderApp(), { path: Win.fs.norm(path) });
     return openFile(path);
   }
 
@@ -50,7 +52,7 @@
     }
     const app = node.app || Win.fs.appFor(path);
     if (!app) {
-      return Win.ui.error('Windows cannot open this file:\n\n' + Win.fs.baseName(path) +
+      return Win.ui.error((Win.isMac ? 'VI OS' : 'Windows') + ' cannot open this file:\n\n' + Win.fs.baseName(path) +
         '\n\nThis file type is not associated with any program in WINemulator.', 'Open With');
     }
     Win.recent.add(path);
@@ -66,11 +68,11 @@
       }
       const lower = raw.toLowerCase();
       if (Win.fs.exists(raw)) { try { return resolve(openPath(raw)); } catch (e) { return reject(e); } }
-      if (/^(https?:\/\/|www\.)/i.test(raw) || /^winemulator:\/\//i.test(raw)) {
-        return resolve(Win.wm.open('browser', { url: raw }));
+      if (/^(https?:\/\/|www\.)/i.test(raw) || /^winemulator:\/\//i.test(raw) || /^vi:\/\//i.test(raw)) {
+        return resolve(Win.wm.open(Win.isMac ? 'surf' : 'browser', { url: raw }));
       }
       if (/^[a-z]:\\/i.test(raw)) {
-        return Win.fs.exists(raw) ? resolve(openPath(raw)) : reject(new Error('Windows cannot find "' + raw + '". Check the path and try again.'));
+        return Win.fs.exists(raw) ? resolve(openPath(raw)) : reject(new Error((Win.isMac ? 'VI OS' : 'Windows') + ' cannot find "' + raw + '". Check the path and try again.'));
       }
       const msdosRun = raw.match(/^(msdos|dos)(?:\s+(.*))?$/i);
       if (msdosRun) {
@@ -91,7 +93,7 @@
         }
         const base = Win.isModern ? 'C:\\Users\\User' : 'C:\\WINDOWS';
         const f = Win.fs.norm(/^[a-z]:\\/i.test(arg) ? arg : Win.fs.join(base, arg));
-        if (!Win.fs.exists(f)) return reject(new Error('Windows cannot find "' + arg + '". Check the path and try again.'));
+        if (!Win.fs.exists(f)) return reject(new Error((Win.isMac ? 'VI OS' : 'Windows') + ' cannot find "' + arg + '". Check the path and try again.'));
         if (Win.boot) Win.boot.dos({ file: f });
         return resolve();
       }
@@ -102,7 +104,11 @@
         taskmgr: 'taskmgr', 'task manager': 'taskmgr', iexplore: 'browser', ie: 'browser', internet: 'browser',
         vpc: 'vpc', 'virtual pc': 'vpc', virtualpc: 'vpc', virtual: 'vpc',
         firefox: 'firefox', mozilla: 'firefox', moz: 'firefox',
-        help: 'help', welcome: 'help', about: 'help', recycle: 'explorer'
+        help: 'help', welcome: 'help', about: 'help', recycle: 'explorer',
+        files: 'files', finder: 'files', surf: 'surf', web: 'surf', internet: 'surf',
+        notes: 'notepad', 'system settings': 'settings', 'system preferences': 'settings',
+        'activity monitor': 'taskmgr', activity: 'taskmgr', canvas: 'paint',
+        calculator: 'calc', mines: 'minesweeper', 'virtual pc': 'vpc'
       };
       if (map[lower]) {
         if (lower === 'recycle') return resolve(Win.wm.open('explorer', { path: '::recycle' }));
@@ -121,7 +127,7 @@
           return resolve(Win.wm.open('browser', { url: rest }));
         }
       }
-      reject(new Error('Windows cannot find "' + raw + '".\n\nMake sure you typed the name correctly, and then try again. To search for a file, use the Find command on the Start menu.'));
+      reject(new Error((Win.isMac ? 'VI OS' : 'Windows') + ' cannot find "' + raw + '".\n\nMake sure you typed the name correctly, and then try again.' + (Win.isMac ? ' Use Spotlight to find apps and files.' : ' To search for a file, use the Find command on the Start menu.')));
     });
   }
 
@@ -130,6 +136,16 @@
   /* ---------------------------------------------------------------- icons */
   function builtins() {
     const recycleCount = Win.fs.recycleCount();
+    if (Win.isMac) {
+      return [
+        { id: 'computer', label: 'Macintosh HD', icon: 'drive-mac', open: function () { openPath('::computer'); }, special: true },
+        { id: 'user', label: Win.store.get('lastUser') || 'User', icon: 'user-avatar', open: function () { openPath('C:\\Users\\User'); }, special: true },
+        { id: 'documents', label: 'Documents', icon: 'documents', open: function () { openPath('C:\\Users\\User\\Documents'); }, special: true },
+        { id: 'surf', label: 'Surf', icon: 'surf', open: function () { Win.wm.open('surf'); }, special: true },
+        { id: 'notes', label: 'Notes', icon: 'notes', open: function () { Win.wm.open('notepad'); }, special: true },
+        { id: 'recycle', label: 'Trash', icon: recycleCount ? 'trash' : 'trash', open: function () { openPath('::recycle'); }, special: true }
+      ];
+    }
     if (Win.isSeven || Win.isNine) {
       return [
         { id: 'computer', label: Win.isNine ? 'This PC' : 'Computer', icon: 'computer', open: function () { openPath('::computer'); }, special: true },
@@ -159,7 +175,7 @@
   }
 
   function deskPath() {
-    if (Win.isSeven || Win.isNine) return 'C:\\Users\\User\\Desktop';
+    if (Win.isMac || Win.isSeven || Win.isNine) return 'C:\\Users\\User\\Desktop';
     return 'C:\\Windows\\Desktop';
   }
 
@@ -169,7 +185,7 @@
       Win.fs.list(deskPath()).forEach(function (entry) {
         out.push({
           id: 'fs:' + entry.path, label: entry.name, icon: entry.icon, path: entry.path,
-          open: function () { if (entry.type === 'dir') Win.wm.open('explorer', { path: entry.path }); else openFile(entry.path); }
+          open: function () { if (entry.type === 'dir') Win.wm.open(folderApp(), { path: entry.path }); else openFile(entry.path); }
         });
       });
     } catch (e) {}
@@ -184,7 +200,13 @@
       rows: Math.max(1, Math.floor((d.clientHeight - PAD_Y) / CELL_H))
     };
   }
-  function pixelFor(c, r) { return { x: PAD_X + c * CELL_W, y: PAD_Y + r * CELL_H }; }
+  function pixelFor(c, r) {
+    if (Win.isMac) {
+      const d = document.getElementById('desktop');
+      return { x: Math.max(0, (d ? d.clientWidth : innerWidth) - PAD_X - (c + 1) * CELL_W), y: PAD_Y + r * CELL_H };
+    }
+    return { x: PAD_X + c * CELL_W, y: PAD_Y + r * CELL_H };
+  }
   function cellOccupied(used, c, r) { return Object.keys(used).some(function (k) { return k === cellKey(c, r); }); }
 
   function assignPositions(icons) {
@@ -286,7 +308,10 @@
         }
         dragging = false;
         const g = gridSize();
-        let c = U.clamp(Math.round((nx - PAD_X) / CELL_W), 0, g.cols - 1);
+        const dw = document.getElementById('desktop').clientWidth;
+        let c = Win.isMac
+          ? U.clamp(Math.round((dw - PAD_X - nx) / CELL_W) - 1, 0, g.cols - 1)
+          : U.clamp(Math.round((nx - PAD_X) / CELL_W), 0, g.cols - 1);
         let r = U.clamp(Math.round((ny - PAD_Y) / CELL_H), 0, g.rows - 1);
         const used = {};
         Object.keys(iconPos).forEach(function (id) {
@@ -350,12 +375,13 @@
 
 
   function openWithDialog(path) {
+    const mac = Win.isMac;
     const apps = [
-      { id: 'notepad', label: 'Notepad', icon: 'notepad' },
-      { id: 'paint', label: 'Paint', icon: 'paint' },
-      { id: 'browser', label: 'Internet Explorer', icon: 'ie' },
+      { id: 'notepad', label: mac ? 'Notes' : 'Notepad', icon: mac ? 'notes' : 'notepad' },
+      { id: 'paint', label: mac ? 'Canvas' : 'Paint', icon: mac ? 'canvas' : 'paint' },
+      { id: mac ? 'surf' : 'browser', label: mac ? 'Surf' : 'Internet Explorer', icon: mac ? 'surf' : 'ie' },
       { id: 'firefox', label: 'Mozilla Firefox', icon: 'firefox' },
-      { id: 'terminal', label: 'Command Prompt', icon: 'terminal' }
+      { id: 'terminal', label: mac ? 'Terminal' : 'Command Prompt', icon: mac ? 'terminal-mac' : 'terminal' }
     ];
     Win.ui.dialog({
       title: 'Open With', icon: 'open', width: 360,
@@ -368,7 +394,7 @@
             const app = b.dataset.app;
             try { close(true); } catch (e) {}
             if (app === 'paint' || app === 'notepad') Win.wm.open(app, { path: Win.fs.norm(path) });
-            else if (app === 'browser') Win.wm.open('browser', { url: 'file://' + path });
+            else if (app === 'browser' || app === 'surf') Win.wm.open(app, { url: app === 'surf' ? 'vi://file/' + encodeURIComponent(path) : 'file://' + path });
             else if (app === 'terminal') {
               const parent = Win.fs.parentPath(path) || 'C:\\';
               Win.wm.open('terminal', { mode: path.toLowerCase().endsWith('.ps1') ? 'ps' : 'cmd', cwd: parent, run: Win.fs.baseName(path) });
@@ -391,8 +417,11 @@
   /* ------------------------------------------------------------- settings */
   function applySettings() {
     const s = Win.store.all();
-    ['theme-classic', 'theme-platinum', 'theme-midnight', 'theme-xp', 'theme-olive', 'theme-silver', 'theme-aero', 'theme-frost', 'theme-dusk', 'theme-win10', 'theme-win10mint', 'theme-win10violet'].forEach(function (c) { document.body.classList.remove(c); });
-    if (Win.isNine) {
+    ['theme-classic', 'theme-platinum', 'theme-midnight', 'theme-xp', 'theme-olive', 'theme-silver', 'theme-aero', 'theme-frost', 'theme-dusk', 'theme-win10', 'theme-win10mint', 'theme-win10violet', 'theme-vi', 'theme-vi-dark', 'theme-vi-graphite'].forEach(function (c) { document.body.classList.remove(c); });
+    if (Win.isMac) {
+      const mt = ['vi', 'vi-dark', 'vi-graphite'].indexOf(s.theme) > -1 ? s.theme : 'vi';
+      document.body.classList.add('theme-' + mt);
+    } else if (Win.isNine) {
       const t9 = ['win10', 'win10mint', 'win10violet'].indexOf(s.theme) > -1 ? s.theme : 'win10';
       document.body.classList.add('theme-' + t9);
     } else if (Win.isSeven) {
@@ -407,13 +436,16 @@
     }
     let wall = s.wallpaper || 'teal';
     if (Win.isXP && wall === 'teal') wall = 'bliss';
-    ['wall-teal', 'wall-clouds', 'wall-azure', 'wall-sunset', 'wall-graphite', 'wall-grid', 'wall-solid', 'wall-bliss', 'wall-harmony', 'wall-hero'].forEach(function (c) {
+    ['wall-teal', 'wall-clouds', 'wall-azure', 'wall-sunset', 'wall-graphite', 'wall-grid', 'wall-solid', 'wall-bliss', 'wall-harmony', 'wall-hero', 'wall-gate', 'wall-dune', 'wall-aurora'].forEach(function (c) {
       document.body.classList.remove(c);
     });
+    if (Win.isMac) {
+      if (['gate', 'dune', 'aurora', 'graphite', 'solid'].indexOf(wall) < 0) wall = 'gate';
+    } else if (['gate', 'dune', 'aurora'].indexOf(wall) > -1) wall = 'teal';
     if (Win.isSeven && (wall === 'teal' || wall === 'bliss')) wall = 'harmony';
     if (Win.isNine && (wall === 'teal' || wall === 'bliss' || wall === 'harmony')) wall = 'hero';
     if (Win.isXP && (wall === 'teal' || wall === 'harmony')) wall = 'bliss';
-    if (!Win.isXP && !Win.isSeven && !Win.isNine && (wall === 'bliss' || wall === 'harmony' || wall === 'hero')) wall = 'teal';
+    if (!Win.isXP && !Win.isSeven && !Win.isNine && !Win.isMac && (wall === 'bliss' || wall === 'harmony' || wall === 'hero')) wall = 'teal';
     document.body.classList.add('wall-' + wall);
     document.body.style.setProperty('--solid-wall', s.solid || '#008080');
     document.body.classList.toggle('no-anim', s.animations === false);
@@ -449,8 +481,9 @@
 
   /* ----------------------------------------------------------- context menu */
   function desktopMenu(x, y) {
+    const mac = Win.isMac;
     Win.ui.menu([
-      { label: 'Arrange Icons', icon: 'view-icons', action: function () { iconPos = {}; savePositions(); renderIcons(); } },
+      { label: mac ? 'Clean Up' : 'Arrange Icons', icon: 'view-icons', action: function () { iconPos = {}; savePositions(); renderIcons(); } },
       { label: 'Refresh', icon: 'refresh', action: function () { renderIcons(); Win.ui.toast('Desktop refreshed.', 'check', 1400); } },
       { separator: true },
       {
@@ -472,8 +505,8 @@
         }
       },
       { separator: true },
-      { label: 'Display Properties', icon: 'monitor', action: function () { Win.wm.open('settings', { tab: 'appearance' }); } },
-      { label: 'Task Manager', icon: 'taskmgr', action: function () { Win.wm.open('taskmgr'); } },
+      { label: mac ? 'System Settings' : 'Display Properties', icon: 'monitor', action: function () { Win.wm.open('settings', { tab: 'appearance' }); } },
+      { label: mac ? 'Activity Monitor' : 'Task Manager', icon: 'taskmgr', action: function () { Win.wm.open('taskmgr'); } },
       { separator: true },
       { label: 'Switch operating system...', icon: 'windows',
         action: function () { if (Win.showOSChooser) Win.showOSChooser(); } }

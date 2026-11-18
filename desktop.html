@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#008080">
   <title>WINemulator — Windows in your browser</title>
-  <meta name="description" content="A fast, offline, no-install Windows 98, Windows 2000, Windows XP, Windows 7 and Windows 9 desktop environment that runs entirely in your browser. Files, Paint, Minesweeper, CMD, PowerShell, Virtual PC and more.">
+  <meta name="description" content="A fast, offline, no-install desktop environment for your browser. Choose VI OS Golden Gate, Windows 98, Windows 2000, Windows XP, Windows 7 or Windows 9. Files, Paint, Minesweeper, Terminal, Virtual PC and more.">
   <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
   <link rel="icon" href="assets/favicon.png" type="image/png">
   <link rel="manifest" href="manifest.webmanifest">
   <meta property="og:title" content="WINemulator">
-  <meta property="og:description" content="A complete Windows-style desktop in your browser. Choose Windows 98, 2000, XP, 7 or 9. Boots in seconds, works offline, no installs.">
+  <meta property="og:description" content="A complete desktop in your browser. Choose VI OS Golden Gate, Windows 98, 2000, XP, 7 or 9. Boots in seconds, works offline, no installs.">
   <meta property="og:type" content="website">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/desktop.css">
@@ -19,111 +19,64 @@
   <link rel="stylesheet" href="css/win7.css">
   <link rel="stylesheet" href="css/win10.css">
   <link rel="stylesheet" href="css/w2k.css">
+  <link rel="stylesheet" href="css/vi.css">
 </head>
 <body class="booting theme-classic wall-teal">
   <script>
     (function () {
       var q = new URLSearchParams(location.search);
       var os = q.get('os');
-      if (os !== '98' && os !== 'xp' && os !== '7' && os !== '9' && os !== '2k' && os !== '2000' && os !== 'dos') {
+      var aliases = { vi: 'mac', osx: 'mac', mvi: 'mac', macos: 'mac', 2000: '2k' };
+      var valid = ['98', 'xp', '7', '9', '2k', 'dos', 'mac'];
+      if (valid.indexOf(os) < 0 && aliases[os]) os = aliases[os];
+      if (valid.indexOf(os) < 0) {
         try { os = localStorage.getItem('winemulator.os'); } catch (e) {}
+        if (os && aliases[os]) os = aliases[os];
       }
-      if (os !== '98' && os !== 'xp' && os !== '7' && os !== '9' && os !== '2k' && os !== '2000' && os !== 'dos') os = '98';
-      if (os === '2000') os = '2k';
+      if (valid.indexOf(os) < 0) os = '98';
       try { localStorage.setItem('winemulator.os', os); } catch (e) {}
 
       /* Give each desktop its own default look the first time it is opened. */
-      if (os === '9') {
-        try {
-          var raw9 = localStorage.getItem('winemulator.settings');
-          var st9 = raw9 ? JSON.parse(raw9) : {};
-          var changed9 = false;
-          if (!st9.wallpaper || st9.wallpaper === 'teal' || st9.wallpaper === 'bliss' || st9.wallpaper === 'harmony') { st9.wallpaper = 'hero'; changed9 = true; }
-          if (!st9.theme || ['classic', 'platinum', 'midnight', 'xp', 'olive', 'silver', 'aero', 'frost', 'dusk'].indexOf(st9.theme) > -1) { st9.theme = 'win10'; changed9 = true; }
-          if (changed9) localStorage.setItem('winemulator.settings', JSON.stringify(st9));
-        } catch (e) {}
-      } else if (os === '2k') {
-        document.body.classList.remove('theme-classic', 'wall-teal');
-        document.body.classList.add('theme-classic', 'wall-teal');
-        var meta2k = document.querySelector('meta[name="theme-color"]');
-        if (meta2k) meta2k.setAttribute('content', '#000080');
-        document.title = 'WINemulator 2000 \u2014 Windows in your browser';
-      } else if (os === 'dos') {
-        document.body.classList.remove('theme-classic', 'wall-teal');
-        document.body.classList.add('theme-classic', 'wall-teal');
-        var metaDos = document.querySelector('meta[name="theme-color"]');
-        if (metaDos) metaDos.setAttribute('content', '#000000');
-        document.title = 'WINemulator DOS \u2014 MS-DOS in your browser';
-      } else if (os === '7') {
-        try {
-          var raw = localStorage.getItem('winemulator.settings');
-          var st = raw ? JSON.parse(raw) : {};
-          var changed = false;
-          if (!st.wallpaper || st.wallpaper === 'teal' || st.wallpaper === 'bliss' || st.wallpaper === 'hero') { st.wallpaper = 'harmony'; changed = true; }
-          if (!st.theme || ['classic', 'platinum', 'midnight', 'xp', 'olive', 'silver', 'win10'].indexOf(st.theme) > -1) { st.theme = 'aero'; changed = true; }
-          if (changed) localStorage.setItem('winemulator.settings', JSON.stringify(st));
-        } catch (e) {}
-      } else if (os === '2k') {
-        try {
-          var raw2k = localStorage.getItem('winemulator.settings');
-          var st2k = raw2k ? JSON.parse(raw2k) : {};
-          var changed2k = false;
-          if (!st2k.wallpaper || st2k.wallpaper === 'bliss' || st2k.wallpaper === 'harmony' || st2k.wallpaper === 'hero') { st2k.wallpaper = 'teal'; changed2k = true; }
-          if (!st2k.theme || ['classic','platinum','midnight','xp','olive','silver','aero','frost','dusk','win10'].indexOf(st2k.theme) > -1) { st2k.theme = 'classic'; changed2k = true; }
-          if (changed2k) localStorage.setItem('winemulator.settings', JSON.stringify(st2k));
-        } catch (e) {}
-      } else if (os === 'dos') {
-        try {
-          var rawDos = localStorage.getItem('winemulator.settings');
-          var stDos = rawDos ? JSON.parse(rawDos) : {};
-          var changedDos = false;
-          if (!stDos.wallpaper) { stDos.wallpaper = 'teal'; changedDos = true; }
-          if (!stDos.theme) { stDos.theme = 'classic'; changedDos = true; }
-          if (changedDos) localStorage.setItem('winemulator.settings', JSON.stringify(stDos));
-        } catch (e) {}
-      } else if (os === 'xp') {
-        try {
-          var rawX = localStorage.getItem('winemulator.settings');
-          var stX = rawX ? JSON.parse(rawX) : {};
-          var changedX = false;
-          if (!stX.wallpaper || stX.wallpaper === 'teal' || stX.wallpaper === 'harmony') { stX.wallpaper = 'bliss'; changedX = true; }
-          if (!stX.theme || ['classic', 'platinum', 'midnight', 'aero', 'frost', 'dusk'].indexOf(stX.theme) > -1) { stX.theme = 'xp'; changedX = true; }
-          if (changedX) localStorage.setItem('winemulator.settings', JSON.stringify(stX));
-        } catch (e) {}
-      }
+      var genericWalls = ['teal', 'clouds', 'azure', 'sunset', 'graphite', 'grid', 'solid'];
+      var conf = {
+        mac: { theme: 'vi', wall: 'gate', themes: ['vi', 'vi-dark', 'vi-graphite'], walls: ['gate', 'dune', 'aurora', 'graphite', 'solid'] },
+        '9': { theme: 'win10', wall: 'hero', themes: ['win10', 'win10mint', 'win10violet'], walls: genericWalls.concat(['hero']) },
+        '7': { theme: 'aero', wall: 'harmony', themes: ['aero', 'frost', 'dusk'], walls: genericWalls.concat(['harmony']) },
+        '2k': { theme: 'classic', wall: 'teal', themes: ['classic', 'platinum', 'midnight'], walls: genericWalls },
+        dos: { theme: 'classic', wall: 'teal', themes: ['classic', 'platinum', 'midnight'], walls: genericWalls },
+        xp: { theme: 'xp', wall: 'bliss', themes: ['xp', 'olive', 'silver'], walls: genericWalls.concat(['bliss']) },
+        '98': { theme: 'classic', wall: 'teal', themes: ['classic', 'platinum', 'midnight'], walls: genericWalls }
+      }[os];
+      try {
+        var raw = localStorage.getItem('winemulator.settings');
+        var st = raw ? JSON.parse(raw) : {};
+        var changed = false;
+        if (conf.themes.indexOf(st.theme) < 0) { st.theme = conf.theme; changed = true; }
+        if (conf.walls.indexOf(st.wallpaper) < 0) { st.wallpaper = conf.wall; changed = true; }
+        if (changed) localStorage.setItem('winemulator.settings', JSON.stringify(st));
+      } catch (e) {}
 
       window.WIN_OS = os;
       document.documentElement.setAttribute('data-os', os);
-      document.body.classList.add(os === '9' ? 'os-9' : os === '7' ? 'os-7' : os === 'xp' ? 'os-xp' : os === '2k' ? 'os-2k' : os === 'dos' ? 'os-dos' : 'os-98');
-      if (os === 'xp') {
-        document.body.classList.remove('theme-classic', 'wall-teal');
-        document.body.classList.add('theme-xp', 'wall-bliss');
-        var meta = document.querySelector('meta[name="theme-color"]');
+      document.body.className = 'booting os-' + os + ' theme-' + conf.theme + ' wall-' + conf.wall;
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (os === 'mac') {
+        if (meta) meta.setAttribute('content', '#0a84ff');
+        document.title = 'VI OS 26 Golden Gate — WINemulator';
+      } else if (os === 'xp') {
         if (meta) meta.setAttribute('content', '#245edb');
         document.title = 'WINemulator XP — Windows in your browser';
       } else if (os === '2k') {
-        document.body.classList.remove('theme-classic', 'wall-teal');
-        document.body.classList.add('theme-classic', 'wall-teal');
-        var meta2k = document.querySelector('meta[name="theme-color"]');
-        if (meta2k) meta2k.setAttribute('content', '#000080');
-        document.title = 'WINemulator 2000 \u2014 Windows in your browser';
+        if (meta) meta.setAttribute('content', '#000080');
+        document.title = 'WINemulator 2000 — Windows in your browser';
       } else if (os === 'dos') {
-        document.body.classList.remove('theme-classic', 'wall-teal');
-        document.body.classList.add('theme-classic', 'wall-teal');
-        var metaDos = document.querySelector('meta[name="theme-color"]');
-        if (metaDos) metaDos.setAttribute('content', '#000000');
-        document.title = 'WINemulator DOS \u2014 MS-DOS in your browser';
+        if (meta) meta.setAttribute('content', '#000000');
+        document.title = 'WINemulator DOS — MS-DOS in your browser';
       } else if (os === '7') {
-        document.body.classList.remove('theme-classic', 'wall-teal');
-        document.body.classList.add('theme-aero', 'wall-harmony');
-        var meta7 = document.querySelector('meta[name="theme-color"]');
-        if (meta7) meta7.setAttribute('content', '#0b6d8f');
+        if (meta) meta.setAttribute('content', '#0b6d8f');
         document.title = 'WINemulator 7 — Windows in your browser';
       } else if (os === '9') {
-        document.body.classList.remove('theme-classic', 'wall-teal');
-        document.body.classList.add('theme-win10', 'wall-hero');
-        var meta9 = document.querySelector('meta[name="theme-color"]');
-        if (meta9) meta9.setAttribute('content', '#0078d7');
+        if (meta) meta.setAttribute('content', '#0078d7');
         document.title = 'WINemulator 9 — Windows in your browser';
       }
     })();
@@ -171,6 +124,7 @@
   <script src="js/icons-xp.js"></script>
   <script src="js/icons-7.js"></script>
   <script src="js/icons-10.js"></script>
+  <script src="js/icons-vi.js"></script>
   <script src="js/util.js"></script>
   <script src="js/sound.js"></script>
   <script src="js/fs.js"></script>
@@ -184,16 +138,19 @@
   <script src="js/apps/paint.js"></script>
   <script src="js/apps/calc.js"></script>
   <script src="js/apps/terminal.js"></script>
-<script src="js/apps/runner.js"></script>
-<script src="js/apps/driving.js"></script>
-<script src="js/apps/eaglercraft.js"></script>
+  <script src="js/apps/runner.js"></script>
+  <script src="js/apps/driving.js"></script>
+  <script src="js/apps/eaglercraft.js"></script>
   <script src="js/apps/minesweeper.js"></script>
   <script src="js/apps/settings.js"></script>
   <script src="js/apps/taskmgr.js"></script>
   <script src="js/apps/browser.js"></script>
-<script src="js/apps/firefox.js"></script>
+  <script src="js/apps/firefox.js"></script>
+  <script src="js/apps/files.js"></script>
+  <script src="js/apps/surf.js"></script>
   <script src="js/apps/help.js"></script>
   <script src="js/apps/vpc.js"></script>
+  <script src="js/vi.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

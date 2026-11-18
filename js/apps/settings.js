@@ -11,7 +11,11 @@
     { id: 'system', label: 'System', icon: 'computer' },
     { id: 'about', label: 'About', icon: 'flag' }
   ];
-  const WALLS = [
+  const WALLS = (Win.isMac ? [
+    { id: 'gate', name: 'Golden Gate' },
+    { id: 'dune', name: 'Dune' },
+    { id: 'aurora', name: 'Aurora' }
+  ] : []).concat([
     { id: 'teal', name: 'Teal' },
     { id: 'bliss', name: 'Bliss' },
     { id: 'harmony', name: 'Harmony' },
@@ -22,11 +26,14 @@
     { id: 'graphite', name: 'Graphite' },
     { id: 'grid', name: 'Grid' },
     { id: 'solid', name: 'Solid Color' }
-  ];
+  ]);
   const SOUND_TESTS = ['startup', 'ding', 'notify', 'click', 'open', 'menu', 'error', 'win', 'explode', 'save'];
   const SOLIDS = ['#008080', '#1e5891', '#0a6b6b', '#5a2c52', '#2a2f36', '#3f7cbe', '#005c5c', '#4b3f72'];
 
   function wallCss(wall, solid) {
+    if (wall === 'gate') return 'url("assets/vi-gate.svg") center / cover no-repeat';
+    if (wall === 'dune') return 'linear-gradient(170deg, #2d3d62 0%, #8a5a72 38%, #d98b64 66%, #f1c48d 100%)';
+    if (wall === 'aurora') return 'linear-gradient(160deg, #0b1530 0%, #17234c 45%, #251a45 100%)';
     if (wall === 'bliss') return 'url("assets/bliss.svg") center / cover no-repeat';
     if (wall === 'harmony') return 'url("assets/harmony.svg") center / cover no-repeat';
     if (wall === 'hero') return 'url("assets/hero.svg") center / cover no-repeat';
@@ -111,7 +118,11 @@
           '<label class="set-check"><input type="checkbox" class="' + cls + '"' + (checked ? ' checked' : '') + '></label></div>';
       }
       function themeCards(st) {
-        const list = Win.is2000 ? [
+        const list = Win.isMac ? [
+          { id: 'vi', name: 'VI Light' },
+          { id: 'vi-dark', name: 'VI Dark' },
+          { id: 'vi-graphite', name: 'VI Graphite' }
+        ] : Win.is2000 ? [
   { id: 'classic', name: 'Windows Classic', preview: 'classic' }
 ] : Win.isNine ? [
             { id: 'win10', name: 'Windows Blue' },
@@ -133,7 +144,8 @@
               { id: 'midnight', name: 'Midnight' }
             ];
         let active = st.theme;
-        if (Win.isNine) active = ['win10', 'win10mint', 'win10violet'].indexOf(active) > -1 ? active : 'win10';
+        if (Win.isMac) active = ['vi', 'vi-dark', 'vi-graphite'].indexOf(active) > -1 ? active : 'vi';
+        else if (Win.isNine) active = ['win10', 'win10mint', 'win10violet'].indexOf(active) > -1 ? active : 'win10';
         else if (Win.isSeven) active = ['aero', 'frost', 'dusk'].indexOf(active) > -1 ? active : 'aero';
         else if (Win.isXP) active = ['xp', 'olive', 'silver'].indexOf(active) > -1 ? active : 'xp';
         else active = ['classic', 'platinum', 'midnight'].indexOf(active) > -1 ? active : 'classic';
@@ -205,6 +217,7 @@
           '<div class="set-group"><h3>' + Win.icon('computer', 16) + ' Operating system</h3>' +
           '<p>This browser can run every desktop. Switching reloads the page and keeps your files and settings.</p>' +
           '<div class="set-actions">' +
+          '<button class="btn" type="button" data-os-switch="mac"' + (Win.isMac ? ' disabled' : '') + '>' + Win.icon('vi', 15) + ' VI OS Golden Gate' + (Win.isMac ? ' (current)' : '') + '</button>' +
           '<button class="btn" type="button" data-os-switch="98"' + (Win.is98 ? ' disabled' : '') + '>' + Win.icon('flag', 15) + ' Windows 98' + (Win.is98 ? ' (current)' : '') + '</button>' +
           '<button class="btn" type="button" data-os-switch="xp"' + (Win.isXP ? ' disabled' : '') + '>' + Win.icon('windows', 15) + ' Windows XP' + (Win.isXP ? ' (current)' : '') + '</button>' +
           '<button class="btn" type="button" data-os-switch="7"' + (Win.isSeven ? ' disabled' : '') + '>' + Win.icon('orb', 15) + ' Windows 7' + (Win.isSeven ? ' (current)' : '') + '</button>' +
@@ -212,7 +225,7 @@
 '<button class="btn" type="button" data-os-switch="2k"' + (Win.is2000 ? ' disabled' : '') + '>' + Win.icon('flag', 15) + ' Windows 2000' + (Win.is2000 ? ' (current)' : '') + '</button>' +
 '<button class="btn" type="button" data-os-switch="dos"' + (Win.isDOS ? ' disabled' : '') + '>' + Win.icon('terminal', 15) + ' MS-DOS' + (Win.isDOS ? ' (current)' : '') + '</button>' +
           '</div></div>' +
-          '<div class="set-group"><h3>' + Win.icon('monitor', 16) + ' Windows theme</h3>' + themeCards(st) + '</div>' +
+          '<div class="set-group"><h3>' + Win.icon('monitor', 16) + ' ' + (Win.isMac ? 'Appearance theme' : 'Windows theme') + '</h3>' + themeCards(st) + '</div>' +
           '<div class="set-group"><h3>' + Win.icon('image', 16) + ' Desktop preview</h3>' + previewHtml(st) + '</div>' +
           '<div class="set-group"><h3>' + Win.icon('settings', 16) + ' Effects</h3>' +
           checkRow('set-anim', 'Animated windows', 'Window open, close and menu animations.', st.animations !== false) +
@@ -361,7 +374,7 @@
         const uptime = U.fmtDuration(Date.now() - (Win.startedAt || Date.now()));
         const boot = Win.bootMs ? (Win.bootMs / 1000).toFixed(2) + ' seconds' : 'n/a';
         const rows = [
-          ['Operating system', Win.isDOS ? 'MS-DOS 6.22 (Web)' : 'Microsoft ' + Win.osNameFull + ' (Web)'],
+          ['Operating system', Win.isDOS ? 'MS-DOS 6.22 (Web)' : (Win.isMac ? Win.osNameFull : 'Microsoft ' + Win.osNameFull) + ' (Web)'],
           ['Version', Win.osVersion + ' — WINemulator ' + (Win.version || '1.0')],
           ['Build', Win.build || 'web-2026'],
           ['Processor', 'WebCore x86 JIT (' + (si.cores || '?') + ' logical cores)'],
@@ -376,7 +389,7 @@
           ['Disk used', U.fmtBytes(stats.bytes) + ' of 2.00 GB'],
           ['Local storage', U.fmtBytes(stats.storageBytes)],
           ['Virtual PC', 'v86 x86 emulator · ' + (window.V86 ? 'loaded' : 'loads on demand')],
-          ['Recycle Bin', stats.recycle + ' item(s)']
+          [Win.isMac ? 'Trash' : 'Recycle Bin', stats.recycle + ' item(s)']
         ];
         return '<h1 class="set-h1">System</h1><p class="set-sub">Information about this browser session and the virtual C: drive.</p>' +
           '<div class="set-group"><h3>' + Win.icon('computer', 16) + ' System information</h3>' +
@@ -445,9 +458,9 @@
       function aboutPane() {
         const si = Win.sysinfo ? Win.sysinfo() : {};
         return '<div class="set-about">' +
-          '<div class="set-about-logo">' + Win.icon(Win.isNine ? 'win10' : 'flag', 60) + '</div>' +
-          '<div><div class="set-about-name">WINemulator ' + Win.osShort + '</div>' +
-          '<div class="set-about-tag">' + (Win.is2000 ? 'The Windows 2000 Professional desktop, entirely in your browser' : Win.isNine ? 'The flat Windows 9 desktop, entirely in your browser' : Win.isSeven ? 'The Windows 7 Aero desktop, entirely in your browser' : Win.isXP ? 'The Windows XP Luna desktop, entirely in your browser' : 'The classic Windows 98 desktop, entirely in your browser') + '</div>' +
+          '<div class="set-about-logo">' + Win.icon(Win.isMac ? 'vi' : (Win.isNine ? 'win10' : 'flag'), 60) + '</div>' +
+          '<div><div class="set-about-name">' + (Win.isMac ? 'VI OS ' + Win.osShort : 'WINemulator ' + Win.osShort) + '</div>' +
+          '<div class="set-about-tag">' + (Win.isMac ? 'VI OS 26 Golden Gate — an original desktop for your browser' : Win.is2000 ? 'The Windows 2000 Professional desktop, entirely in your browser' : Win.isNine ? 'The flat Windows 9 desktop, entirely in your browser' : Win.isSeven ? 'The Windows 7 Aero desktop, entirely in your browser' : Win.isXP ? 'The Windows XP Luna desktop, entirely in your browser' : 'The classic Windows 98 desktop, entirely in your browser') + '</div>' +
           '<p>A fast, zero-install desktop environment written in plain HTML, CSS and JavaScript. No framework, no build step, no Microsoft assets — every icon, sound, wallpaper and pixel is generated locally.</p>' +
           '<p>Your files and settings live in this browser. WINemulator does not upload anything anywhere, and it keeps working when you are offline.</p></div>' +
           '</div>' +
@@ -468,8 +481,8 @@
           '<div class="set-group"><h3>' + Win.icon('help', 16) + ' Learn more</h3>' +
           '<div class="set-actions">' +
           '<button class="btn" type="button" data-open-app="help">Help Topics</button>' +
-          '<button class="btn" type="button" data-open-app="browser">Internet Explorer</button>' +
-          '<button class="btn" type="button" data-open-app="taskmgr">Task Manager</button>' +
+          '<button class="btn" type="button" data-open-app="' + (Win.isMac ? 'surf' : 'browser') + '">' + (Win.isMac ? 'Surf' : 'Internet Explorer') + '</button>' +
+          '<button class="btn" type="button" data-open-app="taskmgr">' + (Win.isMac ? 'Activity Monitor' : 'Task Manager') + '</button>' +
           '</div></div>';
       }
       function bindAbout() {
@@ -501,8 +514,8 @@
           help: [
             { label: 'Help Topics', icon: 'help', action: function () { Win.wm.open('help'); } },
             { separator: true },
-            { label: 'About Control Panel', icon: 'settings', action: function () {
-              Win.ui.alert('WINemulator Control Panel\n' + Win.osNameFull + ' · Version ' + Win.osVersion + '\n\nAppearance, wallpaper, sounds, performance and system tools.\n\nEverything is stored locally in your browser.', 'About Control Panel', 'settings');
+            { label: Win.isMac ? 'About System Settings' : 'About Control Panel', icon: 'settings', action: function () {
+              Win.ui.alert((Win.isMac ? 'VI OS System Settings' : 'WINemulator Control Panel') + '\n' + Win.osNameFull + ' · Version ' + Win.osVersion + '\n\nAppearance, wallpaper, sounds, performance and system tools.\n\nEverything is stored locally in your browser.', Win.isMac ? 'About System Settings' : 'About Control Panel', 'settings');
             } }
           ]
         };
@@ -515,7 +528,7 @@
       });
 
       openTab(current);
-      ctx.setTitle('Control Panel');
+      ctx.setTitle(Win.isMac ? 'System Settings' : 'Control Panel');
 
       return {
         onReopen: function (a) { if (a && a.tab) openTab(a.tab); }

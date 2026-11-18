@@ -1,7 +1,7 @@
 /* WINemulator — offline cache */
 'use strict';
 
-const CACHE = 'winemulator-v80';
+const CACHE = 'winemulator-v81';
 const CORE = [
   './',
   './index.html',
@@ -47,8 +47,8 @@ const CORE = [
   './js/apps/calc.js',
   './js/apps/minesweeper.js',
   './js/apps/terminal.js',
-  './js/apps/langs-core.js?v=80',
-  './js/apps/langs.js',
+  './js/apps/langs-core.js?v=81',
+  './js/apps/langs.js?v=81',
   './js/apps/runner.js',
   './js/apps/eaglercraft.js',
   './js/apps/driving.js',

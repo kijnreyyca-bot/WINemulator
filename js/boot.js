@@ -483,6 +483,8 @@
       print('  MSDOS - DOS      Switch to the main MS-DOS shell');
       print('  MSDOS - CMD      Enable all Command Prompt commands');
       print('  MSDOS - <file>   Run a .bat file or open a file');
+      print('  PYTHON / PY      Run Python code or a .py file');
+      print('  JS / NODE        Run JavaScript code or a .js file');
       print('  WIN [os]         Start a desktop (VI, 98, XP, 7, 9, 2000, DOS)');
       print('  EXPLORER         Open the file manager');
       print('  WINDOWS.SYS      Start ' + (Win.isMac ? 'VI OS' : 'Windows') + ' (WIN.SYS also works)');
@@ -610,6 +612,31 @@
         else if (cmd === 'mem') print('\nMemory Type        Total       Used       Free\n----------------  --------   --------   --------\nConventional         640K       112K       528K\nUpper                155K       155K         0K\nExtended (XMS)    64,512K    12,288K    52,224K\n----------------  --------   --------   --------\nTotal memory      65,307K    12,555K    52,752K\n');
         else if (cmd === 'date') print('Current date is ' + new Date().toDateString());
         else if (cmd === 'time') print('Current time is ' + new Date().toLocaleTimeString());
+        else if (cmd === 'python' || cmd === 'py' || cmd === 'python3' || cmd === 'js' || cmd === 'javascript' || cmd === 'node' || cmd === 'nodejs') {
+          const isJs = cmd === 'js' || cmd === 'javascript' || cmd === 'node' || cmd === 'nodejs';
+          const kind = isJs ? 'js' : 'py';
+          const label = isJs ? 'JavaScript' : 'Python';
+          if (!rest) print('Type ' + label + ' code, or open the ' + label + ' REPL from the desktop.');
+          else {
+            let code = rest;
+            const p = normDos(rest.split(/\s+/)[0]);
+            const fileNode = Win.fs.resolve(p);
+            if (fileNode && fileNode.type === 'file') {
+              const content = Win.fs.read(p);
+              code = (content === null || content === undefined) ? '' : content;
+            }
+            if (!code) print('Nothing to run.');
+            else if (!Win.langs || !Win.langs.runSource) print('The ' + label + ' simulation is not available.');
+            else {
+              try {
+                Win.langs.runSource(code, kind, function (s) {
+                  const text = String(s == null ? '' : s).replace(/\r\n/g, '\n').replace(/\n$/, '');
+                  if (text) text.split('\n').forEach(function (l) { print(l); });
+                }, function () { return ''; });
+              } catch (e) { print(e.message || String(e)); }
+            }
+          }
+        }
         else if (cmd === 'echo') print(rest);
         else print('Bad command or file name');
         draw();

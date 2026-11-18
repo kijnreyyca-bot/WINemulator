@@ -7,12 +7,12 @@
     browser: 'IEXPLORE.EXE', explorer: 'EXPLORER.EXE', notepad: 'NOTEPAD.EXE',
     paint: 'MSPAINT.EXE', calc: 'CALC.EXE', terminal: 'COMMAND.COM',
     minesweeper: 'WINMINE.EXE', settings: 'CONTROL.EXE', taskmgr: 'TASKMGR.EXE',
-    help: 'WINHLP32.EXE'
+    help: 'WINHLP32.EXE', python: 'PYTHON.EXE', js: 'JS.EXE'
   };
   const MEM = {
     browser: 18420, explorer: 9820, notepad: 4210, paint: 12480,
     calc: 3480, terminal: 3960, minesweeper: 3080, settings: 5240,
-    taskmgr: 4380, help: 4720
+    taskmgr: 4380, help: 4720, python: 14200, js: 11800
   };
   const TABS = [
     { id: 'apps', label: 'Applications' },

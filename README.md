@@ -25,7 +25,8 @@ A fast, self-contained **VI OS 26 Golden Gate** desktop plus Windows 98, Windows
 - **Start menu and taskbar** — programs, documents, settings, find, help, run, quick launch, clock with calendar, volume and network trays. Windows XP uses the familiar two-column Start menu; Windows 7 and Windows 9 use searchable Start menus, and Windows 9 adds a tile grid. VI OS replaces them with a menu bar (app menus, Wi-Fi, Bluetooth, Control Center, battery, Spotlight and a calendar clock) and a magnifying Dock with running indicators.
 - **Virtual file system** — a persistent `C:` drive with seeded folders and files, Recycle Bin (called Trash on VI OS), import/export backups and a shared file picker. VI OS users get `C:\Users\User` as a Home folder alongside the classic Windows locations.
 - **Boot experience** - BIOS memory test, a VI OS Golden Gate splash or a Windows 98, 2000, XP, 7 or 9 splash, logon, logoff, shutdown, restart and an MS-DOS mode. VI OS has its own blurred wallpaper login, Spotlight hint and shutdown wording. Fast boot can be enabled in Control Panel or System Settings. MS-DOS mode accepts the full Command Prompt command set; type `msdos - dos` to switch to the plain MS-DOS shell and `msdos - cmd` to return. Type `msdos - <file>` (also available from the Command Prompt or Run dialog) to run a `.bat`/`.cmd` file or open a file in MS-DOS mode. Type `msdos` (or `dos`) at the Command Prompt to switch straight into MS-DOS mode; type `windows.sys` (or `win.sys`) there to start Windows again.
-- **Apps** — Notepad, Paint, Calculator, Command Prompt (MS-DOS Prompt on 98), Windows Explorer, Internet Explorer, Minesweeper, Control Panel, Task Manager, Help and **Virtual PC**. VI OS renames them Notes, Canvas, Calculator, Terminal, Files, Surf, Mines, System Settings, Activity Monitor and Help, keeping the same underlying programs (the classic Explorer is still available as `explorer-classic`).
+- **Apps** — Notepad, Paint, Calculator, Command Prompt (MS-DOS Prompt on 98), Windows Explorer, Internet Explorer, Minesweeper, Python, JavaScript, Control Panel, Task Manager, Help and **Virtual PC**. VI OS renames the classic apps Notes, Canvas, Calculator, Terminal, Files, Surf, Mines, System Settings, Activity Monitor and Help, keeping the same underlying programs (the classic Explorer is still available as `explorer-classic`). Python and JavaScript keep their names on VI OS but use VI-style icons.
+- **Language REPLs** — Python (`python`, `py`, `python3`) and JavaScript (`js`, `javascript`, `node`) are original, sandboxed simulations with an editor, output pane, examples, file open/save and a small standard library. They cover variables, functions, loops, conditions, arrays, objects and common built-ins; they do not use `eval`, `fetch` or host APIs. `.py` and `.js` files open in their matching REPL, and both interpreters also work from CMD, PowerShell and MS-DOS mode.
 - **Offline ready** — a service worker caches the entire desktop, including the x86 emulator, after the first visit.
 
 ## Virtual PC (real x86 emulation)
@@ -128,7 +129,7 @@ js/
   desktop.js             icons, wallpapers and the shell
   vi.js                  VI OS menu bar, Dock, Spotlight, Launchpad and shortcuts
   boot.js                boot, logon, shutdown and MS-DOS mode
-  apps/                  one file per program, including files.js (Files) and surf.js (Surf)
+  apps/                  one file per program, including files.js (Files), surf.js (Surf) and langs.js (Python + JavaScript REPLs)
   main.js                bootstrap and service worker registration
 vendor/v86/              vendored v86 emulator, WASM core and BIOS files
 sw.js                    offline cache

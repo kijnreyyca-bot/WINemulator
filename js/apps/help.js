@@ -138,6 +138,8 @@
       appCard('paint', Win.isMac ? 'canvas' : 'paint', Win.isMac ? 'Canvas' : 'Paint', 'Draw with pencils, brushes and shapes, then save as an image.') +
       appCard('calc', 'calc', 'Calculator', 'A standard four-function calculator with memory keys.') +
       appCard('terminal', Win.isMac ? 'terminal-mac' : 'terminal', termName(), 'A working command line for the virtual C: drive.') +
+      appCard('python', Win.isMac ? 'python-mac' : 'python', 'Python', 'A simulated Python REPL with an editor, examples and .py files.') +
+      appCard('js', Win.isMac ? 'js-mac' : 'js', Win.isMac ? 'JS' : 'JavaScript', 'A simulated JavaScript REPL with an editor, examples and .js files.') +
       (Win.isMac ? appCard('files', 'files', 'Files', 'Browse, organize, copy and delete files and folders.') : appCard('explorer', 'folder', 'Windows Explorer', 'Browse, organize, copy and delete files and folders.')) +
       (Win.isMac ? appCard('surf', 'surf', 'Surf', 'A browser with local vi:// pages and web frames.') : appCard('browser', 'ie', 'Internet Explorer', 'A retro browser with a small local web.')) +
       appCard('firefox', 'firefox', 'Mozilla Firefox', 'A second browser shell that opens real web pages.') +
@@ -156,6 +158,7 @@
       '<li><code>TYPE Welcome.txt</code> — print a text file.</li>' +
       '<li><code>SYSTEMINFO</code> — show information about this session.</li>' +
       '<li><code>START notepad</code> — launch another program.</li>' +
+      '<li><code>PYTHON</code> or <code>JS</code> — open a simulated language REPL; add code or a file to run it here.</li>' +
       '<li><code>CLS</code> — clear the screen; <code>EXIT</code> closes the prompt.</li>' +
       '</ul>' +
       '<h2>' + (Win.isMac ? 'Mines' : 'Minesweeper') + ' in ten seconds</h2>' +
@@ -164,6 +167,8 @@
       appBtn('minesweeper', 'mine', Win.isMac ? 'Play Mines' : 'Play Minesweeper') +
       appBtn(browserApp(), ieIcon(), 'Open ' + browserName()) +
       appBtn('terminal', Win.isMac ? 'terminal-mac' : 'terminal', 'Open ' + termName()) +
+      appBtn('python', Win.isMac ? 'python-mac' : 'python', 'Open Python') +
+      appBtn('js', Win.isMac ? 'js-mac' : 'js', 'Open ' + (Win.isMac ? 'JS' : 'JavaScript')) +
       '</div>';
   }
 
@@ -181,6 +186,7 @@
       '</ul>' +
       '<h2>Saving and opening</h2>' +
       '<p>' + (Win.isMac ? 'Notes and Canvas' : 'Notepad and Paint') + ' use the standard file dialog. Choose <b>File &gt; Save</b> (or <code>Ctrl+S</code>) to write to the drive, and <b>File &gt; Open</b> (<code>Ctrl+O</code>) to load a file. Text files are saved as plain text; ' + (Win.isMac ? 'Canvas' : 'Paint') + ' saves PNG images. The file system is shared, so a note saved in ' + (Win.isMac ? 'Notes' : 'Notepad') + ' can be opened from ' + explorerName() + '.</p>' +
+      '<p><code>.py</code> files open in Python and <code>.js</code> files open in ' + (Win.isMac ? 'JS' : 'JavaScript') + '. Both REPLs can also open and save plain <code>.txt</code> files, and two ready-made examples wait in <code>C:\\My Documents</code>.</p>' +
       '<h2>Organizing</h2>' +
       '<ul>' +
       '<li>Right-click a folder and choose <b>New Folder</b> in ' + explorerName() + '.</li>' +
@@ -263,6 +269,13 @@
       '<h2>Global shortcuts</h2>' +
       '<table class="hlp-kbd"><tr><th>Shortcut</th><th>What it does</th></tr>' + globalRows + '</table>' +
       '<p class="hlp-note">Your real operating system may reserve the Command or Windows key before the browser sees it. On Windows keyboards, Ctrl works in place of ⌘ for these shortcuts.</p>' +
+      '<h2>Python and JavaScript REPLs</h2>' +
+      '<table class="hlp-kbd"><tr><th>Shortcut</th><th>What it does</th></tr>' +
+      '<tr><td>Ctrl/⌘+Enter</td><td>Run the current script.</td></tr>' +
+      '<tr><td>Ctrl/⌘+S</td><td>Save the script to the virtual drive.</td></tr>' +
+      '<tr><td>Ctrl/⌘+O</td><td>Open a .py, .js or .txt file.</td></tr>' +
+      '</table>' +
+      '<p class="hlp-note">The interpreters are deliberately small simulations. They cover variables, functions, loops, conditions, arrays and common built-ins, but they never touch your real files or network.</p>' +
       '<h2>Windows and the desktop</h2>' +
       '<ul>' +
       '<li><b>Double-click</b> a desktop icon to open it.</li>' +
@@ -481,7 +494,7 @@
   const TOPICS = [
     { id: 'welcome', title: 'Welcome', group: 'Getting started', icon: Win.isMac ? 'vi' : 'flag', keywords: 'home start first run introduction help vi os', page: pageWelcome },
     { id: 'tour', title: 'Quick Tour', group: 'Getting started', icon: 'computer', keywords: 'guide basics desktop start taskbar dock menu windows', page: pageTour },
-    { id: 'programs', title: 'Programs', group: 'Using Windows', icon: 'programs', keywords: 'apps notepad paint calculator dos explorer browser minesweeper task manager files surf notes', page: pagePrograms },
+    { id: 'programs', title: 'Programs', group: 'Using Windows', icon: 'programs', keywords: 'apps notepad paint calculator dos explorer browser minesweeper task manager files surf notes python javascript js node repl code interpreter', page: pagePrograms },
     { id: 'virtualpc', title: 'Virtual PC', group: 'Using Windows', icon: 'vpc', keywords: 'v86 x86 emulator disk image iso floppy boot dos linux windows xp', page: pageVirtualPC },
     { id: 'oses', title: Win.isMac ? 'All Desktops' : 'Windows Editions', group: 'Using Windows', icon: Win.isMac ? 'vi' : 'windows', keywords: 'switch operating system luna aero bliss xp 98 2000 7 9 selector theme os vi golden gate', page: pageOS },
     { id: 'files', title: 'Files & Storage', group: 'Using Windows', icon: 'folder', keywords: 'drive folders save open recycle bin trash backup explorer files', page: pageFiles },

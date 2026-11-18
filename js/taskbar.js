@@ -12,7 +12,7 @@
     notepad: 'Notepad', paint: 'Paint', calc: 'Calculator', terminal: (Win.isNT ? 'Command Prompt' : 'MS-DOS Prompt'),
     explorer: 'Windows Explorer', browser: 'Internet Explorer', firefox: 'Mozilla Firefox', minesweeper: 'Minesweeper',
     settings: 'Control Panel', taskmgr: 'Task Manager', help: 'Help', recycle: 'Recycle Bin',
-    vpc: 'Virtual PC'
+    vpc: 'Virtual PC', python: 'Python', js: 'JavaScript'
   };
 
   function menuIsOpen() { return startOpen; }
@@ -107,6 +107,10 @@
       { label: 'Calculator', icon: 'calc', action: function () { Win.wm.open('calc'); } },
       { label: (Win.isNT ? 'Command Prompt' : 'MS-DOS Prompt'), icon: 'terminal', action: function () { Win.wm.open('terminal'); } },
       { separator: true },
+      { label: 'Programming', separator: false },
+      { label: 'Python', icon: 'python', action: function () { Win.wm.open('python'); } },
+      { label: 'JavaScript', icon: 'js', action: function () { Win.wm.open('js'); } },
+      { separator: true },
       { label: 'Games', separator: false },
       { label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } },
       { label: '3D Driving Simulator', icon: 'game', action: function () { Win.wm.open('driving'); } },
@@ -128,8 +132,10 @@
       items.push({ separator: true });
       recent.slice(0, 8).forEach(function (p) {
         const name = Win.fs.baseName(p);
+        const app = Win.fs.appFor(p);
+        const icon = app === 'paint' ? 'imagefile' : app === 'python' ? 'python' : app === 'js' ? 'js' : 'textfile';
         items.push({
-          label: name, icon: Win.fs.appFor(p) === 'paint' ? 'imagefile' : 'textfile',
+          label: name, icon: icon,
           action: function () { if (Win.shell) Win.shell.openFile(p); }
         });
       });
@@ -155,6 +161,10 @@
       { label: 'Paint', icon: 'paint', action: function () { Win.wm.open('paint'); } },
       { label: 'Calculator', icon: 'calc', action: function () { Win.wm.open('calc'); } },
       { label: (Win.isNT ? 'Command Prompt' : 'MS-DOS Prompt'), icon: 'terminal', action: function () { Win.wm.open('terminal'); } },
+      { separator: true },
+      { label: 'Programming', separator: false },
+      { label: 'Python', icon: 'python', action: function () { Win.wm.open('python'); } },
+      { label: 'JavaScript', icon: 'js', action: function () { Win.wm.open('js'); } },
       { separator: true },
       { label: 'Games', separator: false },
       { label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } },
@@ -197,6 +207,8 @@
     left.appendChild(startItem({ label: 'Paint', icon: 'paint', action: function () { Win.wm.open('paint'); } }));
     left.appendChild(startItem({ label: 'Calculator', icon: 'calc', action: function () { Win.wm.open('calc'); } }));
     left.appendChild(startItem({ label: (Win.isNT ? 'Command Prompt' : 'MS-DOS Prompt'), icon: 'terminal', action: function () { Win.wm.open('terminal'); } }));
+    left.appendChild(startItem({ label: 'Python', icon: 'python', action: function () { Win.wm.open('python'); } }));
+    left.appendChild(startItem({ label: 'JavaScript', icon: 'js', action: function () { Win.wm.open('js'); } }));
     left.appendChild(startItem({ label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } }));
     left.appendChild(startItem({ label: 'Virtual PC', icon: 'vpc', action: function () { Win.wm.open('vpc'); } }));
     left.appendChild(startItem({ label: 'Control Panel', icon: 'settings', action: function () { Win.wm.open('settings'); } }));
@@ -254,6 +266,8 @@
       { label: 'Paint', icon: 'paint', action: function () { Win.wm.open('paint'); } },
       { label: 'Calculator', icon: 'calc', action: function () { Win.wm.open('calc'); } },
       { label: 'Windows Explorer', icon: 'folder', action: function () { Win.wm.open('explorer', { path: 'C:\\\\' }); } },
+      { label: 'Python', icon: 'python', action: function () { Win.wm.open('python'); } },
+      { label: 'JavaScript', icon: 'js', action: function () { Win.wm.open('js'); } },
       { label: 'Internet Explorer', icon: 'ie', action: function () { Win.wm.open('browser'); } },
       { label: 'Mozilla Firefox', icon: 'firefox', action: function () { Win.wm.open('firefox'); } },
       { label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } },
@@ -342,6 +356,8 @@
       { label: 'Calculator', icon: 'calc', action: function () { Win.wm.open('calc'); } },
       { label: 'Command Prompt', icon: 'terminal', action: function () { Win.wm.open('terminal', { mode: 'cmd', cwd: 'C:\\Users\\User' }); } },
       { label: 'Windows PowerShell', icon: 'powershell', action: function () { Win.wm.open('terminal', { mode: 'ps', cwd: 'C:\\Users\\User' }); } },
+      { label: 'Python', icon: 'python', action: function () { Win.wm.open('python'); } },
+      { label: 'JavaScript', icon: 'js', action: function () { Win.wm.open('js'); } },
       { label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } },
       { label: '3D Driving Simulator', icon: 'game', action: function () { Win.wm.open('driving'); } },
       { label: 'Eaglercraft', icon: 'eaglercraft', action: function () { Win.wm.open('eaglercraft'); } },
@@ -382,6 +398,8 @@
       { label: 'Paint', icon: 'paint', color: '#b34a86', action: function () { Win.wm.open('paint'); } },
       { label: 'Calculator', icon: 'calc', color: '#2f6f4e', action: function () { Win.wm.open('calc'); } },
       { label: 'Command Prompt', icon: 'terminal', color: '#333333', action: function () { Win.wm.open('terminal', { mode: 'cmd', cwd: 'C:\\Users\\User' }); } },
+      { label: 'Python', icon: 'python', color: '#2867b2', action: function () { Win.wm.open('python'); } },
+      { label: 'JavaScript', icon: 'js', color: '#c99112', action: function () { Win.wm.open('js'); } },
       { label: 'Minesweeper', icon: 'mine', color: '#8a3a3a', action: function () { Win.wm.open('minesweeper'); } },
       { label: 'Settings', icon: 'settings', color: '#0078d7', action: function () { Win.wm.open('settings'); } },
       { label: 'Virtual PC', icon: 'vpc', color: '#2b6a86', action: function () { Win.wm.open('vpc'); } },
@@ -673,6 +691,8 @@
       { icon: 'ie', title: 'Launch Internet Explorer', action: function () { Win.wm.open('browser'); } },
       { icon: 'folder', title: 'Windows Explorer', action: function () { Win.wm.open('explorer', { path: 'C:\\' }); } },
       { icon: 'notepad', title: 'Notepad', action: function () { Win.wm.open('notepad'); } },
+      { icon: 'python', title: 'Python', action: function () { Win.wm.open('python'); } },
+      { icon: 'js', title: 'JavaScript', action: function () { Win.wm.open('js'); } },
       { icon: 'monitor', title: 'Show Desktop', action: showDesktop }
     ];
     items.forEach(function (it) {

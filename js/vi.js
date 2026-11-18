@@ -21,7 +21,13 @@
     firefox: { name: 'Firefox', icon: 'firefox' },
     runner: { name: 'Program Runner', icon: 'exe' },
     driving: { name: 'Driving Game', icon: 'game' },
-    eaglercraft: { name: 'Eaglercraft', icon: 'eaglercraft' }
+    eaglercraft: { name: 'Eaglercraft', icon: 'eaglercraft' },
+    python: { name: 'Python', icon: 'python-mac' },
+    js: { name: 'JS', icon: 'js-mac' }
+  };
+  const SEARCH_TERMS = {
+    python: 'py python3 repl code interpreter',
+    js: 'javascript node nodejs repl code interpreter'
   };
   const HIDDEN_APPS = { explorer: true };
 
@@ -65,6 +71,11 @@
     return String(id || '').replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
   }
   function iconFor(id) { return (Win.apps[id] && Win.apps[id].icon) || 'exe'; }
+  function matchesSearch(id, q) {
+    if (!q) return true;
+    const haystack = (labelFor(id) + ' ' + (SEARCH_TERMS[id] || '')).toLowerCase();
+    return haystack.indexOf(q.toLowerCase()) > -1;
+  }
   function closeOverlays() {
     const ids = ['vi-spotlight', 'vi-launchpad', 'vi-cc', 'vi-cal'];
     ids.forEach(function (id) { const n = document.getElementById(id); if (n) n.remove(); });
@@ -254,6 +265,8 @@
     { app: 'terminal', label: 'Terminal', icon: 'terminal-mac' },
     { app: 'paint', label: 'Canvas', icon: 'canvas' },
     { app: 'calc', label: 'Calculator', icon: 'calc-mac' },
+    { app: 'python', label: 'Python', icon: 'python-mac' },
+    { app: 'js', label: 'JS', icon: 'js-mac' },
     { app: 'settings', label: 'System Settings', icon: 'settings-mac' },
     { app: 'taskmgr', label: 'Activity Monitor', icon: 'activity' },
     { app: 'minesweeper', label: 'Mines', icon: 'mines-mac' },
@@ -329,8 +342,10 @@
       } catch (e) {}
     }
     if (!q) return out.slice(0, 14);
-    const lower = q.toLowerCase();
-    return out.filter(function (i) { return (i.name + ' ' + i.sub).toLowerCase().indexOf(lower) > -1; }).slice(0, 24);
+    return out.filter(function (i) {
+      return (i.name + ' ' + i.sub).toLowerCase().indexOf(q.toLowerCase()) > -1 ||
+        (i.kind === 'app' && matchesSearch(i.id, q));
+    }).slice(0, 24);
   }
 
   function runSpotlight(row) {
@@ -400,7 +415,7 @@
     function draw() {
       const q = input.value.trim().toLowerCase();
       grid.innerHTML = '';
-      ids.filter(function (id) { return !q || labelFor(id).toLowerCase().indexOf(q) > -1; }).forEach(function (id) {
+      ids.filter(function (id) { return matchesSearch(id, q); }).forEach(function (id) {
         const b = el('button', { class: 'vi-lp-app', type: 'button' });
         b.innerHTML = '<span class="vi-lp-ico">' + Win.icon(iconFor(id), 64) + '</span><span></span>';
         b.querySelector('span:last-child').textContent = labelFor(id);

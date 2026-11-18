@@ -481,6 +481,8 @@
           '<div class="set-group"><h3>' + Win.icon('help', 16) + ' Learn more</h3>' +
           '<div class="set-actions">' +
           '<button class="btn" type="button" data-open-app="help">Help Topics</button>' +
+          '<button class="btn" type="button" data-open-app="python">Python</button>' +
+          '<button class="btn" type="button" data-open-app="js">' + (Win.isMac ? 'JS' : 'JavaScript') + '</button>' +
           '<button class="btn" type="button" data-open-app="' + (Win.isMac ? 'surf' : 'browser') + '">' + (Win.isMac ? 'Surf' : 'Internet Explorer') + '</button>' +
           '<button class="btn" type="button" data-open-app="taskmgr">' + (Win.isMac ? 'Activity Monitor' : 'Task Manager') + '</button>' +
           '</div></div>';

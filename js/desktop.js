@@ -108,7 +108,9 @@
         files: 'files', finder: 'files', surf: 'surf', web: 'surf', internet: 'surf',
         notes: 'notepad', 'system settings': 'settings', 'system preferences': 'settings',
         'activity monitor': 'taskmgr', activity: 'taskmgr', canvas: 'paint',
-        calculator: 'calc', mines: 'minesweeper', 'virtual pc': 'vpc'
+        calculator: 'calc', mines: 'minesweeper', 'virtual pc': 'vpc',
+        python: 'python', py: 'python', python3: 'python', 'python 3': 'python',
+        js: 'js', javascript: 'js', node: 'js', nodejs: 'js'
       };
       if (map[lower]) {
         if (lower === 'recycle') return resolve(Win.wm.open('explorer', { path: '::recycle' }));
@@ -120,7 +122,7 @@
       const rest = parts.slice(1).join(' ').replace(/^"|"$/g, '');
       if (map[head] && rest) {
         const appId = map[head];
-        if (appId === 'notepad' || appId === 'paint') {
+        if (appId === 'notepad' || appId === 'paint' || appId === 'python' || appId === 'js') {
           if (Win.fs.exists(rest)) return resolve(Win.wm.open(appId, { path: Win.fs.norm(rest) }));
         }
         if (appId === 'browser') {
@@ -143,6 +145,8 @@
         { id: 'documents', label: 'Documents', icon: 'documents', open: function () { openPath('C:\\Users\\User\\Documents'); }, special: true },
         { id: 'surf', label: 'Surf', icon: 'surf', open: function () { Win.wm.open('surf'); }, special: true },
         { id: 'notes', label: 'Notes', icon: 'notes', open: function () { Win.wm.open('notepad'); }, special: true },
+        { id: 'python', label: 'Python', icon: 'python-mac', open: function () { Win.wm.open('python'); }, special: true },
+        { id: 'js', label: 'JS', icon: 'js-mac', open: function () { Win.wm.open('js'); }, special: true },
         { id: 'recycle', label: 'Trash', icon: recycleCount ? 'trash' : 'trash', open: function () { openPath('::recycle'); }, special: true }
       ];
     }
@@ -157,6 +161,8 @@
         { id: 'paint', label: 'Paint', icon: 'paint', open: function () { Win.wm.open('paint'); }, special: true },
         { id: 'minesweeper', label: 'Minesweeper', icon: 'mine', open: function () { Win.wm.open('minesweeper'); }, special: true },
           { id: 'vpc', label: 'Virtual PC', icon: 'vpc', open: function () { Win.wm.open('vpc'); }, special: true },
+        { id: 'python', label: 'Python', icon: 'python', open: function () { Win.wm.open('python'); }, special: true },
+        { id: 'js', label: 'JavaScript', icon: 'js', open: function () { Win.wm.open('js'); }, special: true },
         { id: 'recycle', label: 'Recycle Bin', icon: recycleCount ? 'recycle-full' : 'recycle', open: function () { openPath('::recycle'); }, special: true }
       ];
     }
@@ -169,6 +175,8 @@
       { id: 'paint', label: 'Paint', icon: 'paint', open: function () { Win.wm.open('paint'); }, special: true },
       { id: 'vpc', label: 'Virtual PC', icon: 'vpc', open: function () { Win.wm.open('vpc'); }, special: true },
       { id: 'minesweeper', label: 'Minesweeper', icon: 'mine', open: function () { Win.wm.open('minesweeper'); }, special: true },
+      { id: 'python', label: 'Python', icon: 'python', open: function () { Win.wm.open('python'); }, special: true },
+      { id: 'js', label: 'JavaScript', icon: 'js', open: function () { Win.wm.open('js'); }, special: true },
       { id: 'recycle', label: 'Recycle Bin', icon: recycleCount ? 'recycle-full' : 'recycle', open: function () { openPath('::recycle'); }, special: true },
       { id: 'help', label: 'Help', icon: 'help', open: function () { Win.wm.open('help'); }, special: true }
     ];
@@ -381,6 +389,8 @@
       { id: 'paint', label: mac ? 'Canvas' : 'Paint', icon: mac ? 'canvas' : 'paint' },
       { id: mac ? 'surf' : 'browser', label: mac ? 'Surf' : 'Internet Explorer', icon: mac ? 'surf' : 'ie' },
       { id: 'firefox', label: 'Mozilla Firefox', icon: 'firefox' },
+      { id: 'python', label: 'Python', icon: mac ? 'python-mac' : 'python' },
+      { id: 'js', label: 'JavaScript', icon: mac ? 'js-mac' : 'js' },
       { id: 'terminal', label: mac ? 'Terminal' : 'Command Prompt', icon: mac ? 'terminal-mac' : 'terminal' }
     ];
     Win.ui.dialog({
@@ -393,7 +403,7 @@
           b.addEventListener('click', function () {
             const app = b.dataset.app;
             try { close(true); } catch (e) {}
-            if (app === 'paint' || app === 'notepad') Win.wm.open(app, { path: Win.fs.norm(path) });
+            if (app === 'paint' || app === 'notepad' || app === 'python' || app === 'js') Win.wm.open(app, { path: Win.fs.norm(path) });
             else if (app === 'browser' || app === 'surf') Win.wm.open(app, { url: app === 'surf' ? 'vi://file/' + encodeURIComponent(path) : 'file://' + path });
             else if (app === 'terminal') {
               const parent = Win.fs.parentPath(path) || 'C:\\';

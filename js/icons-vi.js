@@ -85,7 +85,11 @@
     'list-view': '<g fill="currentColor"><rect x="5" y="7" width="4" height="4" rx="1"/><rect x="12" y="7.5" width="15" height="3" rx="1.5"/><rect x="5" y="14" width="4" height="4" rx="1"/><rect x="12" y="14.5" width="15" height="3" rx="1.5"/><rect x="5" y="21" width="4" height="4" rx="1"/><rect x="12" y="21.5" width="15" height="3" rx="1.5"/></g>',
     plus: '<path d="M16 6v20M6 16h20" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>',
     lock: '<rect x="7" y="14" width="18" height="14" rx="3" fill="currentColor"/><path d="M11 14v-3a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2.6"/>',
-    power: '<path d="M16 4v11" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M9 7.5a10 10 0 1 0 14 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>'
+    power: '<path d="M16 4v11" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M9 7.5a10 10 0 1 0 14 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>',
+
+    'python-mac': '<defs><linearGradient id="vi-py" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#73b8ef"/><stop offset="1" stop-color="#2867b2"/></linearGradient></defs><rect x="2" y="2" width="28" height="28" rx="7" fill="url(#vi-py)"/><rect x="2.6" y="2.6" width="26.8" height="26.8" rx="6.5" fill="none" stroke="#fff" stroke-opacity=".45"/><path d="M8 12c0-3.6 3.2-5.6 7-5.6 4.2 0 6.5 2 6.5 5.1 0 4.1-4.8 4.4-4.8 6.6 0 1.4 1.4 2.2 3.4 2.2 2.3 0 4.2-1.1 5.1-2.8" fill="none" stroke="#ffd86a" stroke-width="2.2" stroke-linecap="round"/><circle cx="21.5" cy="10.5" r="1.3" fill="#fff"/><text x="9.5" y="24" font-family="Avenir Next,Segoe UI,sans-serif" font-size="9.5" font-weight="700" fill="#fff">Py</text>',
+
+    'js-mac': '<defs><linearGradient id="vi-js" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe07a"/><stop offset="1" stop-color="#e6a51a"/></linearGradient></defs><rect x="2" y="2" width="28" height="28" rx="7" fill="url(#vi-js)"/><rect x="2.6" y="2.6" width="26.8" height="26.8" rx="6.5" fill="none" stroke="#fff" stroke-opacity=".5"/><text x="7" y="22" font-family="Avenir Next,Segoe UI,sans-serif" font-size="13" font-weight="800" fill="#4a3200">JS</text><path d="M20 9v14M26 9v14M20 16h6" stroke="#4a3200" stroke-width="2.2" stroke-linecap="round"/>'
   };
 
   // The mine icon above is built from two concatenated strings; keep the object valid.

@@ -84,7 +84,7 @@
     'del','erase','ren','rename','copy','xcopy','move','robocopy','type','more','tree','echo','set','path','prompt',
     'title','color','date','time','whoami','hostname','mem','systeminfo','ipconfig','ping','tracert','nslookup',
     'netstat','arp','route','net','tasklist','taskkill','sc','start','explorer','notepad','calc','mspaint','control',
-    'taskmgr','iexplore','firefox','msinfo32','winver','shutdown','msdos','dos','logoff','exit','pause','rem','attrib','assoc',
+    'taskmgr','iexplore','firefox','msinfo32','python','py','python3','js','javascript','node','nodejs','shutdown','msdos','dos','logoff','exit','pause','rem','attrib','assoc',
     'ftype','where','which','find','findstr','sort','fc','comp','chkdsk','sfc','dism','driverquery','wmic','reg',
     'gpupdate','gpresult','mode','chcp','cipher','compact','convert','diskpart','format','cleanmgr','msconfig',
     'regedit','eventvwr','services','devmgmt','diskmgmt','cmd','powershell','curl','bitsadmin','clip','title'
@@ -99,7 +99,8 @@
     'Get-EventLog','Get-WinEvent','Get-Item','Get-ItemProperty','Select-Object','Where-Object','Sort-Object',
     'Measure-Object','Format-Table','Format-List','Out-String','Out-File','Export-Csv','Import-Csv','ConvertTo-Json',
     'ConvertFrom-Json','Get-Alias','Set-Alias','Get-Variable','Get-Module','Get-ExecutionPolicy','Set-ExecutionPolicy',
-    'Get-Culture','Get-TimeZone','Get-Random','Get-Member','Get-WmiObject','Get-CimInstance','Write-Verbose'
+    'Get-Culture','Get-TimeZone','Get-Random','Get-Member','Get-WmiObject','Get-CimInstance','Write-Verbose',
+    'python','py','python3','js','javascript','node','nodejs'
   ];
 
   const PS_ALIASES = {
@@ -142,7 +143,7 @@
       HOMEDRIVE: 'C:',
       HOMEPATH: Win.isModern ? '\\Users\\User' : '\\',
       PATH: 'C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem',
-      PATHEXT: '.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.PS1',
+      PATHEXT: '.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.PY;.WSF;.WSH;.MSC;.PS1',
       PROMPT: '$P$G',
       CD: cwd
     };
@@ -482,7 +483,7 @@
     function cmdTasklist() {
       const lines = ['Image Name                     PID Session Name        Session#    Mem Usage',
         '========================= ======== ================ =========== ============'];
-      const procs = ['System', 'smss.exe', 'csrss.exe', 'winlogon.exe', 'services.exe', 'lsass.exe', 'svchost.exe', 'explorer.exe', 'cmd.exe', 'notepad.exe', 'iexplore.exe'];
+      const procs = ['System', 'smss.exe', 'csrss.exe', 'winlogon.exe', 'services.exe', 'lsass.exe', 'svchost.exe', 'explorer.exe', 'cmd.exe', 'python.exe', 'node.exe', 'notepad.exe', 'iexplore.exe'];
       procs.forEach(function (p, i) {
         lines.push(p.padEnd(28) + String(4 + i * 37).padStart(5) + ' Console             1    ' + (Math.floor(Math.random() * 20) + 4) + ' K');
       });
@@ -515,6 +516,10 @@
         'PATH       Displays or sets a search path for executable files.',
         'PING       Tests the connection to another TCP/IP computer.',
         'PROMPT     Changes the command prompt.',
+        'PYTHON     Opens the simulated Python REPL, or runs code / a .py file.',
+        'PY         Short alias for PYTHON.',
+        'JS        Opens the simulated JavaScript REPL, or runs code / a .js file.',
+        'NODE      Short alias for JS.',
         'RD         Removes a directory.',
         'REN        Renames a file or files.',
         'SET        Displays, sets, or removes cmd.exe environment variables.',
@@ -556,13 +561,15 @@
       const rest = args.join(' ');
       if (!rest) { Win.wm.open('explorer', { path: 'C:\\' }); return { lines: [] }; }
       // try app map
-      const map = { notepad:'notepad', mspaint:'paint', paint:'paint', calc:'calc', calculator:'calc', explorer:'explorer', cmd:'terminal', powershell:'terminal', iexplore:'browser', ie:'browser', firefox:'firefox', control:'settings', taskmgr:'taskmgr', winmine:'minesweeper', minesweeper:'minesweeper', vpc:'vpc' };
+      const map = { notepad:'notepad', mspaint:'paint', paint:'paint', calc:'calc', calculator:'calc', explorer:'explorer', cmd:'terminal', powershell:'terminal', iexplore:'browser', ie:'browser', firefox:'firefox', control:'settings', taskmgr:'taskmgr', winmine:'minesweeper', minesweeper:'minesweeper', vpc:'vpc', python:'python', py:'python', python3:'python', js:'js', javascript:'js', node:'js', nodejs:'js' };
       const head = args[0].toLowerCase();
       if (map[head]) {
         const app = map[head];
         if (app === 'terminal') {
           const ps = head === 'powershell' || args.indexOf('/?') === -1 && rest.toLowerCase().indexOf('powershell') > -1;
           Win.wm.open('terminal', { mode: ps ? 'ps' : 'cmd', cwd: cwd });
+        } else if ((app === 'python' || app === 'js') && args[1]) {
+          Win.wm.open(app, { path: normPath(args[1], cwd) });
         } else Win.wm.open(app);
         return { lines: [] };
       }
@@ -577,6 +584,35 @@
       const t = normPath(args[0], cwd);
       try { Win.shell.openFile(t); } catch (e) { return { lines: [e.message.split('\n')[0]], code: 1 }; }
       return { lines: [] };
+    }
+
+    const LANGS = {
+      py: { app: 'python', label: 'Python', ext: '.py' },
+      js: { app: 'js', label: 'JavaScript', ext: '.js' }
+    };
+    function runLanguageSource(kind, args) {
+      const spec = LANGS[kind];
+      if (!Win.langs || !Win.langs.runSource) {
+        return { lines: ['The ' + spec.label + ' simulation is not available.'], code: 1 };
+      }
+      if (!args.length) {
+        if (headless) return { lines: ['Type ' + spec.label + ' code, or open ' + spec.app + ' from the desktop.'] };
+        Win.wm.open(spec.app);
+        return { lines: [] };
+      }
+      let code = args.join(' ').trim();
+      const first = normPath(args[0], cwd);
+      const node = Win.fs.resolve(first);
+      if (node && node.type === 'file') {
+        const content = Win.fs.read(first);
+        if (content === null || content === undefined) return { lines: ['File not found: ' + args[0]], code: 1 };
+        code = content;
+      }
+      let text = '';
+      try { Win.langs.runSource(code, kind, function (s) { text += String(s == null ? '' : s); }); }
+      catch (e) { return { lines: [e.message || String(e)], code: 1 }; }
+      text = text.replace(/\r\n/g, '\n').replace(/\n$/, '');
+      return { lines: text ? text.split('\n') : [] };
     }
 
     // PowerShell object helpers
@@ -594,7 +630,7 @@
     }
 
     function psProcessList() {
-      const names = ['System','smss','csrss','winlogon','services','lsass','svchost','explorer','cmd','powershell','notepad','iexplore'];
+      const names = ['System','smss','csrss','winlogon','services','lsass','svchost','explorer','cmd','powershell','python','node','notepad','iexplore'];
       return names.map(function (n, i) {
         return { Handles: 100 + i * 40, NPM: (i % 3) + 1, PM: (i + 1) * 1200, WS: (i + 2) * 3400, Id: 4 + i * 37, ProcessName: n, __type: 'proc' };
       });
@@ -686,6 +722,8 @@
       const cmd = PS_ALIASES[cmdRaw.toLowerCase()] || cmdRaw;
       const cl = cmd.toLowerCase();
       const args = tokens.slice(1);
+      if (cl === 'python' || cl === 'py' || cl === 'python3') return runLanguageSource('py', args);
+      if (cl === 'js' || cl === 'javascript' || cl === 'node' || cl === 'nodejs') return runLanguageSource('js', args);
       // flags
       function getFlag(name) {
         const i = args.findIndex(function (a) { return a.toLowerCase() === name.toLowerCase() || a.toLowerCase().startsWith(name.toLowerCase() + ':'); });
@@ -924,11 +962,14 @@
         } else if (cl === 'start-process' || cl === 'saps' || cl === 'start') {
           const target = args.find(function (a) { return !a.startsWith('-'); });
           if (!target) { Win.wm.open('explorer', { path: 'C:\\' }); return { lines: [] }; }
-          const map = { notepad:'notepad', mspaint:'paint', calc:'calc', explorer:'explorer', iexplore:'browser', firefox:'firefox', control:'settings', taskmgr:'taskmgr', cmd:'terminal', powershell:'terminal' };
+          const map = { notepad:'notepad', mspaint:'paint', calc:'calc', explorer:'explorer', iexplore:'browser', firefox:'firefox', control:'settings', taskmgr:'taskmgr', cmd:'terminal', powershell:'terminal', python:'python', py:'python', python3:'python', js:'js', javascript:'js', node:'js', nodejs:'js' };
           const low = target.toLowerCase();
           if (map[low]) {
-            if (low === 'powershell' || low === 'cmd') Win.wm.open('terminal', { mode: low === 'powershell' ? 'ps' : 'cmd', cwd: cwd });
-            else Win.wm.open(map[low]);
+            const app = map[low];
+            const next = args.filter(function (a) { return !a.startsWith('-') && a !== target; })[0];
+            if (app === 'terminal') Win.wm.open('terminal', { mode: low === 'powershell' ? 'ps' : 'cmd', cwd: cwd });
+            else if ((app === 'python' || app === 'js') && next) Win.wm.open(app, { path: normPath(next, cwd) });
+            else Win.wm.open(app);
             return { lines: [] };
           }
           const t = normPath(target, cwd);
@@ -1093,6 +1134,7 @@
               'Copy-Item           Copies an item from one location to another.',
               'Move-Item           Moves an item from one location to another.',
               'Rename-Item         Renames an item in a Windows PowerShell provider namespace.',
+              'Start-Process       Starts a program, including python, py, js and node.',
               'Get-Process         Gets the processes that are running on the local computer.',
               'Get-Service         Gets the services on the computer.',
               'Get-Date            Gets the current date and time.',
@@ -1303,6 +1345,8 @@
         case 'iexplore': case 'ie': Win.wm.open('browser'); result = { lines: [] }; break;
         case 'firefox': Win.wm.open('firefox'); result = { lines: [] }; break;
         case 'msinfo32': Win.wm.open('help'); result = { lines: [] }; break;
+        case 'python': case 'py': case 'python3': result = runLanguageSource('py', args.slice(1)); break;
+        case 'js': case 'javascript': case 'node': case 'nodejs': result = runLanguageSource('js', args.slice(1)); break;
         case 'shutdown': {
           const mode = args.indexOf('/r') > -1 ? 'restart' : args.indexOf('/l') > -1 ? 'logoff' : 'shutdown';
           if (Win.boot) Win.boot.power(mode);
@@ -1335,8 +1379,8 @@
         case 'pause': result = { lines: ['Press any key to continue . . .'] }; break;
         case 'rem': result = { lines: [] }; break;
         case 'attrib': result = { lines: [args[1] ? ('A    ' + args[1]) : ''] }; break;
-        case 'assoc': result = { lines: ['.txt=txtfile', '.bat=batfile', '.cmd=cmdfile', '.ps1=Microsoft.PowerShellScript.1'] }; break;
-        case 'ftype': result = { lines: ['txtfile=notepad.exe %1', 'batfile="%1" %*'] }; break;
+        case 'assoc': result = { lines: ['.txt=txtfile', '.bat=batfile', '.cmd=cmdfile', '.ps1=Microsoft.PowerShellScript.1', '.py=pyfile', '.js=jsfile'] }; break;
+        case 'ftype': result = { lines: ['txtfile=notepad.exe %1', 'batfile="%1" %*', 'pyfile=python.exe %1', 'jsfile=js.exe %1'] }; break;
         case 'where': {
           const name = args[1] || args[0];
           const t = normPath(name, cwd);

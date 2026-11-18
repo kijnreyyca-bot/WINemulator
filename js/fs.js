@@ -99,6 +99,8 @@
   function appFor(path) {
     const ext = extName(path);
     if (IMAGE_EXT.indexOf(ext) > -1) return 'paint';
+    if (ext === 'py') return 'python';
+    if (ext === 'js') return 'js';
     if (TEXT_EXT.indexOf(ext) > -1) return 'notepad';
     if (ext === 'exe' || ext === 'com') {
       const base = (Win.fs.baseName(path) || '').toLowerCase();
@@ -112,6 +114,8 @@
       if (base === 'firefox.exe' || base === 'mozilla.exe') return 'firefox';
       if (base === 'msconfig.exe' || base === 'control.exe') return 'settings';
       if (base === 'minesweeper.exe' || base === 'winmine.exe') return 'minesweeper';
+      if (base === 'python.exe' || base === 'python3.exe') return 'python';
+      if (base === 'js.exe' || base === 'node.exe' || base === 'nodejs.exe') return 'js';
       return 'runner';
     }
     return null;
@@ -123,6 +127,8 @@
     if (entry.ext === 'exe' || entry.ext === 'com') return 'exe';
     if (entry.ext === 'bat' || entry.ext === 'cmd') return 'terminal';
     if (entry.ext === 'ps1') return 'powershell';
+    if (entry.ext === 'py') return 'python';
+    if (entry.ext === 'js') return 'js';
     if (entry.kind === 'text') return 'textfile';
     return 'file';
   }
@@ -134,6 +140,7 @@
     if (entry.ext === 'bat' || entry.ext === 'cmd') return 'Windows Command Script';
     if (entry.ext === 'ps1') return 'Windows PowerShell Script';
     if (entry.ext === 'py') return 'Python File';
+    if (entry.ext === 'js') return 'JavaScript File';
     if (entry.ext === 'reg') return 'Registry File';
     if (entry.ext === 'vbs') return 'VBScript File';
     if (entry.ext === 'ini' || entry.ext === 'sys' || entry.ext === 'inf') return 'Configuration File';
@@ -565,7 +572,7 @@
     sys32Dirs.forEach(function (d) {
       try { Win.fs.mkdir('C:\\Windows\\System32\\' + d, { parents: true, silent: true }); } catch (e) {}
     });
-    const sys32Files = ['cmd.exe', 'powershell.exe', 'notepad.exe', 'explorer.exe', 'calc.exe', 'taskmgr.exe', 'regedit.exe', 'msconfig.exe', 'mmc.exe', 'mspaint.exe', 'kernel32.dll', 'user32.dll', 'ntdll.dll', 'gdi32.dll', 'advapi32.dll', 'shell32.dll', 'ole32.dll', 'rpcrt4.dll', 'ws2_32.dll', 'msvcrt.dll', 'wininet.dll', 'urlmon.dll', 'shlwapi.dll', 'crypt32.dll', 'secur32.dll', 'netapi32.dll', 'iphlpapi.dll', 'dnsapi.dll', 'wship6.dll', 'imm32.dll', 'comctl32.dll', 'comdlg32.dll', 'version.dll', 'winmm.dll', 'setupapi.dll', 'cfgmgr32.dll', 'devmgr.dll', 'ntoskrnl.exe', 'hal.dll', 'smss.exe', 'csrss.exe', 'winlogon.exe', 'services.exe', 'lsass.exe', 'svchost.exe', 'spoolsv.exe', 'taskhost.exe', 'dwm.exe', 'conhost.exe', 'audiodg.exe', 'SearchIndexer.exe', 'WmiPrvSE.exe'];
+    const sys32Files = ['cmd.exe', 'powershell.exe', 'python.exe', 'python3.exe', 'js.exe', 'node.exe', 'notepad.exe', 'explorer.exe', 'calc.exe', 'taskmgr.exe', 'regedit.exe', 'msconfig.exe', 'mmc.exe', 'mspaint.exe', 'kernel32.dll', 'user32.dll', 'ntdll.dll', 'gdi32.dll', 'advapi32.dll', 'shell32.dll', 'ole32.dll', 'rpcrt4.dll', 'ws2_32.dll', 'msvcrt.dll', 'wininet.dll', 'urlmon.dll', 'shlwapi.dll', 'crypt32.dll', 'secur32.dll', 'netapi32.dll', 'iphlpapi.dll', 'dnsapi.dll', 'wship6.dll', 'imm32.dll', 'comctl32.dll', 'comdlg32.dll', 'version.dll', 'winmm.dll', 'setupapi.dll', 'cfgmgr32.dll', 'devmgr.dll', 'ntoskrnl.exe', 'hal.dll', 'smss.exe', 'csrss.exe', 'winlogon.exe', 'services.exe', 'lsass.exe', 'svchost.exe', 'spoolsv.exe', 'taskhost.exe', 'dwm.exe', 'conhost.exe', 'audiodg.exe', 'SearchIndexer.exe', 'WmiPrvSE.exe'];
     sys32Files.forEach(function (name) {
       const p = 'C:\\Windows\\System32\\' + name;
       if (!Win.fs.exists(p)) {
@@ -588,6 +595,47 @@
     }
   }
 
+  function ensureLanguageSamples() {
+    const samples = [
+      {
+        path: 'C:\\My Documents\\Hello.py', app: 'python',
+        content: [
+          '# Welcome to the WINemulator Python simulation',
+          'name = "world"',
+          'for i in range(3):',
+          '    print("Hello", name, i + 1)',
+          '',
+          'values = [1, 2, 3, 4]',
+          'print("total:", sum(values))',
+          ''
+        ].join('\r\n')
+      },
+      {
+        path: 'C:\\My Documents\\Hello.js', app: 'js',
+        content: [
+          '// Welcome to the WINemulator JavaScript simulation',
+          'const name = "world";',
+          'for (let i = 0; i < 3; i++) {',
+          '  console.log("Hello " + name + " " + (i + 1));',
+          '}',
+          '',
+          'const values = [1, 2, 3, 4];',
+          'let total = 0;',
+          'for (let i = 0; i < values.length; i++) {',
+          '  total += values[i];',
+          '}',
+          'console.log("total:", total);',
+          ''
+        ].join('\r\n')
+      }
+    ];
+    samples.forEach(function (s) {
+      if (!Win.fs.exists(s.path)) {
+        try { Win.fs.write(s.path, s.content, { kind: 'text', app: s.app, silent: true }); } catch (e) {}
+      }
+    });
+  }
+
   function init() {
     let ok = false;
     try {
@@ -604,6 +652,7 @@
       if (!Array.isArray(recycle)) recycle = [];
     } catch (e) { recycle = []; }
     ensureSevenFolders();
+    ensureLanguageSamples();
     persist();
     document.dispatchEvent(new CustomEvent('fs:change', { detail: { rev: rev } }));
   }

@@ -1004,9 +1004,23 @@
         });
         body.querySelector('.repl-copy').addEventListener('click', function () {
           const text = output.textContent;
+          function legacyCopy() {
+            try {
+              const ta = document.createElement('textarea');
+              ta.value = text;
+              ta.setAttribute('readonly', '');
+              ta.style.position = 'fixed';
+              ta.style.left = '-9999px';
+              document.body.appendChild(ta);
+              ta.select();
+              const ok = document.execCommand('copy');
+              ta.remove();
+              setState(ok ? 'Output copied' : 'Copy unavailable');
+            } catch (e) { setState('Copy unavailable'); }
+          }
           if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(text).then(function () { setState('Output copied'); }, function () { setState('Copy unavailable'); });
-          } else setState('Copy unavailable');
+            navigator.clipboard.writeText(text).then(function () { setState('Output copied'); }, legacyCopy);
+          } else legacyCopy();
         });
         editor.addEventListener('input', function () { setDirty(true); updateLabels(); });
         editor.addEventListener('click', updateLabels);

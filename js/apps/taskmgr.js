@@ -390,7 +390,7 @@
           { label: 'Task Manager Help', icon: 'help', action: function () { Win.wm.open('help'); } },
           { separator: true },
           { label: 'About Task Manager', icon: 'taskmgr', action: function () {
-            Win.ui.alert('WINemulator Task Manager\nVersion 4.10.2222 (Web Edition)\n\nMonitor running tasks, end programs and watch a simulated performance graph.\n\nAll measurements are generated locally.', 'About Task Manager', 'taskmgr');
+            Win.ui.alert('WINemulator Task Manager\nVersion ' + Win.osVersion + ' (Web Edition)\n\nMonitor running tasks, end programs and watch a simulated performance graph.\n\nAll measurements are generated locally.', 'About Task Manager', 'taskmgr');
           } }
         ];
       }

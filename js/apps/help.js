@@ -6,6 +6,24 @@
   const WELCOME_DOC = 'C:\\My Documents\\Welcome.txt';
   const README_DOC = 'C:\\Windows\\Desktop\\Read Me.txt';
 
+  /* Console app is called "Command Prompt" on NT systems, "MS-DOS Prompt" on 9x. */
+  function termName() { return (Win.is98 || Win.isDOS) ? 'MS-DOS Prompt' : 'Command Prompt'; }
+
+  const OS_LIST = [
+    { id: '98', name: 'Windows 98', icon: 'flag' },
+    { id: '2k', name: 'Windows 2000', icon: 'flag' },
+    { id: 'xp', name: 'Windows XP', icon: 'windows' },
+    { id: '7', name: 'Windows 7', icon: 'orb' },
+    { id: '9', name: 'Windows 9', icon: 'win10' },
+    { id: 'dos', name: 'MS-DOS', icon: 'terminal' }
+  ];
+  /* One "Switch to ..." button for every desktop except the one we are in. */
+  function osSwitchButtons() {
+    return OS_LIST.filter(function (o) { return o.id !== Win.os; }).map(function (o) {
+      return actionBtn('os-' + o.id, o.icon, 'Switch to ' + o.name);
+    }).join('');
+  }
+
   /* ------------------------------------------------------------- fragments */
   function topicLink(id, label) {
     return '<a href="#" data-topic="' + id + '">' + label + '</a>';
@@ -32,16 +50,16 @@
   function pageWelcome() {
     return '<div class="hlp-hero">' +
       '<span class="hlp-flag">' + Win.icon('flag', 72) + '</span>' +
-      '<div><h1>Welcome to WINemulator ' + (Win.isXP ? 'XP' : '98') + '</h1>' +
-      '<p>A complete Windows-style desktop that boots in your browser. No installs, no setup, no waiting.</p></div>' +
+      '<div><h1>Welcome to WINemulator ' + Win.osShort + '</h1>' +
+      '<p>You are running <b>' + Win.osNameFull + '</b> — a complete Windows-style desktop that boots in your browser. No installs, no setup, no waiting.</p></div>' +
       '</div>' +
-      '<p class="hlp-lead">This copy is yours. Files, drawings, settings and even the wallpaper are saved locally in this browser, so everything is right where you left it next time. You can switch between the Windows 98 and Windows XP desktops whenever you like.</p>' +
+      '<p class="hlp-lead">This copy is yours. Files, drawings, settings and even the wallpaper are saved locally in this browser, so everything is right where you left it next time. You can switch between the Windows 98, Windows 2000, Windows XP, Windows 7 and Windows 9 desktops whenever you like.</p>' +
       '<div class="hlp-cards">' +
       topicCard('tour', 'computer', 'Quick Tour', 'A two-minute walk through the desktop.') +
       topicCard('programs', 'programs', 'Programs', 'Notepad, Paint, Minesweeper and friends.') +
       topicCard('files', 'folder', 'Files & Storage', 'Where things are saved and how to find them.') +
       topicCard('virtualpc', 'vpc', 'Virtual PC', 'Boot a real x86 disk image in the browser.') +
-      topicCard('oses', 'windows', 'Windows 98 & XP', 'Switch desktops and change the Luna theme.') +
+      topicCard('oses', 'windows', 'Windows Editions', 'Switch desktops and compare every version.') +
       topicCard('offline', 'network', 'Offline & Privacy', 'How everything keeps working without the web.') +
       '</div>' +
       '<div class="hlp-note"><b>First time here?</b> Start with the Quick Tour, or just double-click an icon on the desktop. Nothing you do here can break the real computer.</div>' +
@@ -57,7 +75,7 @@
       '<li>Play ' + appLink('minesweeper', 'Minesweeper') + ' on Beginner, Intermediate or Expert.</li>' +
       '<li>Boot a genuine x86 boot sector in ' + appLink('vpc', 'Virtual PC') + ' — no disk image needed for the demo.</li>' +
       '<li>Browse the local web with ' + appLink('browser', 'Internet Explorer') + ' — try <code>winemulator://home</code>.</li>' +
-      '<li>Type <code>HELP</code> in the ' + appLink('terminal', 'MS-DOS Prompt') + ' for a full command list.</li>' +
+      '<li>Type <code>HELP</code> in the ' + appLink('terminal', termName()) + ' for a full command list.</li>' +
       '<li>Change the theme, wallpaper, sounds or operating system in the ' + appLink('settings', 'Control Panel') + '.</li>' +
       '</ul>' +
       '<div class="hlp-footnote">WINemulator ' + (Win.version || '1.0.0') + ' &middot; Build ' + (Win.build || 'web-2026') +
@@ -72,7 +90,9 @@
       '<p>Click <b>' + (Win.isXP ? 'start' : 'Start') + '</b> in the bottom-left corner, or press <code>Ctrl+Esc</code>. ' +
       (Win.isXP
         ? 'The XP Start menu is split into two columns: programs on the left, and My Documents, My Computer, Help and Run on the right. All Programs opens the full list, while Log Off and Turn Off Computer sit at the bottom.'
-        : 'Programs, Documents, Settings, Find, Help and Run all live there.') +
+        : (Win.isSeven || Win.isNine)
+          ? 'The Start menu opens with a searchable program list, plus quick links to Documents, Computer, Control Panel and the shutdown options.'
+          : 'Programs, Documents, Settings, Find, Help and Run all live there.') +
       ' The bottom bar is the taskbar: every open window gets a button, and the tray on the right holds the clock, volume and network icons.</p>' +
       '<h2>3. Windows behave like windows</h2>' +
       '<ul>' +
@@ -101,7 +121,7 @@
       appCard('notepad', 'notepad', 'Notepad', 'Plain-text editing. Opens .txt files from the virtual drive.') +
       appCard('paint', 'paint', 'Paint', 'Draw with pencils, brushes and shapes, then save as an image.') +
       appCard('calc', 'calc', 'Calculator', 'A standard four-function calculator with memory keys.') +
-      appCard('terminal', 'terminal', 'MS-DOS Prompt', 'A working command line for the virtual C: drive.') +
+      appCard('terminal', 'terminal', termName(), 'A working command line for the virtual C: drive.') +
       appCard('explorer', 'folder', 'Windows Explorer', 'Browse, organize, copy and delete files and folders.') +
       appCard('browser', 'ie', 'Internet Explorer', 'A retro browser with a small local web.') +
       appCard('firefox', 'firefox', 'Mozilla Firefox', 'A second browser shell that opens real web pages.') +
@@ -112,7 +132,7 @@
       appCard('help', 'help', 'Help', 'This guide. Press F1 from almost anywhere.') +
       '</div>' +
       '<h2>Handy commands</h2>' +
-      '<p>Open the ' + appLink('terminal', 'MS-DOS Prompt') + ' and try:</p>' +
+      '<p>Open the ' + appLink('terminal', termName()) + ' and try:</p>' +
       '<ul>' +
       '<li><code>HELP</code> — list every command.</li>' +
       '<li><code>DIR</code> — list the current folder.</li>' +
@@ -127,7 +147,7 @@
       '<div class="hlp-actions">' +
       appBtn('minesweeper', 'mine', 'Play Minesweeper') +
       appBtn('browser', 'ie', 'Open Internet Explorer') +
-      appBtn('terminal', 'terminal', 'Open MS-DOS Prompt') +
+      appBtn('terminal', 'terminal', 'Open ' + termName()) +
       '</div>';
   }
 
@@ -163,19 +183,19 @@
   }
 
   function pageAppearance() {
-    const themes = Win.isXP
-      ? '<b>Windows XP Blue</b>, <b>Olive Green</b> and <b>Silver</b>'
-      : 'the classic Windows look, a softer <b>Platinum</b> theme and a dark <b>Midnight</b> theme';
+    let themes;
+    if (Win.isNine) themes = '<b>Windows Blue</b>, <b>Mint</b> and <b>Violet</b>';
+    else if (Win.isSeven) themes = '<b>Aero Glass</b>, <b>Aero Frost</b> and <b>Aero Dusk</b>';
+    else if (Win.isXP) themes = '<b>Windows XP Blue</b>, <b>Olive Green</b> and <b>Silver</b>';
+    else if (Win.is2000) themes = '<b>Windows Classic</b>';
+    else themes = 'the classic Windows look, a softer <b>Platinum</b> theme and a dark <b>Midnight</b> theme';
     return '<h1>Make It Yours</h1><p class="hlp-lead">The Control Panel changes the desktop in real time. Everything is remembered for next time.</p>' +
       '<h2>Operating system</h2>' +
-      '<p>WINemulator includes both a Windows 98 desktop and a Windows XP Luna desktop. Open the OS selector from the Start menu, the desktop right-click menu, or the Appearance tab. Switching reloads the page but keeps your files and settings.</p>' +
-      '<div class="hlp-actions">' +
-      (Win.isXP
-        ? actionBtn('os-98', 'flag', 'Switch to Windows 98')
-        : actionBtn('os-xp', 'windows', 'Switch to Windows XP')) +
-      '</div>' +
+      '<p>WINemulator can run five Windows desktops — Windows 98 Second Edition, Windows 2000 Professional, Windows XP Professional, Windows 7 Ultimate and Windows 9 Pro — plus a standalone MS-DOS 6.22 shell. Open the OS selector from the Start menu, the desktop right-click menu, or the Appearance tab. Switching reloads the page but keeps your files and settings.</p>' +
+      '<p>This session is running <b>' + Win.osNameFull + '</b>.</p>' +
+      '<div class="hlp-actions">' + osSwitchButtons() + '</div>' +
       '<h2>Appearance</h2>' +
-      '<p>Choose between ' + themes + '. You can also turn window animations on or off, enable CRT scanlines, switch to a 24-hour clock and show a frame-rate meter. XP mode also offers a full-screen Bliss-style wallpaper and rounded Luna window chrome.</p>' +
+      '<p>Available themes: ' + themes + '. You can also turn window animations on or off, enable CRT scanlines, switch to a 24-hour clock and show a frame-rate meter. Each desktop has its own window chrome, icon set, boot sequence and logon screen.</p>' +
       '<div class="hlp-actions">' + appBtn('settings', 'monitor', 'Open Appearance', 'appearance') + '</div>' +
       '<h2>Background</h2>' +
       '<p>Pick Teal, Bliss, Clouds, Azure, Sunset, Graphite or Grid — all drawn with CSS gradients or local SVG, so there are no images to download. Choose <b>Solid Color</b> to pick any desktop color.</p>' +
@@ -331,35 +351,57 @@
       '</ul>' +
       '<div class="hlp-actions">' +
       appBtn('vpc', 'vpc', 'Open Virtual PC') +
-      actionBtn('oses', 'windows', 'Compare the two desktops') +
+      actionBtn('oses', 'windows', 'Compare Windows desktops') +
       '</div>' +
       '<div class="hlp-footnote">v86 is an independent open-source project by Fabian Hemmer and contributors, distributed under the BSD 2-Clause licence. See <code>vendor/v86/LICENSE</code>.</div>';
   }
 
   function pageOS() {
-    return '<h1>Windows 98 &amp; XP</h1><p class="hlp-lead">One project, two complete desktops. Pick the one that matches your mood.</p>' +
+    function osSection(title, items) {
+      return '<h2>' + title + '</h2><ul>' + items.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>';
+    }
+    return '<h1>Windows Editions</h1><p class="hlp-lead">One project, five complete Windows desktops. Pick the one that matches your mood.</p>' +
       '<h2>Choosing a desktop</h2>' +
-      '<p><code>index.html</code> is the operating-system selector. It remembers your choice in local storage and opens the matching shell. In the desktop itself you can switch at any time from the Start menu, the desktop right-click menu, or ' + appLink('settings', 'Control Panel') + ' → <b>Appearance</b>. The page reloads, but files and settings are shared between both desktops.</p>' +
-      '<h2>Windows 98</h2>' +
-      '<ul>' +
-      '<li>Teal desktop, grey window chrome and the classic single-column Start menu.</li>' +
-      '<li>Original 98-style icon set, BIOS text, boot splash, logon and "safe to turn off" screen.</li>' +
-      '<li>Themes: Windows Classic, Platinum and Midnight.</li>' +
-      '<li>Shut down, restart, log off or restart in MS-DOS mode.</li>' +
-      '</ul>' +
-      '<h2>Windows XP</h2>' +
-      '<ul>' +
-      '<li>Luna shell with the Bliss-style wallpaper, rounded blue windows and gradient title bars.</li>' +
-      '<li>Two-column XP Start menu with All Programs, My Documents, My Computer, Help and Run.</li>' +
-      '<li>XP boot splash, welcome/login screen, taskbar and Turn Off Computer dialog.</li>' +
-      '<li>Original XP-style icon recreations at a slightly larger desktop size.</li>' +
-      '<li>Themes: Windows XP Blue, Olive Green and Silver.</li>' +
-      '</ul>' +
+      '<p><code>index.html</code> is the operating-system selector. It remembers your choice in local storage and opens the matching shell. In the desktop itself you can switch at any time from the Start menu, the desktop right-click menu, or ' + appLink('settings', 'Control Panel') + ' → <b>Appearance</b>. The page reloads, but files and settings are shared between every desktop.</p>' +
+      osSection('Windows 98 Second Edition', [
+        'Teal desktop, grey window chrome and the classic single-column Start menu.',
+        'Original 98-style icon set, BIOS text, boot splash, logon and "safe to turn off" screen.',
+        'Themes: Windows Classic, Platinum and Midnight.',
+        'Shut down, restart, log off or restart in MS-DOS mode.'
+      ]) +
+      osSection('Windows 2000 Professional', [
+        'Classic NT desktop with the blue taskbar and grey window chrome.',
+        'Windows 2000 boot splash, logon screen and System information.',
+        'Command Prompt and the shared file system.',
+        'Theme: Windows Classic.'
+      ]) +
+      osSection('Windows XP Professional', [
+        'Luna shell with the Bliss-style wallpaper, rounded blue windows and gradient title bars.',
+        'Two-column XP Start menu with All Programs, My Documents, My Computer, Help and Run.',
+        'XP boot splash, welcome/logon screen, taskbar and Turn Off Computer dialog.',
+        'Original XP-style icon recreations at a slightly larger desktop size.',
+        'Themes: Windows XP Blue, Olive Green and Silver.'
+      ]) +
+      osSection('Windows 7 Ultimate', [
+        'Aero glass with the Superbar, orb Start menu and live wallpaper.',
+        'Windows 7 boot animation and welcome screen.',
+        'Themes: Aero Glass, Aero Frost and Aero Dusk.',
+        'Command Prompt and Windows PowerShell 2.0.'
+      ]) +
+      osSection('Windows 9 Pro', [
+        'Flat, square desktop with a tile Start menu and accent-coloured taskbar.',
+        'Windows 9 boot animation and modern logon screen.',
+        'Themes: Windows Blue, Mint and Violet.',
+        'Modern Notepad with zoom, dark mode and status bar.'
+      ]) +
+      osSection('MS-DOS 6.22', [
+        'A pure command-line desktop with its own boot banner.',
+        'File manager via EXPLORER and the shared file system.',
+        'Launch any Windows version with WIN 98, WIN 2000, WIN XP, WIN 7 or WIN 9.'
+      ]) +
       '<p class="hlp-note">Every icon, wallpaper and sound is an original recreation made for this project. No Microsoft icon files or Windows installation files are included.</p>' +
       '<div class="hlp-actions">' +
-      (Win.isXP
-        ? actionBtn('os-98', 'flag', 'Switch to Windows 98')
-        : actionBtn('os-xp', 'windows', 'Switch to Windows XP')) +
+      osSwitchButtons() +
       actionBtn('appearance', 'monitor', 'Theme settings') +
       '</div>';
   }
@@ -370,11 +412,12 @@
       '<span class="hlp-flag">' + Win.icon('flag', 64) + '</span>' +
       '<div><h1>About WINemulator</h1><p>A tribute to the desktop that made computers feel friendly.</p></div>' +
       '</div>' +
-      '<p class="hlp-lead">WINemulator is a self-contained Windows 98 and Windows XP desktop environment written in plain HTML, CSS and JavaScript. It is a simulation, not a real operating system, and it is not affiliated with Microsoft.</p>' +
+      '<p class="hlp-lead">WINemulator is a self-contained Windows 98, Windows 2000, Windows XP, Windows 7 and Windows 9 desktop environment written in plain HTML, CSS and JavaScript. It is a simulation, not a real operating system, and it is not affiliated with Microsoft.</p>' +
       '<h2>Version</h2>' +
       '<table class="hlp-kbd"><tr><th>Item</th><th>Value</th></tr>' +
-      '<tr><td>Edition</td><td>WINemulator ' + (Win.isXP ? 'XP Professional' : '98 Second Edition') + ' (Web)</td></tr>' +
-      '<tr><td>Version</td><td>' + U.escapeHtml(Win.version || '1.0.0') + '</td></tr>' +
+      '<tr><td>Edition</td><td>' + U.escapeHtml(Win.osNameFull) + ' (Web)</td></tr>' +
+      '<tr><td>Windows version</td><td>' + U.escapeHtml(Win.osVersion) + '</td></tr>' +
+      '<tr><td>WINemulator</td><td>' + U.escapeHtml(Win.version || '1.0.0') + '</td></tr>' +
       '<tr><td>Build</td><td>' + U.escapeHtml(Win.build || 'web-2026') + '</td></tr>' +
       '<tr><td>Engine</td><td>JavaScript, HTML and CSS — no frameworks</td></tr>' +
       '<tr><td>Display</td><td>' + U.escapeHtml(si.viewport || (innerWidth + '×' + innerHeight)) + ' at ' + (si.dpr || 1) + 'x</td></tr>' +
@@ -392,7 +435,7 @@
       appBtn('settings', 'info', 'System information', 'about') +
       appBtn('taskmgr', 'taskmgr', 'Task Manager') +
       '</div>' +
-      '<div class="hlp-footnote">Microsoft, Windows, Windows 98 and Windows XP are trademarks of Microsoft Corporation. This project is an independent, non-commercial homage.</div>';
+      '<div class="hlp-footnote">Microsoft, Windows, Windows 98, Windows 2000, Windows XP, Windows 7 and Windows 9 are trademarks of Microsoft Corporation. This project is an independent, non-commercial homage.</div>';
   }
 
   /* ---------------------------------------------------------------- topics */
@@ -401,7 +444,7 @@
     { id: 'tour', title: 'Quick Tour', group: 'Getting started', icon: 'computer', keywords: 'guide basics desktop start taskbar windows', page: pageTour },
     { id: 'programs', title: 'Programs', group: 'Using Windows', icon: 'programs', keywords: 'apps notepad paint calculator dos explorer browser minesweeper task manager', page: pagePrograms },
     { id: 'virtualpc', title: 'Virtual PC', group: 'Using Windows', icon: 'vpc', keywords: 'v86 x86 emulator disk image iso floppy boot dos linux windows xp', page: pageVirtualPC },
-    { id: 'oses', title: 'Windows 98 & XP', group: 'Using Windows', icon: 'windows', keywords: 'switch operating system luna bliss xp 98 selector theme os', page: pageOS },
+    { id: 'oses', title: 'Windows Editions', group: 'Using Windows', icon: 'windows', keywords: 'switch operating system luna aero bliss xp 98 2000 7 9 selector theme os', page: pageOS },
     { id: 'files', title: 'Files & Storage', group: 'Using Windows', icon: 'folder', keywords: 'drive folders save open recycle bin backup explorer', page: pageFiles },
     { id: 'appearance', title: 'Make It Yours', group: 'Using Windows', icon: 'monitor', keywords: 'theme wallpaper background sound volume settings control panel', page: pageAppearance },
     { id: 'shortcuts', title: 'Keyboard & Mouse', group: 'Reference', icon: 'keyboard', keywords: 'hotkeys keys mouse clicking drag double click', page: pageShortcuts },
@@ -683,10 +726,8 @@
           printTopic();
         } else if (action === 'export') {
           exportTopic();
-        } else if (action === 'os-98') {
-          if (Win.switchOS) Win.switchOS('98');
-        } else if (action === 'os-xp') {
-          if (Win.switchOS) Win.switchOS('xp');
+        } else if (action === 'os-98' || action === 'os-2k' || action === 'os-xp' || action === 'os-7' || action === 'os-9' || action === 'os-dos') {
+          if (Win.switchOS) Win.switchOS(action.slice(3));
         }
       }
 
@@ -776,7 +817,7 @@
             { label: 'Keyboard & Mouse', icon: 'keyboard', action: function () { navigate('shortcuts'); } },
             { separator: true },
             { label: 'About WINemulator Help', icon: 'info', action: function () {
-              Win.ui.alert('WINemulator Help\nVersion 4.10.2222 (Web Edition)\n\nA local guide to the desktop, its programs, files, shortcuts and settings.\n\nTip: press F1 at any time to open Help.', 'About Help', 'help');
+              Win.ui.alert('WINemulator Help\n' + Win.osNameFull + ' · Help version ' + (Win.version || '1.0.0') + '\n\nA local guide to the desktop, its programs, files, shortcuts and settings.\n\nTip: press F1 at any time to open Help.', 'About Help', 'help');
             } },
             { label: 'About WINemulator', icon: 'flag', action: function () { navigate('about'); } }
           ]

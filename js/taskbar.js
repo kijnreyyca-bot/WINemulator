@@ -105,7 +105,7 @@
       { label: 'Notepad', icon: 'notepad', action: function () { Win.wm.open('notepad'); } },
       { label: 'Paint', icon: 'paint', action: function () { Win.wm.open('paint'); } },
       { label: 'Calculator', icon: 'calc', action: function () { Win.wm.open('calc'); } },
-      { label: 'MS-DOS Prompt', icon: 'terminal', action: function () { Win.wm.open('terminal'); } },
+      { label: (Win.isNT ? 'Command Prompt' : 'MS-DOS Prompt'), icon: 'terminal', action: function () { Win.wm.open('terminal'); } },
       { separator: true },
       { label: 'Games', separator: false },
       { label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } },
@@ -154,7 +154,7 @@
       { label: 'Notepad', icon: 'notepad', action: function () { Win.wm.open('notepad'); } },
       { label: 'Paint', icon: 'paint', action: function () { Win.wm.open('paint'); } },
       { label: 'Calculator', icon: 'calc', action: function () { Win.wm.open('calc'); } },
-      { label: 'MS-DOS Prompt', icon: 'terminal', action: function () { Win.wm.open('terminal'); } },
+      { label: (Win.isNT ? 'Command Prompt' : 'MS-DOS Prompt'), icon: 'terminal', action: function () { Win.wm.open('terminal'); } },
       { separator: true },
       { label: 'Games', separator: false },
       { label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } },
@@ -196,7 +196,7 @@
     left.appendChild(startItem({ label: 'Notepad', icon: 'notepad', action: function () { Win.wm.open('notepad'); } }));
     left.appendChild(startItem({ label: 'Paint', icon: 'paint', action: function () { Win.wm.open('paint'); } }));
     left.appendChild(startItem({ label: 'Calculator', icon: 'calc', action: function () { Win.wm.open('calc'); } }));
-    left.appendChild(startItem({ label: 'MS-DOS Prompt', icon: 'terminal', action: function () { Win.wm.open('terminal'); } }));
+    left.appendChild(startItem({ label: (Win.isNT ? 'Command Prompt' : 'MS-DOS Prompt'), icon: 'terminal', action: function () { Win.wm.open('terminal'); } }));
     left.appendChild(startItem({ label: 'Minesweeper', icon: 'mine', action: function () { Win.wm.open('minesweeper'); } }));
     left.appendChild(startItem({ label: 'Virtual PC', icon: 'vpc', action: function () { Win.wm.open('vpc'); } }));
     left.appendChild(startItem({ label: 'Control Panel', icon: 'settings', action: function () { Win.wm.open('settings'); } }));
@@ -214,7 +214,7 @@
     right.appendChild(startItem({ label: 'Search', icon: 'search', action: findDialog }));
     right.appendChild(startItem({ label: 'Run...', icon: 'run', action: function () { Win.ui.runDialog(); } }));
     right.appendChild(el('div', { class: 'xp-sm-sep' }));
-    right.appendChild(startItem({ label: 'Switch to Windows 98', icon: 'windows', action: function () { if (Win.showOSChooser) Win.showOSChooser(); } }));
+    right.appendChild(startItem({ label: 'Switch Operating System', icon: 'windows', action: function () { if (Win.showOSChooser) Win.showOSChooser(); } }));
 
     const foot = el('div', { class: 'xp-sm-footer' });
     const logoffBtn = el('button', { class: 'xp-sm-foot-btn', type: 'button', html: Win.icon('logoff', 22) + '<span>Log Off</span>' });

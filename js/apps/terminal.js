@@ -115,8 +115,8 @@
   };
 
   Win.apps.terminal = {
-    name: (Win.isSeven || Win.isNine || Win.is2000) ? 'Command Prompt' : 'MS-DOS Prompt',
-    title: (Win.isSeven || Win.isNine || Win.is2000) ? 'Command Prompt' : 'MS-DOS Prompt',
+    name: (Win.is98 || Win.isDOS) ? 'MS-DOS Prompt' : 'Command Prompt',
+    title: (Win.is98 || Win.isDOS) ? 'MS-DOS Prompt' : 'Command Prompt',
     icon: 'terminal',
     width: 780, height: 480, minWidth: 420, minHeight: 240,
     mount: function (body, ctx) {
@@ -161,7 +161,7 @@
     function setMode(m) {
       mode = m;
       screen.classList.toggle('term-ps', mode === 'ps');
-      ctx.setTitle(mode === 'ps' ? 'Windows PowerShell' : ((Win.isSeven || Win.isNine || Win.is2000) ? 'Command Prompt' : 'MS-DOS Prompt'));
+      ctx.setTitle(mode === 'ps' ? 'Windows PowerShell' : ((Win.is98 || Win.isDOS) ? 'MS-DOS Prompt' : 'Command Prompt'));
       ctx.setIcon(mode === 'ps' ? 'powershell' : 'terminal');
       setPrompt();
     }
@@ -224,6 +224,12 @@
       if (Win.isModern) {
         printLine('Microsoft Windows [Version ' + Win.osVersion + ']', 'term-dim');
         printLine('(c) Microsoft Corporation. All rights reserved.', 'term-dim');
+      } else if (Win.isXP) {
+        printLine('Microsoft Windows XP [Version ' + Win.osVersion + ']', 'term-dim');
+        printLine('(c) Microsoft Corporation. All rights reserved.', 'term-dim');
+      } else if (Win.isDOS) {
+        printLine('MS-DOS Version 6.22', 'term-dim');
+        printLine('   (C)Copyright Microsoft Corp 1981-1998.', 'term-dim');
       } else {
         printLine('Microsoft(R) Windows 98', 'term-dim');
         printLine('   (C)Copyright Microsoft Corp 1981-1998.', 'term-dim');
@@ -404,9 +410,10 @@
     }
 
     function cmdVer() {
+      if (Win.isDOS) return { lines: ['MS-DOS Version 6.22'] };
+      if (Win.isXP) return { lines: ['Microsoft Windows XP [Version ' + Win.osVersion + ']'] };
       if (Win.isModern) return { lines: ['Microsoft Windows [Version ' + Win.osVersion + ']'] };
-      if (Win.isXP) return { lines: ['Microsoft Windows XP [Version 5.1.2600]'] };
-      return { lines: ['Windows 98 [Version 4.10.2222]'] };
+      return { lines: [Win.osName + ' [Version ' + Win.osVersion + ']'] };
     }
 
     function cmdSysteminfo() {

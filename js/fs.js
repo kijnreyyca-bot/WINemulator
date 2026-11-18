@@ -419,12 +419,12 @@
       x.fillStyle = 'rgba(0,0,0,.55)'; x.fillRect(20, 238, 286, 58);
       x.strokeStyle = '#7fd06b'; x.lineWidth = 2; x.strokeRect(20, 238, 286, 58);
       x.fillStyle = '#7fd06b'; x.font = 'bold 22px Consolas, monospace';
-      x.fillText('WINemulator 98', 36, 264);
+      x.fillText('WINemulator ' + Win.osShort, 36, 264);
       x.fillStyle = '#b9f0c6'; x.font = '12px Consolas, monospace';
       x.fillText('480 x 320  ·  Paint sample', 36, 284);
       return c.toDataURL('image/png');
     } catch (e) {
-      return 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320"><rect width="480" height="320" fill="#0a2a4a"/><text x="24" y="160" fill="#7fd06b" font-family="monospace" font-size="24">WINemulator 98</text></svg>');
+      return 'data:image/svg+xml;base64,' + btoa('<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320"><rect width="480" height="320" fill="#0a2a4a"/><text x="24" y="160" fill="#7fd06b" font-family="monospace" font-size="24">WINemulator ' + Win.osShort + '</text></svg>');
     }
   }
 
@@ -437,7 +437,7 @@
 
     const welcome = [
       '========================================',
-      '        WELCOME TO WINEMULATOR 98',
+      '        WELCOME TO WINEMULATOR ' + Win.osShort.toUpperCase(),
       '========================================',
       '',
       'You are running a complete Windows-style desktop',
@@ -504,7 +504,7 @@
     ].join('\r\n');
 
     const readme = [
-      'WINEMULATOR 98 — READ ME',
+      'WINEMULATOR ' + Win.osShort.toUpperCase() + ' — READ ME',
       '========================',
       '',
       'This desktop is a simulation: a fast, self-contained',

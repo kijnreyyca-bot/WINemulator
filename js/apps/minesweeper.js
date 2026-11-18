@@ -325,7 +325,7 @@
               'The counter shows how many mines are left. Clear every safe square to win.', 'How to Play', 'mine');
           } },
           { label: 'About Minesweeper', icon: 'mine', action: function () {
-            Win.ui.alert('WINemulator Minesweeper\nVersion 4.10.2222 (Web Edition)\n\nBeginner, Intermediate and Expert levels.\nBest times are saved in this browser.', 'About Minesweeper', 'mine');
+            Win.ui.alert('WINemulator Minesweeper\nVersion ' + Win.osVersion + ' (Web Edition)\n\nBeginner, Intermediate and Expert levels.\nBest times are saved in this browser.', 'About Minesweeper', 'mine');
           } }
         ];
       }

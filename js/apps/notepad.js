@@ -393,7 +393,7 @@
             { label: 'Help Topics', icon: 'help', action: function () { Win.wm.open('help'); } },
             { separator: true },
             { label: 'About Notepad', icon: 'notepad', action: function () {
-              Win.ui.alert('WINemulator Notepad\nVersion ' + (modern ? '10.0 (Web Edition)' : '4.10.2222 (Web Edition)') + '\n\nA small text editor with a virtual file system.\nYour words are saved in this browser.' +
+              Win.ui.alert('WINemulator Notepad\nVersion ' + Win.osVersion + ' (Web Edition)\n\nA small text editor with a virtual file system.\nYour words are saved in this browser.' +
                 (modern ? '\n\nNew: zoom, dark mode, line-ending and encoding indicators,\nand preferences that persist between sessions.' : ''), 'About Notepad', 'notepad');
             } }
           ];

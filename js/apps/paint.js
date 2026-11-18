@@ -391,7 +391,7 @@
           { label: 'Help Topics', icon: 'help', action: function () { Win.wm.open('help'); } },
           { separator: true },
           { label: 'About Paint', icon: 'paint', action: function () {
-            Win.ui.alert('WINemulator Paint\nVersion 4.10.2222 (Web Edition)\n\nA small bitmap editor. Save your work as a PNG in the virtual file system.\n\nTip: right-drag draws with the background color.', 'About Paint', 'paint');
+            Win.ui.alert('WINemulator Paint\nVersion ' + Win.osVersion + ' (Web Edition)\n\nA small bitmap editor. Save your work as a PNG in the virtual file system.\n\nTip: right-drag draws with the background color.', 'About Paint', 'paint');
           } }
         ]; }
       };

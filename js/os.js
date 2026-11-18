@@ -25,6 +25,9 @@
   Win.osNameFull = Win.isDOS ? 'MS-DOS 6.22' : Win.is2000 ? 'Windows 2000 Professional' : Win.isNine ? 'Windows 9 Pro' : Win.isSeven ? 'Windows 7 Ultimate' : Win.isXP ? 'Windows XP Professional' : 'Windows 98 Second Edition';
   Win.osVersion = Win.isDOS ? '6.22' : Win.is2000 ? '5.0.2195' : Win.isNine ? '6.4.9841' : Win.isSeven ? '6.1.7601' : Win.isXP ? '5.1.2600' : '4.10.2222';
   Win.osBuild = Win.is2000 ? '2195' : Win.isNine ? '9841.fbl_release.260101-0000' : Win.isSeven ? '7601.win7sp1_gdr.260101-0000' : Win.isXP ? '2600.xpsp_sp3_gdr.260101-0000' : '2222 A';
+  /* Short brand suffix (WINemulator 98 / 2000 / XP / 7 / 9) and edition name. */
+  Win.osShort = Win.isDOS ? 'DOS' : Win.is2000 ? '2000' : Win.isNine ? '9' : Win.isSeven ? '7' : Win.isXP ? 'XP' : '98';
+  Win.osEdition = Win.isDOS ? '6.22' : Win.is2000 ? 'Professional' : Win.isNine ? 'Pro' : Win.isSeven ? 'Ultimate' : Win.isXP ? 'Professional' : 'Second Edition';
 
   function patchSettings(patch) {
     try {

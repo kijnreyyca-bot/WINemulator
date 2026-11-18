@@ -203,7 +203,7 @@
         const st = s();
         return '<h1 class="set-h1">Appearance</h1><p class="set-sub">Choose how windows and the desktop look. Changes are applied immediately.</p>' +
           '<div class="set-group"><h3>' + Win.icon('computer', 16) + ' Operating system</h3>' +
-          '<p>This browser can run either desktop. Switching reloads the page and keeps your files and settings.</p>' +
+          '<p>This browser can run every desktop. Switching reloads the page and keeps your files and settings.</p>' +
           '<div class="set-actions">' +
           '<button class="btn" type="button" data-os-switch="98"' + (Win.is98 ? ' disabled' : '') + '>' + Win.icon('flag', 15) + ' Windows 98' + (Win.is98 ? ' (current)' : '') + '</button>' +
           '<button class="btn" type="button" data-os-switch="xp"' + (Win.isXP ? ' disabled' : '') + '>' + Win.icon('windows', 15) + ' Windows XP' + (Win.isXP ? ' (current)' : '') + '</button>' +
@@ -361,8 +361,8 @@
         const uptime = U.fmtDuration(Date.now() - (Win.startedAt || Date.now()));
         const boot = Win.bootMs ? (Win.bootMs / 1000).toFixed(2) + ' seconds' : 'n/a';
         const rows = [
-          ['Operating system', Win.isDOS ? 'MS-DOS 6.22 (Web)' : Win.is2000 ? 'Microsoft Windows 2000 Professional (Web)' : Win.isNine ? 'Microsoft Windows 9 Pro (Web)' : Win.isSeven ? 'Microsoft Windows 7 Ultimate (Web)' : Win.isXP ? 'Microsoft Windows XP Professional (Web)' : 'Microsoft Windows 98 Second Edition (Web)'],
-          ['Version', (Win.isNine ? '6.4.9841' : Win.isSeven ? '6.1.7601' : Win.isXP ? '5.1.2600' : '4.10.2222') + ' — WINemulator ' + (Win.version || '1.0')],
+          ['Operating system', Win.isDOS ? 'MS-DOS 6.22 (Web)' : 'Microsoft ' + Win.osNameFull + ' (Web)'],
+          ['Version', Win.osVersion + ' — WINemulator ' + (Win.version || '1.0')],
           ['Build', Win.build || 'web-2026'],
           ['Processor', 'WebCore x86 JIT (' + (si.cores || '?') + ' logical cores)'],
           ['Memory', (si.memory || 8) + ' GB reported'],
@@ -446,8 +446,8 @@
         const si = Win.sysinfo ? Win.sysinfo() : {};
         return '<div class="set-about">' +
           '<div class="set-about-logo">' + Win.icon(Win.isNine ? 'win10' : 'flag', 60) + '</div>' +
-          '<div><div class="set-about-name">WINemulator ' + (Win.isNine ? '9' : Win.isSeven ? '7' : Win.isXP ? 'XP' : '98') + '</div>' +
-          '<div class="set-about-tag">' + (Win.is2000 ? 'The Windows 2000 Professional desktop, entirely in your browser' : Win.isNine ? 'The flat Windows 9 desktop, entirely in your browser' : Win.isSeven ? 'The Windows 7 Aero desktop, entirely in your browser' : Win.isXP ? 'The Windows XP Luna desktop, entirely in your browser' : 'Windows-style desktop, entirely in your browser') + '</div>' +
+          '<div><div class="set-about-name">WINemulator ' + Win.osShort + '</div>' +
+          '<div class="set-about-tag">' + (Win.is2000 ? 'The Windows 2000 Professional desktop, entirely in your browser' : Win.isNine ? 'The flat Windows 9 desktop, entirely in your browser' : Win.isSeven ? 'The Windows 7 Aero desktop, entirely in your browser' : Win.isXP ? 'The Windows XP Luna desktop, entirely in your browser' : 'The classic Windows 98 desktop, entirely in your browser') + '</div>' +
           '<p>A fast, zero-install desktop environment written in plain HTML, CSS and JavaScript. No framework, no build step, no Microsoft assets — every icon, sound, wallpaper and pixel is generated locally.</p>' +
           '<p>Your files and settings live in this browser. WINemulator does not upload anything anywhere, and it keeps working when you are offline.</p></div>' +
           '</div>' +
@@ -502,7 +502,7 @@
             { label: 'Help Topics', icon: 'help', action: function () { Win.wm.open('help'); } },
             { separator: true },
             { label: 'About Control Panel', icon: 'settings', action: function () {
-              Win.ui.alert('WINemulator Control Panel\nVersion 4.10.2222 (Web Edition)\n\nAppearance, wallpaper, sounds, performance and system tools.\n\nEverything is stored locally in your browser.', 'About Control Panel', 'settings');
+              Win.ui.alert('WINemulator Control Panel\n' + Win.osNameFull + ' · Version ' + Win.osVersion + '\n\nAppearance, wallpaper, sounds, performance and system tools.\n\nEverything is stored locally in your browser.', 'About Control Panel', 'settings');
             } }
           ]
         };

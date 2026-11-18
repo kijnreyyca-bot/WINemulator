@@ -32,6 +32,16 @@
       '</div>';
   }
 
+  function dosSplashMarkup() {
+    return '<div class="bios-screen">' +
+      '<pre class="bios-text">Starting MS-DOS...\n\n' +
+      'HIMEM: DOS XMS Driver, Version 3.10\n' +
+      'MS-DOS Version 6.22\n' +
+      '   (C)Copyright Microsoft Corp 1981-1998.\n\n' +
+      'C:\\&gt;</pre>' +
+      '</div>';
+  }
+
   function xpSplashMarkup() {
     return '<div class="xp-boot-splash">' +
       '<div class="xp-logo"><span class="xp-ms">Microsoft</span><span class="xp-win">Windows</span><span class="xp-xp">xp</span></div>' +
@@ -113,7 +123,7 @@
       '  Secondary Master: CD-ROM 32X',
       '  Secondary Slave : None',
       '',
-      Win.isNine ? 'Starting Windows 9...' : Win.is2000 ? 'Starting Windows 2000...' : Win.isSeven ? 'Starting Windows 7...' : Win.isXP ? 'Starting Windows XP...' : 'Starting Windows 98...'
+      Win.isDOS ? 'Starting MS-DOS...' : Win.isNine ? 'Starting Windows 9...' : Win.is2000 ? 'Starting Windows 2000...' : Win.isSeven ? 'Starting Windows 7...' : Win.isXP ? 'Starting Windows XP...' : 'Starting Windows 98...'
     ];
     const step = fast() ? 25 : 72;
     lines.forEach(function (line, i) {
@@ -134,6 +144,20 @@
     });
 
     const splashAt = fast() ? 550 : 1500;
+
+    /* MS-DOS has no graphical splash screen: the BIOS text hands straight over to the prompt. */
+    if (Win.isDOS) {
+      const lastAt = 160 + (lines.length - 1) * step;
+      later(function () {
+        if (!booting) return;
+        bootLayer.innerHTML = dosSplashMarkup();
+        bootLayer.classList.add('splash');
+        bootLayer.style.background = '#000';
+      }, splashAt);
+      later(finish, lastAt + (fast() ? 400 : 900));
+      return;
+    }
+
     later(function () {
       if (!booting) return;
       bootLayer.innerHTML = bootSplash();
@@ -166,9 +190,11 @@
     }
     if (Win.store.get('firstRun')) {
       Win.store.set({ firstRun: false });
-      setTimeout(function () {
-        if (Win.wm) Win.wm.open('help', { welcome: true });
-      }, 450);
+      if (!Win.isDOS) {
+        setTimeout(function () {
+          if (Win.wm) Win.wm.open('help', { welcome: true });
+        }, 450);
+      }
     } else {
       setTimeout(function () {
         if (Win.ui) Win.ui.toast('WINemulator booted in ' + (Win.bootMs / 1000).toFixed(1) + 's. Press Ctrl+Esc for Start.', 'flag', 4200);
@@ -326,11 +352,14 @@
     let cwd = options.cwd ? options.cwd : (Win.isDOS ? 'C:\\' : (Win.isModern ? 'C:\\Users\\User' : 'C:\\WINDOWS'));
     let classic = !!options.classic;
     let fmActive = false, fmDir = cwd, fmSel = 0;
-    let output = (Win.isDOS
-      ? 'MS-DOS Version 6.22\n   (C)Copyright Microsoft Corp 1981-1998.\n\nType HELP for a list of commands.\n\n'
-      : Win.isNine
-        ? 'Microsoft Windows 9\n   MS-DOS mode\n\nType HELP for a list of commands. Type WINDOWS.SYS to start Windows.\n\n'
-        : 'Microsoft(R) Windows 98\n   (C)Copyright Microsoft Corp 1981-1998.\n\nType HELP for a list of commands. Type WINDOWS.SYS to start Windows.\n\n');
+    let output;
+    if (Win.isDOS) {
+      output = 'MS-DOS Version 6.22\n   (C)Copyright Microsoft Corp 1981-1998.\n\nType HELP for a list of commands.\n\n';
+    } else if (Win.is98) {
+      output = 'Microsoft(R) Windows 98\n   (C)Copyright Microsoft Corp 1981-1998.\n\nType HELP for a list of commands. Type WINDOWS.SYS to start Windows.\n\n';
+    } else {
+      output = 'Microsoft ' + Win.osName + ' [Version ' + Win.osVersion + ']\n   MS-DOS mode\n\nType HELP for a list of commands. Type WINDOWS.SYS to start Windows.\n\n';
+    }
     powerLayer.innerHTML =
       '<div class="dos-screen"><pre class="dos-out"></pre>' +
       '<div class="dos-line"><span class="dos-prompt"></span><input class="dos-input" spellcheck="false" autocomplete="off" aria-label="MS-DOS prompt"></div></div>';
@@ -497,7 +526,7 @@
       if (cmd === 'powershell' || cmd === 'pwsh') { print('Windows PowerShell is not available in MS-DOS mode.'); return; }
       if (cmd === 'msdos' || cmd === 'dos') { handleMsdos(rest); return; }
       if (cmd === 'win' || cmd === 'windows' || cmd === 'win.exe') {
-        let t = '98';
+        let t = Win.isDOS ? '98' : Win.os;
         const a = rest.toLowerCase();
         if (a.indexOf('98') > -1) t = '98';
         else if (a.indexOf('xp') > -1) t = 'xp';
@@ -505,7 +534,8 @@
         else if (a.indexOf('7') > -1) t = '7';
         else if (a.indexOf('9') > -1) t = '9';
         else if (a.indexOf('dos') > -1) t = 'dos';
-        print('Starting ' + (t === 'dos' ? 'MS-DOS' : 'Windows ' + (t === '98' ? '98' : t.toUpperCase())) + '...');
+        const osTitle = { '98': 'Windows 98', xp: 'Windows XP', '2k': 'Windows 2000', '7': 'Windows 7', '9': 'Windows 9', dos: 'MS-DOS' };
+        print('Starting ' + (osTitle[t] || 'Windows') + '...');
         setTimeout(function () { if (Win.switchOS) Win.switchOS(t); else location.href = 'desktop.html?os=' + t; }, 400);
         return;
       }
@@ -570,7 +600,7 @@
           if (content === null || content === undefined) print('File not found');
           else print(content);
         }
-        else if (cmd === 'ver') print(Win.isNine ? '\nWindows 9 [Version 6.4.9841]  MS-DOS mode  WINemulator Web Edition\n' : '\nWindows 98 [Version 4.10.2222]  WINemulator Web Edition\n');
+        else if (cmd === 'ver') print('\n' + Win.osName + ' [Version ' + Win.osVersion + ']' + (Win.isNine ? '  MS-DOS mode' : '') + '  WINemulator Web Edition\n');
         else if (cmd === 'mem') print('\nMemory Type        Total       Used       Free\n----------------  --------   --------   --------\nConventional         640K       112K       528K\nUpper                155K       155K         0K\nExtended (XMS)    64,512K    12,288K    52,224K\n----------------  --------   --------   --------\nTotal memory      65,307K    12,555K    52,752K\n');
         else if (cmd === 'date') print('Current date is ' + new Date().toDateString());
         else if (cmd === 'time') print('Current time is ' + new Date().toLocaleTimeString());

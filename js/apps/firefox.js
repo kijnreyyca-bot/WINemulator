@@ -54,7 +54,7 @@
         if (text) return text;
       }
     }
-    return 'Welcome to WINemulator 98.\r\n\r\nThis desktop runs entirely in your browser.';
+    return 'Welcome to ' + Win.osNameFull + '.\r\n\r\nThis desktop runs entirely in your browser.';
   }
 
   function guestEntries() {
@@ -161,9 +161,9 @@
             '<button class="ie-tile" type="button" data-open-app="notepad">' + Win.icon('notepad', 28) + '<span><b>Notepad</b><small>Write something</small></span></button>' +
             '<button class="ie-tile" type="button" data-open-app="paint">' + Win.icon('paint', 28) + '<span><b>Paint</b><small>Draw a masterpiece</small></span></button>' +
             '<button class="ie-tile" type="button" data-open-app="minesweeper">' + Win.icon('mine', 28) + '<span><b>Minesweeper</b><small>Clear the minefield</small></span></button>' +
-            '<button class="ie-tile" type="button" data-open-app="terminal">' + Win.icon('terminal', 28) + '<span><b>MS-DOS Prompt</b><small>Type DIR and relive 1998</small></span></button>' +
+            '<button class="ie-tile" type="button" data-open-app="terminal">' + Win.icon('terminal', 28) + '<span><b>' + ((Win.is98 || Win.isDOS) ? 'MS-DOS Prompt' : 'Command Prompt') + '</b><small>Type DIR to browse the drive</small></span></button>' +
             '</div>' +
-            '<p class="ie-small" style="margin-top:18px">WINemulator 98 · Best viewed at 800×600 · <span data-go="' + HOME + '">Home</span> · ' +
+            '<p class="ie-small" style="margin-top:18px">WINemulator ' + Win.osShort + ' · Best viewed at 800×600 · <span data-go="' + HOME + '">Home</span> · ' +
             '<span data-go="winemulator://about">About</span></p>'
         };
       }
@@ -189,7 +189,7 @@
       function pageHelp() {
         return {
           title: 'Help & Shortcuts',
-          html: '<h1>Help & Shortcuts</h1><p class="ie-lead">A few things worth knowing before you get lost in 1998.</p>' +
+          html: '<h1>Help & Shortcuts</h1><p class="ie-lead">A few things worth knowing before you get lost in ' + Win.osName + '.</p>' +
             '<h2>Keyboard</h2>' +
             '<table class="ie-kbdtable"><tr><td>Ctrl+Esc</td><td>Open the Start menu</td></tr>' +
             '<tr><td>Win+E</td><td>Open My Computer</td></tr>' +
@@ -246,7 +246,7 @@
         const entries = guestEntries();
         return {
           title: 'Guestbook',
-          html: '<h1>Guestbook</h1><p class="ie-lead">The classic 1998 web experience. Leave a note; it is stored only in this browser.</p>' +
+          html: '<h1>Guestbook</h1><p class="ie-lead">The classic web experience. Leave a note; it is stored only in this browser.</p>' +
             '<div class="ie-form">' +
             '<label>Name <input class="field gb-name" type="text" maxlength="40" placeholder="Anonymous visitor"></label>' +
             '<label>Message <input class="field gb-msg" type="text" maxlength="160" placeholder="This desktop is amazing!"></label>' +
@@ -262,8 +262,8 @@
       function pageAbout() {
         return {
           title: 'About WINemulator',
-          html: '<h1>About WINemulator 98</h1><p class="ie-lead">A Windows-style desktop written from scratch for the browser.</p>' +
-            '<p>WINemulator is a simulation, not an emulator of real x86 software. It re-creates the <i>feel</i> of a 1998 desktop using nothing but HTML, CSS and JavaScript: hand-drawn SVG icons, synthesised sounds and a virtual file system backed by local storage.</p>' +
+          html: '<h1>About WINemulator ' + Win.osShort + '</h1><p class="ie-lead">A Windows-style desktop written from scratch for the browser.</p>' +
+            '<p>WINemulator is a simulation, not an emulator of real x86 software. It re-creates the <i>feel</i> of a ' + Win.osName + ' desktop using nothing but HTML, CSS and JavaScript: hand-drawn SVG icons, synthesised sounds and a virtual file system backed by local storage.</p>' +
             '<h2>Technical notes</h2><ul>' +
             '<li>No frameworks, no build step and no external assets.</li>' +
             '<li>Works offline after the first load; a service worker caches the shell.</li>' +
@@ -286,7 +286,7 @@
             '<li><b>Icons:</b> hand-drawn inline SVG, no icon fonts.</li>' +
             '<li><b>Sounds:</b> Web Audio API oscillators and noise.</li>' +
             '<li><b>Typography:</b> the fonts already on your computer.</li>' +
-            '<li><b>Inspiration:</b> every 1998 desktop that ever booted.</li></ul>' +
+            '<li><b>Inspiration:</b> every Windows desktop that ever booted.</li></ul>' +
             '<div class="ie-note">This is an independent tribute project. It is not affiliated with Microsoft, and no original Windows code or artwork is included.</div>' +
             '<button class="btn" type="button" data-go="' + HOME + '">Back to home</button>'
         };

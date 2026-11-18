@@ -1,16 +1,17 @@
-# WINemulator — Windows 98, XP, 7 & 9 in your browser
+# WINemulator — Windows 98, 2000, XP, 7 & 9 in your browser
 
-A fast, self-contained Windows 98, Windows XP, Windows 7 **and** Windows 9 desktop that runs entirely in your browser. No installation, no build step, no framework and no server required. Every icon is an original inline SVG, every sound is synthesised with the Web Audio API, and your files live in the browser's local storage.
+A fast, self-contained Windows 98, Windows 2000, Windows XP, Windows 7 **and** Windows 9 desktop that runs entirely in your browser. No installation, no build step, no framework and no server required. Every icon is an original inline SVG, every sound is synthesised with the Web Audio API, and your files live in the browser's local storage.
 
-**Open `index.html` or visit the GitHub Pages build.** Pick one of the four desktops, and it boots in a second or two and keeps working offline.
+**Open `index.html` or visit the GitHub Pages build.** Pick one of the five desktops, and it boots in a second or two and keeps working offline.
 
 ![WINemulator](assets/favicon.svg)
 
-## Four desktops, one project
+## Five desktops, one project
 
-`index.html` is a small operating-system selector. It remembers your choice in `localStorage` and opens `desktop.html?os=98`, `?os=xp`, `?os=7` or `?os=9`.
+`index.html` is a small operating-system selector. It remembers your choice in `localStorage` and opens `desktop.html?os=98`, `?os=2k`, `?os=xp`, `?os=7`, `?os=9` or the standalone `?os=dos` shell.
 
 - **Windows 98 Second Edition** — the classic teal desktop, grey chrome, original 98-style icons, boot screen, logon and shutdown flows.
+- **Windows 2000 Professional** — the classic NT desktop with the blue taskbar, grey window chrome, 2000 boot splash and logon screen, and the shared Command Prompt.
 - **Windows XP** — a full Luna shell with the Bliss wallpaper, blue gradient title bars, rounded windows, the two-column XP Start menu, XP taskbar, login screen, boot splash and XP icon set. Blue, Olive Green and Silver themes are included.
 - **Windows 7** — the glassy Aero shell with a Superbar taskbar, orb Start menu, live wallpaper thumbnails, Aero Snap, the Command Prompt and PowerShell, and an Aero glass icon set. Blue, Frost and Dusk themes are included.
 - **Windows 9** — a fictional flat, modern desktop in the Windows 10 style: a dark taskbar, square windows with white title bars, an accent-coloured four-pane Start mark (no glossy orb), a tile Start menu with search, flat icons, and a modern Notepad with zoom, dark mode and line-ending indicators. Blue, Mint and Violet themes are included.
@@ -18,12 +19,12 @@ A fast, self-contained Windows 98, Windows XP, Windows 7 **and** Windows 9 deskt
 
 ## What is inside
 
-- **Desktop shell** — draggable icons, desktop shortcuts, right-click context menus, wallpapers, three Windows 98 themes, three XP themes, three Aero themes and three flat Windows 9 themes, CRT mode and an optional FPS meter.
+- **Desktop shell** — draggable icons, desktop shortcuts, right-click context menus, wallpapers, three Windows 98 themes, a Windows 2000 Classic theme, three XP themes, three Aero themes and three flat Windows 9 themes, CRT mode and an optional FPS meter.
 - **Window manager** — draggable and resizable windows, minimize/maximize/restore, snapping, Alt+Tab, taskbar buttons and focus management.
 - **Start menu and taskbar** — programs, documents, settings, find, help, run, quick launch, clock with calendar, volume and network trays. Windows XP uses the familiar two-column Start menu; Windows 7 and Windows 9 use searchable Start menus, and Windows 9 adds a tile grid.
 - **Virtual file system** — a persistent `C:` drive with seeded folders and files, Recycle Bin, import/export backups and a shared file picker.
-- **Boot experience** - BIOS memory test, Windows 98, XP, 7 or 9 splash, logon, logoff, shutdown, restart and an MS-DOS mode. Fast boot can be enabled in Control Panel. MS-DOS mode accepts the full Command Prompt command set; type `msdos - dos` to switch to the plain MS-DOS shell and `msdos - cmd` to return. Type `msdos - <file>` (also available from the Command Prompt or Run dialog) to run a `.bat`/`.cmd` file or open a file in MS-DOS mode. Type `msdos` (or `dos`) at the Command Prompt to switch straight into MS-DOS mode; type `windows.sys` (or `win.sys`) there to start Windows again.
-- **Apps** — Notepad, Paint, Calculator, MS-DOS Prompt, Windows Explorer, Internet Explorer, Minesweeper, Control Panel, Task Manager, Help and **Virtual PC**.
+- **Boot experience** - BIOS memory test, Windows 98, 2000, XP, 7 or 9 splash, logon, logoff, shutdown, restart and an MS-DOS mode. Fast boot can be enabled in Control Panel. MS-DOS mode accepts the full Command Prompt command set; type `msdos - dos` to switch to the plain MS-DOS shell and `msdos - cmd` to return. Type `msdos - <file>` (also available from the Command Prompt or Run dialog) to run a `.bat`/`.cmd` file or open a file in MS-DOS mode. Type `msdos` (or `dos`) at the Command Prompt to switch straight into MS-DOS mode; type `windows.sys` (or `win.sys`) there to start Windows again.
+- **Apps** — Notepad, Paint, Calculator, Command Prompt (MS-DOS Prompt on 98), Windows Explorer, Internet Explorer, Minesweeper, Control Panel, Task Manager, Help and **Virtual PC**.
 - **Offline ready** — a service worker caches the entire desktop, including the x86 emulator, after the first visit.
 
 ## Virtual PC (real x86 emulation)
@@ -128,7 +129,7 @@ Everything stays in your browser. There is no account, analytics, tracking or se
 
 ## Disclaimer
 
-WINemulator is an independent tribute and a simulation. It is not affiliated with, endorsed by, or connected to Microsoft. Windows, Windows 98, Windows XP, Windows 7 and Windows 9 are names used descriptively; Windows is a trademark of Microsoft Corporation. Windows 9 is not a Microsoft product. v86 is an independent open-source project distributed under the BSD 2-Clause licence; see `vendor/v86/LICENSE`.
+WINemulator is an independent tribute and a simulation. It is not affiliated with, endorsed by, or connected to Microsoft. Windows, Windows 98, Windows 2000, Windows XP, Windows 7 and Windows 9 are names used descriptively; Windows is a trademark of Microsoft Corporation. Windows 9 is not a Microsoft product. v86 is an independent open-source project distributed under the BSD 2-Clause licence; see `vendor/v86/LICENSE`.
 
 ## License
 

@@ -503,7 +503,7 @@ Win.apps.explorer = {
             { label: 'Help Topics', icon: 'help', action: function () { Win.wm.open('help'); } },
             { separator: true },
             { label: 'About Windows Explorer', icon: 'folder', action: function () {
-              Win.ui.alert('WINemulator Windows Explorer\nVersion 4.10.2222\n\nBrowse the virtual C: drive, move files, and empty the Recycle Bin.', 'About Windows Explorer', 'folder');
+              Win.ui.alert('WINemulator Windows Explorer\nVersion ' + Win.osVersion + '\n\nBrowse the virtual C: drive, move files, and empty the Recycle Bin.', 'About Windows Explorer', 'folder');
             } }
           ]
         };

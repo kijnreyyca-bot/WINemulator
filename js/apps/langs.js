@@ -1,6 +1,7 @@
 /* WINemulator — simulated Python and JavaScript REPL applications.
- * These are deliberately small, original interpreters for a documented subset
- * of each language. They do not call eval(), fetch(), or any host API. */
+ * The full sandboxed interpreter lives in langs-core.js; this file provides the
+ * editor UI, banners, help and a minimal fallback. Neither layer calls eval(),
+ * fetch(), new Function or any host API. */
 (function () {
   'use strict';
 
@@ -821,6 +822,7 @@
   }
 
   function runSource(src, lang, write, readInput) {
+    if (Win.langsCore && Win.langsCore.runSource) return Win.langsCore.runSource(src, lang, write, readInput);
     let source = String(src);
     if (lang === 'js') source = stripBlockComments(source);
     const env = newEnv(null);
@@ -836,39 +838,54 @@
     py: {
       appId: 'python', title: 'Python', icon: 'python', prompt: '>>>',
       ext: 'py', defaultName: 'Untitled.py', filters: ['py', 'txt'],
-      banner: 'Python 3.12.0 (WINemulator simulation)\nType help() for the supported subset. Programs run locally in this tab.\n',
+      banner: 'Python 3.12.0 (WINemulator simulation)\nType help() for the full command list. Programs run locally in this tab.\n',
       sample: [
-        '# A tiny Python program\nname = "VI OS"\nfor i in range(3):\n    print("Hello", name, i + 1)\n\nvalues = [1, 2, 3, 4]\nprint("total:", sum(values))\nprint("square root:", round(math.sqrt(16), 2))',
-        'def greet(who):\n    return "Hi, " + who.upper() + "!"\n\nprint(greet("golden gate"))\nprint(sorted([5, 2, 9, 1]))'
+        '# A Python program with functions, comprehensions and modules\nimport math\n\ndef square(n):\n    return n * n\n\nvalues = [square(x) for x in range(1, 6)]\nprint("squares:", values)\nprint("total:", sum(values))\nprint("square root:", round(math.sqrt(16), 2))',
+        'class Greeter:\n    def __init__(self, name):\n        self.name = name\n    def greet(self):\n        return f"Hi, {self.name.title()}!"\n\ng = Greeter("golden gate")\nprint(g.greet())\nprint(sorted([5, 2, 9, 1]))'
       ],
       help:
-        'WINemulator Python is a simulated subset, not a full Python runtime.\n\n' +
-        'Supported:\n' +
-        '  print(), len(), range(), sum(), min(), max(), abs(), round()\n' +
-        '  int(), float(), str(), bool(), list(), sorted(), type(), input()\n' +
-        '  math.sqrt/floor/ceil/pow and math.pi/math.e\n' +
-        '  if / elif / else, for x in range(...), while, def, return\n' +
-        '  lists, dictionaries, strings, + - * / // % ** and comparisons\n\n' +
-        'Example:\n  for i in range(3):\n      print("hi", i)\n\n' +
-        'Use Run (Ctrl+Enter), Open (Ctrl+O) and Save (Ctrl+S).'
+        'WINemulator Python 3.12 simulation — a broad, sandboxed language runtime.\n' +
+        'It never calls eval(), fetch(), or host APIs; file access uses emulated drives.\n\n' +
+        'Core: if/elif/else, for/while/else, break/continue, def, return, lambda,\n' +
+        '  class/inheritance/super(), decorators, try/except/else/finally, raise,\n' +
+        '  assert, with, global/nonlocal, del, imports and comprehensions.\n' +
+        'Values: int/float/str/bool/None, list/tuple/dict/set/range, slices, f-strings,\n' +
+        '  unpacking, keyword args, *args/**kwargs, all operators and chained compares.\n' +
+        'Builtins: print, input, len, range, int, float, str, bool, list, tuple, dict,\n' +
+        '  set, type, isinstance, abs, all, any, sum, min, max, sorted, reversed,\n' +
+        '  enumerate, zip, map, filter, round, pow, divmod, chr, ord, bin, oct, hex,\n' +
+        '  format, hash, repr, open, help and standard exception classes.\n' +
+        'Modules: math, random, datetime, time, json, re, os/os.path, sys, string,\n' +
+        '  statistics, itertools, functools, collections, heapq, copy, uuid, node:fs.\n' +
+        'Generators, annotation syntax, f-string specs, slices, error subclasses and\n' +
+        '  emulated files behave like the real thing inside the sandbox.\n\n' +
+        'Example:\n  import math\n  print([x*x for x in range(5)])\n  print(round(math.sqrt(16), 2))\n\n' +
+        'Use Run (Ctrl+Enter), Open (Ctrl+O) and Save (Ctrl+S). type help() in a program.'
     },
     js: {
       appId: 'js', title: 'JavaScript', icon: 'js', prompt: '›',
       ext: 'js', defaultName: 'Untitled.js', filters: ['js', 'txt'],
-      banner: 'JS Console 1.0 (WINemulator simulation)\nType help() for the supported subset. Programs run locally in this tab.\n',
+      banner: 'JS Console 2.0 (WINemulator simulation)\nType help() for the full command list. Programs run locally in this tab.\n',
       sample: [
         '// A tiny JavaScript program\nconst name = "VI OS";\nfor (let i = 0; i < 3; i++) {\n  console.log("Hello " + name + " " + (i + 1));\n}\n\nconst nums = [1, 2, 3, 4];\nconsole.log(nums.length, nums.join("-"));',
         'function square(x) {\n  return x * x;\n}\n\nlet total = 0;\nfor (let i = 1; i <= 5; i++) {\n  total += square(i);\n}\nconsole.log("total:", total);'
       ],
       help:
-        'WINemulator JavaScript is a simulated subset, not a full JS engine.\n\n' +
-        'Supported:\n' +
-        '  console.log/warn/error, let/const/var, functions and return\n' +
-        '  if / else, for (let i=0; i<n; i++), while, break, continue\n' +
-        '  arrays, objects, strings, Math, JSON, Number, String, parseInt\n' +
-        '  + - * / % **, comparisons, && / ||, .length and array methods\n\n' +
-        'Example:\n  for (let i = 0; i < 3; i++) {\n    console.log(i);\n  }\n\n' +
-        'Use Run (Ctrl+Enter), Open (Ctrl+O) and Save (Ctrl+S).'
+        'WINemulator JavaScript 2.0 simulation — a broad, sandboxed JS runtime.\n' +
+        'It never calls eval(), fetch(), or host APIs; file access uses emulated drives.\n\n' +
+        'Syntax: var/let/const, functions, arrows, classes/extends/super, if/else,\n' +
+        '  for/for-of/for-in, while/do-while, switch, try/catch/finally, throw,\n' +
+        '  ternary, optional chaining (?.), nullish coalescing (??), spread/rest,\n' +
+        '  destructuring, template literals and all standard operators.\n' +
+        'Globals: console, Math, JSON, Object, Array, Number, String, Boolean, Date,\n' +
+        '  RegExp, Map, Set, Reflect, Promise-free timer shims, parseInt, parseFloat,\n' +
+        '  isNaN, isFinite, Error classes, require(), process and fs emulation.\n' +
+        'Methods: full Array/String/Object/Map/Set/Date/RegExp method sets, sort,\n' +
+        '  map/filter/reduce, includes, startsWith, padStart, match, slice and more.\n' +
+        'Spread/rest, computed keys, static/accessor class members, hoisting, const\n' +
+        '  enforcement and deterministic timer ids are also simulated.\n\n' +
+        'Example:\n  const xs = [1, 2, 3].map(x => x * 2);\n  console.log(xs.join("-"));\n\n' +
+        'Use Run (Ctrl+Enter), Open (Ctrl+O) and Save (Ctrl+S). type help() in a program.'
     }
   };
 
@@ -1058,5 +1075,14 @@
 
   Win.apps.python = makeApp('py');
   Win.apps.js = makeApp('js');
-  Win.langs = { runSource: runSource, display: display };
+  Win.langs = Win.langsCore || { runSource: runSource, display: display };
+  Win.langs.runSource = Win.langsCore ? Win.langsCore.runSource : runSource;
+  Win.langs.display = Win.langsCore ? Win.langsCore.display : display;
+  Win.langs.selfTest = Win.langsCore ? Win.langsCore.selfTest : function () {
+    return { total: 0, passed: 0, failed: 0, failures: [] };
+  };
+  Win.langs.helpText = {
+    py: CONFIG.py.help,
+    js: CONFIG.js.help
+  };
 })();
